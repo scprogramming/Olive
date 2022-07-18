@@ -1,7 +1,7 @@
 import express from "express"
-import { registerUser } from "./auth.js";
+import { registerUser } from "../auth.js";
 
-var app = express();
+export const app = express();
 app.use(express.json());
 
 app.post("/registration", async(req,res) => {
@@ -23,6 +23,4 @@ app.post("/registration", async(req,res) => {
     } 
 });
 
-app.listen(5000, () => {
-    console.log("Server started");
-})
+
