@@ -1,12 +1,7 @@
-const sqlhandle = require("../handlers/DbHandler.js");
 const bcrypt = require("bcrypt");
-const conf = require("../handlers/confHandler.js");
 
-module.exports.registerUser =  async function registerUser(username,userPassword,firstName,lastName,address,postalZipCode){
+module.exports.registerUser =  async function registerUser(username,userPassword,firstName,lastName,address,postalZipCode,sqlConn){
     try{
-        var params = getDBParams();
-        var sqlConn = new SqlHandler(params[0],params[1],params[2],params[3],params[4]);
-
         var sql = `SELECT COUNT(*) AS userCount FROM user_login WHERE username = ?`;
         var result = await sqlConn.queryReturnWithParams(sql,[username]);
         
@@ -32,10 +27,7 @@ module.exports.registerUser =  async function registerUser(username,userPassword
         }
 
     } catch (err){
+        console.log(err);
         return -1;
-        
     }
-
-
-
 }
