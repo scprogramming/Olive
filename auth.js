@@ -1,8 +1,8 @@
-import { SqlHandler } from "./DbHandler";
-import {bcrypt} from "bcrypt";
-import { getDBParams } from "./confHandler";
+import { SqlHandler } from "./DbHandler.js";
+import * as bcrypt from "bcrypt";
+import { getDBParams } from "./confHandler.js";
 
-export function registerUser(username,userPassword,firstName,lastName,address,postalZipCode){
+export async function registerUser(username,userPassword,firstName,lastName,address,postalZipCode){
     
     try{
         var params = getDBParams();
@@ -15,9 +15,12 @@ export function registerUser(username,userPassword,firstName,lastName,address,po
         var sql = `INSERT INTO user_login(username,user_password,active,role)
         VALUES (?,?,1,'user')`;
 
-        var result = sqlConn.queryReturnWithParams(sql,username,userPassword);
+        var result = sqlConn.queryReturnWithParams(sql,[username,passwordHash]);
+
+        return 1;
+
     } catch (err){
-        
+
     }
 
 
