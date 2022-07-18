@@ -1,27 +1,48 @@
 const express = require("express");
 const auth = require('../utils/auth.js');
+const sqlHandle = require('../handlers/DbHandler.js');
 
-var app = express()
-module.exports.app = app;
-app.use(express.json());
+module.exports.appServer = class AppServer{
 
-app.post("/registration", async(req,res) => {
+    constructor(host,port,user,pass,database){
+        this.host = host;
+        this.port = port;
+        this.user = user;
+        this.pass = pass;
+        this.database = database;
 
-    try{
-        const {username, user_password, first_name, last_name, address, postal_zip_code} = req.body;
-        var result = await auth.registerUser(username, user_password, first_name, last_name, address, postal_zip_code);
-    
-        if (result == 1){
-            res.json("User created successfully!");
-        }else if (result == -2){
-            res.json("User already exists, pick another username!");
-        }else{
-            res.json("Failed to register user!");
-        }
+        this.app = express()
+        this.app.use(express.json());
 
-    }catch(err){
-        res.json("Failed to register user!");
-    } 
-});
+        this.app.post("/registration", async(req,res) => {
+
+            var sqlConn = new sqlHandle.SqlHandler(this.host,this.port,this.user,this.pass,this.database);
+
+            try{
+                const {username, user_password, first_name, last_name, address, postal_zip_code} = req.body;
+                
+                
+                var result = await auth.registerUser(username, user_password, first_name, last_name, address, postal_zip_code,sqlConn);
+            
+                if (result == 1){
+                    res.status(200);
+                    res.json("User created successfully!");
+                }else if (result == -2){
+                    res.status(400);
+                    res.json("User already exists, pick another username!");
+                }else{
+                    res.status(500);
+                    res.json("Failed to register user!");
+                }
+
+            }catch(err){
+                res.status(500);
+                res.json("Failed to register user!");
+            }finally{
+                sqlConn.close();
+            }
+        });
+    }
+}
 
 
