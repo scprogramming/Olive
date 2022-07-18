@@ -1,9 +1,8 @@
 import { SqlHandler } from "./DbHandler.js";
 import * as bcrypt from "bcrypt";
-import { getDBParams } from "./confHandler.js";
+import { getDBParams } from "./handlers/confHandler.js";
 
 export async function registerUser(username,userPassword,firstName,lastName,address,postalZipCode){
-    
     try{
         var params = getDBParams();
         var sqlConn = new SqlHandler(params[0],params[1],params[2],params[3],params[4]);
