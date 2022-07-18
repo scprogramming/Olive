@@ -1,5 +1,5 @@
-import {app} from './app.js'
+const server = require('./app.js');
 
-app.listen(5000, () => {
+server.app.listen(5000, () => {
     console.log("Server started");
 });
