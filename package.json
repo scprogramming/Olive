@@ -2,9 +2,14 @@
   "name": "cmsforall",
   "version": "1.0.0",
   "description": "A content management system for everyone",
-  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns":[
+      "/node_modules/"
+    ]
   },
   "repository": {
     "type": "git",
@@ -20,5 +25,9 @@
     "bcrypt": "^5.0.1",
     "express": "^4.18.1",
     "mysql2": "^2.3.3"
+  },
+  "devDependencies": {
+    "jest": "^28.1.3",
+    "supertest": "^6.2.4"
   }
 }

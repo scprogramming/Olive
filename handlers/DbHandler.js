@@ -1,6 +1,6 @@
-import * as mysql from 'mysql2'
+const mysql = require('mysql2');
 
-export class SqlHandler{
+module.exports.SqlHandler = class SqlHandler{
     constructor(host,port,user,pass,database){
         this.mySqlConn = mysql.createConnection({
             host:host,
