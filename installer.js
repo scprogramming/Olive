@@ -1,6 +1,6 @@
-import { SqlHandler } from './handlers/DbHandler.js'
-import { getDBParams } from './handlers/confHandler.js';
-import * as readline from 'readline'
+const dbHandle = require("./handlers/DbHandler.js");
+const confHandle = require("./handlers/confHandler.js");
+const readline = require("readline");
 
 async function runQueries(sqlConn){
     await sqlConn.queryReturnNoParam("DROP TABLE IF EXISTS user_login");
@@ -36,8 +36,8 @@ const rl = readline.createInterface({
 
 rl.question('This will delete all of your database data. Are you sure you want to proceed?', async(input) => {
     if (input === 'y'){
-        var params = getDBParams();
-        var sqlConn = new SqlHandler(params[0],params[1],params[2],params[3],"");
+        var params = confHandle.getDBParams();
+        var sqlConn = new dbHandle.SqlHandler(params[0],params[1],params[2],params[3],"");
         
         await sqlConn.queryReturnNoParam("CREATE DATABASE IF NOT EXISTS CmsSystem");
         await sqlConn.queryReturnNoParam("CREATE DATABASE IF NOT EXISTS CmsSystemTest")
@@ -45,12 +45,12 @@ rl.question('This will delete all of your database data. Are you sure you want t
 
         sqlConn.close();
         
-        sqlConn = new SqlHandler(params[0],params[1],params[2],params[3],params[4]);
+        sqlConn = new dbHandle.SqlHandler(params[0],params[1],params[2],params[3],params[4]);
         
         await runQueries(sqlConn);
         sqlConn.close();
 
-        sqlConn = new SqlHandler(params[0],params[1],params[2],params[3],"CmsSystemTest");
+        sqlConn = new dbHandle.SqlHandler(params[0],params[1],params[2],params[3],"CmsSystemTest");
         await runQueries(sqlConn);
 
         sqlConn.close();

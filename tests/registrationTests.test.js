@@ -17,7 +17,7 @@ describe("Testing normal registration", () => {
     test("We should be able to register a user", async () => {
         
         const res = await request(appServer.app)
-        .post('/registration')
+        .post('/api/registration')
         .send(
             {
                 "username":"Scott",
@@ -36,7 +36,7 @@ describe("Testing normal registration", () => {
     test("Duplicate users are not allowed", async () => {
         
         const res = await request(appServer.app)
-        .post('/registration')
+        .post('/api/registration')
         .send(
             {
                 "username":"Scott",
