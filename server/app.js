@@ -49,24 +49,18 @@ module.exports.appServer = class AppServer{
 
             try{
                 const {username, user_password} = req.body;
-                
-                
                 var result = await auth.login(username, user_password, sqlConn);
             
                 if (result){
                     res.status(200);
                     res.json("Login successful!");
-                }else if (result == -2){
-                    res.status(400);
-                    res.json("User already exists, pick another username!");
                 }else{
-                    res.status(500);
-                    res.json("Failed to register user!");
+                    res.status(400);
+                    res.json("Invalid username or password!");
                 }
-
             }catch(err){
                 res.status(500);
-                res.json("Failed to register user!");
+                res.json("Failed to login!");
             }finally{
                 sqlConn.close();
             }
