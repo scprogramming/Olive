@@ -31,3 +31,19 @@ module.exports.registerUser =  async function registerUser(username,userPassword
         return -1;
     }
 }
+
+module.exports.login = async function login(username,password, sqlConn){
+    
+    try {
+        var sql = "SELECT * FROM user_login WHERE username = ?";
+
+        var result = await sqlConn.queryReturnWithParams(sql,[username]);
+        var comp = await bcrypt.compare(password,result[0][0].user_password);
+    
+        return comp;
+    }catch(err){
+        return false;
+    }
+    
+
+}
