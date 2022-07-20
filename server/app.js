@@ -14,7 +14,7 @@ module.exports.appServer = class AppServer{
         this.app = express()
         this.app.use(express.json());
 
-        this.app.post("/registration", async(req,res) => {
+        this.app.post("/api/registration", async(req,res) => {
 
             var sqlConn = new sqlHandle.SqlHandler(this.host,this.port,this.user,this.pass,this.database);
 
@@ -27,6 +27,35 @@ module.exports.appServer = class AppServer{
                 if (result == 1){
                     res.status(200);
                     res.json("User created successfully!");
+                }else if (result == -2){
+                    res.status(400);
+                    res.json("User already exists, pick another username!");
+                }else{
+                    res.status(500);
+                    res.json("Failed to register user!");
+                }
+
+            }catch(err){
+                res.status(500);
+                res.json("Failed to register user!");
+            }finally{
+                sqlConn.close();
+            }
+        });
+
+        this.app.post("/api/login", async(req,res) => {
+
+            var sqlConn = new sqlHandle.SqlHandler(this.host,this.port,this.user,this.pass,this.database);
+
+            try{
+                const {username, user_password} = req.body;
+                
+                
+                var result = await auth.login(username, user_password, sqlConn);
+            
+                if (result){
+                    res.status(200);
+                    res.json("Login successful!");
                 }else if (result == -2){
                     res.status(400);
                     res.json("User already exists, pick another username!");
