@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require('cors');
 const auth = require('../utils/auth.js');
 const sqlHandle = require('../handlers/DbHandler.js');
 
@@ -13,6 +14,7 @@ module.exports.appServer = class AppServer{
 
         this.app = express()
         this.app.use(express.json());
+        this.app.use(cors());
 
         this.app.post("/api/registration", async(req,res) => {
 
@@ -38,8 +40,6 @@ module.exports.appServer = class AppServer{
             }catch(err){
                 res.status(500);
                 res.json("Failed to register user!");
-            }finally{
-                sqlConn.close();
             }
         });
 
@@ -50,7 +50,7 @@ module.exports.appServer = class AppServer{
             try{
                 const {username, user_password} = req.body;
                 var result = await auth.login(username, user_password, sqlConn);
-            
+
                 if (result){
                     res.status(200);
                     res.json("Login successful!");
@@ -61,8 +61,6 @@ module.exports.appServer = class AppServer{
             }catch(err){
                 res.status(500);
                 res.json("Failed to login!");
-            }finally{
-                sqlConn.close();
             }
         });
     }

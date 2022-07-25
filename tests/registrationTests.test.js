@@ -10,7 +10,6 @@ beforeAll(() => {
     var sqlConn = new sqlHandle.SqlHandler(params[0],params[1],params[2],params[3],"CmsSystemTest");
     sqlConn.queryReturnNoParam("TRUNCATE TABLE user_login");
     sqlConn.queryReturnNoParam("TRUNCATE TABLE user_details")
-    sqlConn.close();
 });
 
 describe("Testing normal registration", () => {
@@ -67,7 +66,5 @@ describe("Testing normal registration", () => {
         expect(result[0][0].last_name).toEqual("Cosentino");
         expect(result[0][0].address).toEqual("123 Street");
         expect(result[0][0].postal_zip_code).toEqual("000000");
-
-        sqlConn.close();
     });
 });
