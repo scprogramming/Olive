@@ -10,7 +10,6 @@ beforeAll(() => {
     var sqlConn = new sqlHandle.SqlHandler(params[0],params[1],params[2],params[3],"CmsSystemTest");
     sqlConn.queryReturnNoParam("TRUNCATE TABLE user_login");
     sqlConn.queryReturnNoParam("TRUNCATE TABLE user_details")
-    sqlConn.close();
 });
 
 describe("Testing normal registration", () => {
