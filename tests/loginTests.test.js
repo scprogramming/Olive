@@ -9,7 +9,7 @@ const appServer = new server.appServer(params[0],params[1],params[2],params[3],"
 beforeAll(() => {
     var sqlConn = new sqlHandle.SqlHandler(params[0],params[1],params[2],params[3],"CmsSystemTest");
     sqlConn.queryReturnNoParam("TRUNCATE TABLE user_login");
-    sqlConn.queryReturnNoParam("TRUNCATE TABLE user_details")
+    sqlConn.queryReturnNoParam("TRUNCATE TABLE user_details");
 });
 
 describe("Testing normal registration", () => {
@@ -19,12 +19,11 @@ describe("Testing normal registration", () => {
         .post('/api/registration')
         .send(
             {
-                "username":"Scott",
+                "email":"scottc130@gmail.com",
                 "user_password":"123456",
+                "confirm_password":"123456",
                 "first_name":"Scott",
-                "last_name":"Cosentino",
-                "address":"123 Street",
-                "postal_zip_code":"000000"
+                "last_name":"Cosentino"
             }
         );
 
@@ -38,8 +37,8 @@ describe("Testing normal registration", () => {
         .post('/api/login')
         .send(
             {
-                "username":"Scott",
-                "user_password":"123456",
+                "email":"scottc130@gmail.com",
+                "user_password":"123456"
             }
         );
 
@@ -52,8 +51,8 @@ describe("Testing normal registration", () => {
         .post('/api/login')
         .send(
             {
-                "username":"Scott",
-                "user_password":"1234567",
+                "email":"scottc130@gmail.com",
+                "user_password":"1234567"
             }
         );
 
@@ -67,8 +66,8 @@ describe("Testing normal registration", () => {
         .post('/api/login')
         .send(
             {
-                "username":"",
-                "user_password":"1234567",
+                "email":"",
+                "user_password":"1234567"
             }
         );
 
@@ -82,8 +81,8 @@ describe("Testing normal registration", () => {
         .post('/api/login')
         .send(
             {
-                "username":"Scott",
-                "user_password":"",
+                "email":"scottc130@gmail.com",
+                "user_password":""
             }
         );
 
@@ -97,8 +96,8 @@ describe("Testing normal registration", () => {
         .post('/api/login')
         .send(
             {
-                "username":"Scott",
-                "user_password":"'",
+                "email":"scottc130@gmail.com",
+                "user_password":"'"
             }
         );
 
@@ -112,8 +111,8 @@ describe("Testing normal registration", () => {
         .post('/api/login')
         .send(
             {
-                "username":"'",
-                "user_password":"1234567",
+                "email":"'",
+                "user_password":"1234567"
             }
         );
 

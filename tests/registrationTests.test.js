@@ -19,12 +19,11 @@ describe("Testing normal registration", () => {
         .post('/api/registration')
         .send(
             {
-                "username":"Scott",
+                "email":"scottc130@gmail.com",
                 "user_password":"123456",
+                "confirm_password":"123456",
                 "first_name":"Scott",
-                "last_name":"Cosentino",
-                "address":"123 Street",
-                "postal_zip_code":"000000"
+                "last_name":"Cosentino"
             }
         );
 
@@ -38,12 +37,11 @@ describe("Testing normal registration", () => {
         .post('/api/registration')
         .send(
             {
-                "username":"Scott",
+                "email":"scottc130@gmail.com",
                 "user_password":"123456",
+                "confirm_password":"123456",
                 "first_name":"Scott",
-                "last_name":"Cosentino",
-                "address":"123 Street",
-                "postal_zip_code":"000000"
+                "last_name":"Cosentino"
             }
         );
 
@@ -54,9 +52,9 @@ describe("Testing normal registration", () => {
     test("Database contains user details", async () => {
 
         var sqlConn = new sqlHandle.SqlHandler(params[0],params[1],params[2],params[3],"CmsSystemTest");
-        var result = await sqlConn.queryReturnNoParam("SELECT * FROM user_login WHERE username = 'Scott'");
+        var result = await sqlConn.queryReturnNoParam("SELECT * FROM user_login WHERE email = 'scottc130@gmail.com'");
         
-        expect(result[0][0].username).toEqual("Scott");
+        expect(result[0][0].email).toEqual("scottc130@gmail.com");
         expect(result[0][0].active).toEqual(1);
         expect(result[0][0].role).toEqual("user");
 
@@ -64,7 +62,6 @@ describe("Testing normal registration", () => {
 
         expect(result[0][0].first_name).toEqual("Scott");
         expect(result[0][0].last_name).toEqual("Cosentino");
-        expect(result[0][0].address).toEqual("123 Street");
-        expect(result[0][0].postal_zip_code).toEqual("000000");
+
     });
 });
