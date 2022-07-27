@@ -21,10 +21,10 @@ module.exports.appServer = class AppServer{
             var sqlConn = new sqlHandle.SqlHandler(this.host,this.port,this.user,this.pass,this.database);
 
             try{
-                const {username, user_password, first_name, last_name, address, postal_zip_code} = req.body;
+                const {email, user_password, confirm_password, first_name, last_name} = req.body;
                 
                 
-                var result = await auth.registerUser(username, user_password, first_name, last_name, address, postal_zip_code,sqlConn);
+                var result = await auth.registerUser(email, user_password, confirm_password, first_name, last_name, sqlConn);
             
                 if (result == 1){
                     res.status(200);
@@ -32,6 +32,9 @@ module.exports.appServer = class AppServer{
                 }else if (result == -2){
                     res.status(400);
                     res.json("User already exists, pick another username!");
+                }else if (result == -3){
+                    res.status(400);
+                    res.json("Passwords provided do not match!");
                 }else{
                     res.status(500);
                     res.json("Failed to register user!");
@@ -48,9 +51,9 @@ module.exports.appServer = class AppServer{
             var sqlConn = new sqlHandle.SqlHandler(this.host,this.port,this.user,this.pass,this.database);
 
             try{
-                const {username, user_password} = req.body;
-                var result = await auth.login(username, user_password, sqlConn);
-
+                const {email, user_password} = req.body;
+                var result = await auth.login(email, user_password, sqlConn);
+                
                 if (result){
                     res.status(200);
                     res.json("Login successful!");

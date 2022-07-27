@@ -10,7 +10,7 @@ async function runQueries(sqlConn){
 
     await sqlConn.queryReturnNoParam(`CREATE TABLE user_login(
         user_id INT NOT NULL AUTO_INCREMENT,
-        username VARCHAR(100) NOT NULL,
+        email VARCHAR(100) NOT NULL,
         user_password VARCHAR(100) NOT NULL,
         active INT NOT NULL,
         role VARCHAR(100),
@@ -21,12 +21,12 @@ async function runQueries(sqlConn){
         CREATE TABLE user_details(
         user_id INT NOT NULL,
         first_name VARCHAR(100) NOT NULL,
-        last_name VARCHAR(100),
-        address VARCHAR(1000),
-        postal_zip_code VARCHAR(25)
+        last_name VARCHAR(100)
         );`);
     
     console.log("Created tables");
+
+    sqlConn.close();
 }
 
 const rl = readline.createInterface({
@@ -53,13 +53,12 @@ rl.question('This will delete all of your database data. Are you sure you want t
         sqlConn = new dbHandle.SqlHandler(params[0],params[1],params[2],params[3],"CmsSystemTest");
         await runQueries(sqlConn);
 
+        
         sqlConn.close();
         rl.close();
-        
+
     }else{
         console.log("Quitting!");
         rl.close();
     }
 })
-
-
