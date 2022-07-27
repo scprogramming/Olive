@@ -1,25 +1,30 @@
 const bcrypt = require("bcrypt");
 
-module.exports.registerUser =  async function registerUser(username,userPassword,firstName,lastName,address,postalZipCode,sqlConn){
+module.exports.registerUser =  async function registerUser(email, userPassword, confirmPassword, firstName, lastName, sqlConn){
     try{
-        var sql = `SELECT COUNT(*) AS userCount FROM user_login WHERE username = ?`;
-        var result = await sqlConn.queryReturnWithParams(sql,[username]);
+
+        if (userPassword != confirmPassword){
+            return -3
+        }
+        
+        var sql = `SELECT COUNT(*) AS userCount FROM user_login WHERE email = ?`;
+        var result = await sqlConn.queryReturnWithParams(sql,[email]);
         
         if (result[0][0].userCount == 0){
             var saltRounds = 10;
             var salt = await bcrypt.genSalt(saltRounds);
             var passwordHash = await bcrypt.hash(userPassword,salt);
     
-            var sql = `INSERT INTO user_login(username,user_password,active,role)
+            var sql = `INSERT INTO user_login(email,user_password,active,role)
             VALUES (?,?,1,'user')`;
     
-            result = await sqlConn.queryReturnWithParams(sql,[username,passwordHash]);
+            result = await sqlConn.queryReturnWithParams(sql,[email,passwordHash]);
             var userId = result[0].insertId;
     
             var sql = `INSERT INTO user_details
-            VALUES (?,?,?,?,?)`;
+            VALUES (?,?,?)`;
     
-            sqlConn.queryReturnWithParams(sql,[userId,firstName,lastName,address,postalZipCode]);
+            sqlConn.queryReturnWithParams(sql,[userId,firstName,lastName]);
     
             return 1;
         }else{
@@ -32,12 +37,12 @@ module.exports.registerUser =  async function registerUser(username,userPassword
     }
 }
 
-module.exports.login = async function login(username,password, sqlConn){
+module.exports.login = async function login(email,password, sqlConn){
     
     try {
-        var sql = "SELECT * FROM user_login WHERE username = ?";
+        var sql = "SELECT * FROM user_login WHERE email = ?";
 
-        var result = await sqlConn.queryReturnWithParams(sql,[username]);
+        var result = await sqlConn.queryReturnWithParams(sql,[email]);
         var comp = await bcrypt.compare(password,result[0][0].user_password);
     
         return comp;
