@@ -10,11 +10,12 @@ module.exports.SqlHandler = class SqlHandler{
             database:database
         });
 
-        this.mySqlConn.connect(function(err){
+        this.mySqlConn.connect(function (err) {
             if (err){
-                throw err;
+                console.log(err);
             }
-        });
+        })
+
     }
 
     async queryReturnNoParam(query){
@@ -27,7 +28,7 @@ module.exports.SqlHandler = class SqlHandler{
         return result;
     }
 
-    close(){
-        this.mySqlConn.end();
+    async close(){
+        this.mySqlConn.close();
     }
 }
