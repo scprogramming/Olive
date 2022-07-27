@@ -2,7 +2,7 @@ import {useState} from 'react';
 import '../css/signin.css';
 function Login() {
 
-  const [username,setUsername] = useState("");
+  const [email,setEmail] = useState("");
   const [password,setPassword] = useState("");
   const [status,setStatus] = useState("");
 
@@ -15,7 +15,7 @@ function Login() {
         "Content-type": "application/json"
       },
       body: JSON.stringify({
-        username: username,
+        email: email,
         user_password: password
       })
     })
@@ -31,7 +31,7 @@ function Login() {
 
     <h1 className="h3 mb-3 font-weight-normal">Please sign in</h1>
 
-    <input className="form-control" id="username" placeholder='Email address' type="email" onChange={(e)=>setUsername(e.target.value)} required autoFocus/>
+    <input className="form-control" id="email" placeholder='Email address' type="email" onChange={(e)=>setEmail(e.target.value)} required autoFocus/>
     
     <input id="password" className = "form-control" type="password" placeholder='Password' onChange={(e)=>setPassword(e.target.value)} required />
     
