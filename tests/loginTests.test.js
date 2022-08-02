@@ -6,43 +6,20 @@ const sqlHandle = require("../handlers/DbHandler.js");
 const params = conf.getDBParams();
 const appServer = new server.appServer(params[0],params[1],params[2],params[3],"CmsSystemTest");
 
-beforeAll(() => {
-    var sqlConn = new sqlHandle.SqlHandler(params[0],params[1],params[2],params[3],"CmsSystemTest");
-    sqlConn.queryReturnNoParam("TRUNCATE TABLE user_login");
-    sqlConn.queryReturnNoParam("TRUNCATE TABLE user_details");
-});
-
 describe("Testing normal registration", () => {
-    test("We should be able to register a user", async () => {
-        
-        const res = await request(appServer.app)
-        .post('/api/registration')
-        .send(
-            {
-                "email":"scottc130@gmail.com",
-                "user_password":"123456",
-                "confirm_password":"123456",
-                "first_name":"Scott",
-                "last_name":"Cosentino"
-            }
-        );
-
-        expect(res.statusCode).toEqual(200);
-        expect(res.body).toEqual("User created successfully!")
-    });
-
     test("Valid login is successful", async () => {
         
         const res = await request(appServer.app)
         .post('/api/login')
         .send(
             {
-                "email":"scottc130@gmail.com",
+                "email":"test@gmail.com",
                 "user_password":"123456"
             }
         );
 
         expect(res.statusCode).toEqual(200);
+        
     });
 
     test("Invalid login fails", async () => {
@@ -51,7 +28,7 @@ describe("Testing normal registration", () => {
         .post('/api/login')
         .send(
             {
-                "email":"scottc130@gmail.com",
+                "email":"test@gmail.com",
                 "user_password":"1234567"
             }
         );
@@ -81,7 +58,7 @@ describe("Testing normal registration", () => {
         .post('/api/login')
         .send(
             {
-                "email":"scottc130@gmail.com",
+                "email":"test@gmail.com",
                 "user_password":""
             }
         );
@@ -96,7 +73,7 @@ describe("Testing normal registration", () => {
         .post('/api/login')
         .send(
             {
-                "email":"scottc130@gmail.com",
+                "email":"test@gmail.com",
                 "user_password":"'"
             }
         );
