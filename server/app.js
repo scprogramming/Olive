@@ -53,9 +53,10 @@ module.exports.appServer = class AppServer{
             try{
                 const {email, user_password} = req.body;
                 var result = await auth.login(email, user_password, sqlConn);
-                
-                if (result){
+
+                if (result[0]){
                     res.status(200);
+                    res.setHeader('Set-Cookie','auth=' + result[1] + '; HttpOnly');
                     res.json("Login successful!");
                 }else{
                     res.status(400);
@@ -66,6 +67,7 @@ module.exports.appServer = class AppServer{
                 res.json("Failed to login!");
             }
         });
+
     }
 }
 
