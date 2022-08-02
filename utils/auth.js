@@ -1,4 +1,8 @@
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 module.exports.registerUser =  async function registerUser(email, userPassword, confirmPassword, firstName, lastName, sqlConn){
     try{
@@ -44,11 +48,30 @@ module.exports.login = async function login(email,password, sqlConn){
 
         var result = await sqlConn.queryReturnWithParams(sql,[email]);
         var comp = await bcrypt.compare(password,result[0][0].user_password);
-    
-        return comp;
-    }catch(err){
-        return false;
-    }
-    
 
+        const token = jwt.sign(
+            {user:email},
+            process.env.jwtKey,
+            {
+                expiresIn: process.env.tokenExpires
+            }
+        );
+    
+        return [comp,token];
+    }catch(err){
+        return [false,""];
+    }
+}
+
+module.exports.verify = async function validateJwt(token){
+    if (!token){
+        return false;
+    }else{
+        try{
+            const decoded = jwt.verify(token,process.env.jwtKey);
+            return true;
+        }catch(err){
+            return false;
+        }
+    }
 }
