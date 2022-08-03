@@ -1,10 +1,18 @@
 import {useState} from 'react';
-import '../css/signin.css';
+import '../css/style.css';
+import {useNavigate} from "react-router-dom";
+
 function Login() {
+
+  const navigate = useNavigate();
 
   const [email,setEmail] = useState("");
   const [password,setPassword] = useState("");
   const [status,setStatus] = useState("");
+
+  const redirect = (event) => {
+    navigate("/register");
+  }
 
   const login = (event) =>{
     event.preventDefault();
@@ -26,23 +34,18 @@ function Login() {
   }
 
   return (
-    <div className="text-center">
-    <form className="form-signin" onSubmit={login}>
+      <form onSubmit={login}>
 
-    <h1 className="h3 mb-3 font-weight-normal">Please sign in</h1>
+      <div className="centerForm">
+        <h1>Please sign in</h1>
+        <input className='stackedInput' placeholder='Email address' type="email" onChange={(e)=>setEmail(e.target.value)} required autoFocus/>
+        <input className='stackedInput' type="password"  placeholder='Password' onChange={(e)=>setPassword(e.target.value)} required />
 
-    <input className="form-control" id="email" placeholder='Email address' type="email" onChange={(e)=>setEmail(e.target.value)} required autoFocus/>
-    
-    <input id="password" className = "form-control" type="password" placeholder='Password' onChange={(e)=>setPassword(e.target.value)} required />
-    
-    <button className="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-    <p>Need an account? <a href="/register">Sign up!</a></p>
-    <label>{status}</label>
-
-     
-
-    </form>
-    </div>
+        <button className='signInButton' type="submit">Sign in</button>
+        <button type="button" onClick={redirect}>Sign up</button>
+        <label>{status}</label>    
+      </div>
+      </form>
   );
 }
 
