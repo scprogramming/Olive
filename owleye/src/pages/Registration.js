@@ -35,17 +35,18 @@ function Login() {
   <div>
     <form onSubmit={login}>
 
-    <h1>Register</h1>
+    <div className="centerForm">
+      <h1>Register</h1>
 
-    <input placeholder='Email address' type="email" onChange={(e)=>setEmail(e.target.value)} required autoFocus/>
-    <input className = "form-control" type="password" placeholder='Password' onChange={(e)=>setPassword(e.target.value)} required />
-    <input type="password" placeholder='Confirm Password' onChange={(e)=>setConfirmPassword(e.target.value)} required />
-    <input type="text" placeholder="First name" onChange={(e)=>setFirstName(e.target.value)}/>
-    <input type="text" placeholder="Last name" onChange={(e)=>setLastName(e.target.value)}/>
+      <input className = "stackedInput" placeholder='Email address' type="email" onChange={(e)=>setEmail(e.target.value)} required autoFocus/>
+      <input className = "stackedInput" type="password" placeholder='Password' onChange={(e)=>setPassword(e.target.value)} required />
+      <input className = "stackedInput" type="password" placeholder='Confirm Password' onChange={(e)=>setConfirmPassword(e.target.value)} required />
+      <input className = "stackedInput" type="text" placeholder="First name" onChange={(e)=>setFirstName(e.target.value)}/>
+      <input className = "stackedInput" type="text" placeholder="Last name" onChange={(e)=>setLastName(e.target.value)}/>
 
-    <button type="submit">Register</button>
-    <label>{status}</label>
-
+      <button type="submit">Register</button>
+      <label>{status}</label>
+    </div>
     </form>
   </div>
   );
