@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import '../css/registration.css';
+import '../css/style.css';
 function Login() {
 
   const [email,setEmail] = useState("");
@@ -32,29 +32,22 @@ function Login() {
   }
 
   return (
-    <div className="text-center">
-    <form className="form-signin" onSubmit={login}>
+  <div>
+    <form onSubmit={login}>
 
-    <h1 className="h3 mb-3 font-weight-normal">Register</h1>
+    <h1>Register</h1>
 
-    <div class = "form-group">
-        <input className="form-control" id="email" placeholder='Email address' type="email" onChange={(e)=>setEmail(e.target.value)} required autoFocus/>
-    </div>
+    <input placeholder='Email address' type="email" onChange={(e)=>setEmail(e.target.value)} required autoFocus/>
+    <input className = "form-control" type="password" placeholder='Password' onChange={(e)=>setPassword(e.target.value)} required />
+    <input type="password" placeholder='Confirm Password' onChange={(e)=>setConfirmPassword(e.target.value)} required />
+    <input type="text" placeholder="First name" onChange={(e)=>setFirstName(e.target.value)}/>
+    <input type="text" placeholder="Last name" onChange={(e)=>setLastName(e.target.value)}/>
 
-    <div class = "form-group">
-        <input id="password" className = "form-control" type="password" placeholder='Password' onChange={(e)=>setPassword(e.target.value)} required />
-        <input id="confirmPassword" className = "form-control" type="password" placeholder='Confirm Password' onChange={(e)=>setConfirmPassword(e.target.value)} required />
-        <input id="firstname" className = "form-control" type="text" placeholder="First name" onChange={(e)=>setFirstName(e.target.value)}/>
-        <input id="lastname" className = "form-control" type="text" placeholder="Last name" onChange={(e)=>setLastName(e.target.value)}/>
-    </div>
-
-    <button className="btn btn-lg btn-primary btn-block" type="submit">Register</button>
+    <button type="submit">Register</button>
     <label>{status}</label>
 
-     
-
     </form>
-    </div>
+  </div>
   );
 }
 

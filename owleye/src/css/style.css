@@ -1,0 +1,14 @@
+.loginForm {
+  width:300px;
+  margin:0 auto 0 auto;
+  padding: 0px 0px 70px 0px;
+}
+
+.loginInputs {
+  display:block;
+  margin-bottom: 10px;
+}
+
+.signUpButton {
+  float: left;
+}
