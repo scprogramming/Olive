@@ -1,14 +1,14 @@
-.loginForm {
+.centerForm {
   width:300px;
   margin:0 auto 0 auto;
   padding: 0px 0px 70px 0px;
 }
 
-.loginInputs {
+.stackedInput {
   display:block;
   margin-bottom: 10px;
 }
 
-.signUpButton {
-  float: left;
+.signInButton{
+  margin-right:15px;
 }

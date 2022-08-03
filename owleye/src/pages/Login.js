@@ -36,12 +36,12 @@ function Login() {
   return (
       <form onSubmit={login}>
 
-      <div className="loginForm">
+      <div className="centerForm">
         <h1>Please sign in</h1>
-        <input className='loginInputs' placeholder='Email address' type="email" onChange={(e)=>setEmail(e.target.value)} required autoFocus/>
-        <input className='loginInputs' type="password"  placeholder='Password' onChange={(e)=>setPassword(e.target.value)} required />
+        <input className='stackedInput' placeholder='Email address' type="email" onChange={(e)=>setEmail(e.target.value)} required autoFocus/>
+        <input className='stackedInput' type="password"  placeholder='Password' onChange={(e)=>setPassword(e.target.value)} required />
 
-        <button type="submit">Sign in</button>
+        <button className='signInButton' type="submit">Sign in</button>
         <button type="button" onClick={redirect}>Sign up</button>
         <label>{status}</label>    
       </div>
