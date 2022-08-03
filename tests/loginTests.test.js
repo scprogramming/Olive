@@ -1,10 +1,11 @@
 const request = require("supertest");
-const server = require("../server/app.js")
-const conf = require("../handlers/confHandler.js");
-const sqlHandle = require("../handlers/DbHandler.js");
+const server = require("../server/app.js");
+const dotenv = require("dotenv");
 
-const params = conf.getDBParams();
-const appServer = new server.appServer(params[0],params[1],params[2],params[3],"CmsSystemTest");
+dotenv.config();
+
+const appServer = new server.appServer(process.env.databaseAddress,
+    process.env.databasePort,process.env.databaseUser,process.env.databasePassword,"CmsSystemTest");
 
 describe("Testing normal registration", () => {
     test("Valid login is successful", async () => {
