@@ -1,13 +1,16 @@
 const request = require("supertest");
-const conf = require("../handlers/confHandler.js");
 const sqlHandle = require("../handlers/DbHandler.js");
 const server = require("../server/app.js")
 
-const params = conf.getDBParams();
-const appServer = new server.appServer(params[0],params[1],params[2],params[3],"CmsSystemTest");
+const dotenv = require("dotenv");
+
+dotenv.config();
+const appServer = new server.appServer(process.env.databaseAddress,
+    process.env.databasePort,process.env.databaseUser,process.env.databasePassword,"CmsSystemTest");
 
 module.exports = async () => {
-    var sqlConn = new sqlHandle.SqlHandler(params[0],params[1],params[2],params[3],"CmsSystemTest");
+    var sqlConn = new sqlHandle.SqlHandler(process.env.databaseAddress,
+        process.env.databasePort,process.env.databaseUser,process.env.databasePassword,"CmsSystemTest");
     sqlConn.queryReturnNoParam("TRUNCATE TABLE user_login");
     sqlConn.queryReturnNoParam("TRUNCATE TABLE user_details");
     const res = await request(appServer.app)
