@@ -1,0 +1,38 @@
+{
+  "name": "cmsforall",
+  "version": "1.0.0",
+  "description": "A content management system for everyone",
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "globalSetup": "./tests/setup.js",
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scprogramming/CMSForAll.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/scprogramming/CMSForAll/issues"
+  },
+  "homepage": "https://github.com/scprogramming/CMSForAll#readme",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "jsonwebtoken": "^8.5.1",
+    "mysql2": "^2.3.3",
+    "vue": "^3.2.37"
+  },
+  "devDependencies": {
+    "jest": "^28.1.3",
+    "supertest": "^6.2.4"
+  }
+}
