@@ -28,5 +28,4 @@ tokenExpires=1d
 
 This example defines the `jwtkey` as `SuperSecretJwtKey` and the `tokenExpires` field to expire the JWT in 1 day. 
 
-## app.conf
 
