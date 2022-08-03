@@ -1,16 +1,12 @@
 const request = require("supertest");
 const server = require("../server/app.js")
-const conf = require("../handlers/confHandler.js");
 const sqlHandle = require("../handlers/DbHandler.js");
+const dotenv = require("dotenv");
 
-const params = conf.getDBParams();
-const appServer = new server.appServer(params[0],params[1],params[2],params[3],"CmsSystemTest");
+dotenv.config();
 
-beforeAll(() => {
-    var sqlConn = new sqlHandle.SqlHandler(params[0],params[1],params[2],params[3],"CmsSystemTest");
-    sqlConn.queryReturnNoParam("TRUNCATE TABLE user_login");
-    sqlConn.queryReturnNoParam("TRUNCATE TABLE user_details")
-});
+const appServer = new server.appServer(process.env.databaseAddress,
+    process.env.databasePort,process.env.databaseUser,process.env.databasePassword,"CmsSystemTest");
 
 describe("Testing normal registration", () => {
     test("We should be able to register a user", async () => {
@@ -51,7 +47,8 @@ describe("Testing normal registration", () => {
 
     test("Database contains user details", async () => {
 
-        var sqlConn = new sqlHandle.SqlHandler(params[0],params[1],params[2],params[3],"CmsSystemTest");
+        var sqlConn = new sqlHandle.SqlHandler(process.env.databaseAddress,
+            process.env.databasePort,process.env.databaseUser,process.env.databasePassword,"CmsSystemTest");
         var result = await sqlConn.queryReturnNoParam("SELECT * FROM user_login WHERE email = 'scottc130@gmail.com'");
         
         expect(result[0][0].email).toEqual("scottc130@gmail.com");
