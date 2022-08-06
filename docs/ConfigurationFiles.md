@@ -1,4 +1,4 @@
-# Summary
+# Configuration Files
 
 For the application to run, a number of different configurations are required. This document outlines the required components for the application to run.
 
