@@ -42,3 +42,21 @@ This endpoint sets up a database connection, and attempts to register a new user
 * **400**: The user already exists, or the `user_password` and `confirm_password` fields do not match
 * **500**: The process for registering a new user failed due to an internal server error
 
+### /api/login endpoint
+
+The login endpoint requires the following parameters to be provided:
+
+* **email**: The email of the user who is logging in
+* **user_password**: The password of the user
+
+This endpoint sets up a database connection and attempts to login using the provided email and password. The `login` method of the [auth](auth/auth.md) module is used to verify the provided login. The endpoint can return the following statuses:
+
+* **200**: The login was successful
+* **400**: An invalid username or password was provided
+* **500**: The login failed due to an internal server error
+
+If the user authentication is successful, a token is created by the `login` method and a cookie named `auth` is set with the `JWT` generated for the user.
+
+## server.js
+
+The file `server.js` creates an instance of the `AppServer` class and starts it listening on port 5000.
