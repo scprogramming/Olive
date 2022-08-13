@@ -1,5 +1,4 @@
 const server = require('./app.js');
-const conf = require('../handlers/confHandler.js');
 const dotenv = require("dotenv");
 
 dotenv.config();
