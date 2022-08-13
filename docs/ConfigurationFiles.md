@@ -1,4 +1,4 @@
-# Summary
+# Configuration Files
 
 For the application to run, a number of different configurations are required. This document outlines the required components for the application to run.
 
@@ -11,11 +11,31 @@ The .env file contains various components required by the node.js server. The fo
 
 ### jwtkey
 
-The parameter `jwtkey` represents the key used to create and verify JWT. You should pick a long, secure, unique key for your application. 
+The key used to create and verify JWT. You should pick a long, secure, unique key for your application. 
 
 ### tokenExpires
 
-The paramter `tokenExpires` represents the expiry time for a JWT. If this is set to `none`, no expiry is set on the token. 
+The expiry time for a JWT. If this is set to `none`, no expiry is set on the token. 
+
+### databaseAddress
+
+The address of the database used by the application
+
+### databasePort
+
+The port that the database server is listening on for connections
+
+### databaseUser
+
+The username of the database user used for the application
+
+### databasePassword
+
+The password of the database user
+
+### database
+
+The name of the database where the data will be stored
 
 ### Sample Usage
 
@@ -24,9 +44,9 @@ Below is a sample of the `.env` file:
 ```
 jwtkey=SuperSecretJwtKey
 tokenExpires=1d
+databaseAddress=localhost
+databasePort=3306
+databaseUser=user
+databasePassword=password
+database=CmsSystem
 ```
-
-This example defines the `jwtkey` as `SuperSecretJwtKey` and the `tokenExpires` field to expire the JWT in 1 day. 
-
-## app.conf
-

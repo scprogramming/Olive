@@ -34,7 +34,7 @@ const rl = readline.createInterface({
     output: process.stdout
 });
 
-rl.question('This will delete all of your database data. Are you sure you want to proceed?', async(input) => {
+rl.question('This will delete all of your database data in your target database. Are you sure you want to proceed?', async(input) => {
     if (input === 'y'){
         var params = confHandle.getDBParams();
         var sqlConn = new dbHandle.SqlHandler(params[0],params[1],params[2],params[3],"");
