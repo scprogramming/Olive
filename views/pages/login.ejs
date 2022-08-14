@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="/public/login.css">
+    </head>
+
+    <body class="text-center">
+        <form class="form-signin" id="loginForm">
+            <h1 class="h3 mb-3 font-weight-normal">Sign in</h1>
+            <label for="email" class="sr-only">Email address</label>
+            <input name="email" type="email" id="email" class="form-control" placeholder="Email address" required autofocus>
+            
+            <label for="user_password" class="sr-only">Password</label>
+            <input name="user_password" type="password" id="user_password" class="form-control" placeholder="Password" required>
+
+            <p id="status"></p>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+
+            <p>New user? <a href="/register">Sign up now!</a></p>
+        </form>
+    </body>
+
+    <script>
+        const form = document.getElementById('loginForm');
+
+        form.addEventListener('submit',function(e){
+            e.preventDefault();
+
+            const payload = new FormData(form);
+            let formDataObject = Object.fromEntries(payload.entries());
+            let jsonData = JSON.stringify(formDataObject);
+
+            fetch('http://localhost:5000/api/login', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body:jsonData
+            })
+            .then(res => res.json())
+            .then(data => document.getElementById("status").innerHTML = data);
+
+        })
+    </script>
+
+</html>
