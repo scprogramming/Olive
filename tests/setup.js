@@ -3,10 +3,16 @@ const sqlHandle = require("../handlers/DbHandler.js");
 const server = require("../server/app.js")
 
 const dotenv = require("dotenv");
+const config = require("../utils/configuration")
 
 dotenv.config();
-const appServer = new server.appServer(process.env.databaseAddress,
-    process.env.databasePort,process.env.databaseUser,process.env.databasePassword,"CmsSystemTest");
+
+conf = new config.Configuration(process.env.databaseAddress,
+    process.env.databasePort,process.env.databaseUser,process.env.databasePassword,"CmsSystemTest",
+    process.env.serverAddress, process.env.serverPort);
+
+
+const appServer = new server.appServer(conf);
 
 module.exports = async () => {
     var sqlConn = new sqlHandle.SqlHandler(process.env.databaseAddress,
