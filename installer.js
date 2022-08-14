@@ -1,6 +1,10 @@
 const dbHandle = require("./handlers/DbHandler.js");
-const confHandle = require("./handlers/confHandler.js");
 const readline = require("readline");
+const fs = require('fs');
+const dotenv = require("dotenv");
+const {Input,AutoComplete} = require('enquirer');
+
+dotenv.config();
 
 async function runQueries(sqlConn){
     await sqlConn.queryReturnNoParam("DROP TABLE IF EXISTS user_login");
@@ -29,15 +33,122 @@ async function runQueries(sqlConn){
     sqlConn.close();
 }
 
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
+const proceed = new AutoComplete({
+    name:'confirm',
+    message: 'This will delete all of your database data in your target database. Are you sure you want to proceed?',
+    initial: 1,
+    choices: [
+        'Yes',
+        'No'
+    ]
 });
 
-rl.question('This will delete all of your database data in your target database. Are you sure you want to proceed?', async(input) => {
-    if (input === 'y'){
-        var params = confHandle.getDBParams();
-        var sqlConn = new dbHandle.SqlHandler(params[0],params[1],params[2],params[3],"");
+const jwtKeyIn = new Input({
+    name:'jwtKeyIn',
+    message:'Enter a secret key for your JWT'
+});
+
+const tokenExpiryIn = new Input({
+    name:'tokenExpiryIn',
+    initial:'none',
+    message:'Enter the expiry time for your JWT (enter none for no expiry)'
+});
+
+const databaseAddressIn = new Input({
+    name:'databaseAddressIn',
+    initial:'localhost',
+    message:'Enter the address of your database'
+});
+
+const databasePortIn = new Input({
+    name:'databasePortIn',
+    initial: '3306',
+    message:'Enter the port of your database'
+});
+
+const databaseUserIn = new Input({
+    name:'databaseUserIn',
+    message:'Enter the username of your database user'
+});
+
+const databasePasswordIn = new Input({
+    name:'databasePasswordIn',
+    message:'Enter the password of your database user'
+});
+
+const databaseNameIn = new Input({
+    name:'databaseNameIn',
+    initial:'CmsSystem',
+    message:'Enter the desired name of your CMS database'
+});
+
+const serverAddressIn = new Input({
+    name:'serverAddressIn',
+    initial:'http://localhost',
+    message:'Enter the address of your application server'
+});
+
+const serverPortIn = new Input({
+    name:'serverPortIn',
+    initial:'5000',
+    message:'Enter the port of your application server'
+});
+
+const main = async() => {
+    const confirm = await proceed.run();
+
+    if (confirm === 'Yes'){
+
+        const jwtKey = await jwtKeyIn.run();
+        const tokenExpiry = await tokenExpiryIn.run();
+        const databaseAddress = await databaseAddressIn.run();
+        const databasePort = await databasePortIn.run();
+        const databaseUser = await databaseUserIn.run();
+        const databasePassword = await databasePasswordIn.run();
+        const databaseName = await databaseNameIn.run();
+        const serverAddress = await serverAddressIn.run();
+        const serverPort = await serverPortIn.run();
+
+        const envFile = '.env';
+
+        fs.writeFileSync(envFile,'jwtkey=' + jwtKey + '\n', (err) => {
+            if (err) throw err;
+        });
+
+        fs.appendFileSync(envFile,'tokenExpires=' + tokenExpiry + '\n', (err) =>{
+            if (err) throw err;
+        });
+
+        fs.appendFileSync(envFile,'databaseAddress=' + databaseAddress + '\n', (err) =>{
+            if (err) throw err;
+        });
+
+        fs.appendFileSync(envFile,'databasePort=' + databasePort + '\n', (err) =>{
+            if (err) throw err;
+        });
+
+        fs.appendFileSync(envFile,'databaseUser=' + databaseUser + '\n', (err) =>{
+            if (err) throw err;
+        });
+
+        fs.appendFileSync(envFile,'databasePassword=' + databasePassword + '\n', (err) =>{
+            if (err) throw err;
+        });
+
+        fs.appendFileSync(envFile,'database=' + databaseName + '\n', (err) =>{
+            if (err) throw err;
+        });
+
+        fs.appendFileSync(envFile,'serverAddress=' + serverAddress + '\n', (err) =>{
+            if (err) throw err;
+        });
+
+        fs.appendFileSync(envFile,'serverPort=' + serverPort + '\n', (err) =>{
+            if (err) throw err;
+        });
+
+        var sqlConn = new dbHandle.SqlHandler(databaseAddress,
+            databasePort,databaseUser,databasePassword,"");
         
         await sqlConn.queryReturnNoParam("CREATE DATABASE IF NOT EXISTS CmsSystem");
         await sqlConn.queryReturnNoParam("CREATE DATABASE IF NOT EXISTS CmsSystemTest")
@@ -45,20 +156,24 @@ rl.question('This will delete all of your database data in your target database.
 
         sqlConn.close();
         
-        sqlConn = new dbHandle.SqlHandler(params[0],params[1],params[2],params[3],params[4]);
+        sqlConn = new dbHandle.SqlHandler(databaseAddress,
+            databasePort,databaseUser,databasePassword,
+            databaseName);
         
         await runQueries(sqlConn);
         sqlConn.close();
 
-        sqlConn = new dbHandle.SqlHandler(params[0],params[1],params[2],params[3],"CmsSystemTest");
+        sqlConn = new dbHandle.SqlHandler(databaseAddress,
+            databasePort,databaseUser,databasePassword,"CmsSystemTest");
         await runQueries(sqlConn);
-
         
         sqlConn.close();
-        rl.close();
+
+
 
     }else{
         console.log("Quitting!");
-        rl.close();
     }
-})
+}
+
+main()

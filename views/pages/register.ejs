@@ -40,7 +40,7 @@
             let formDataObject = Object.fromEntries(payload.entries());
             let jsonData = JSON.stringify(formDataObject);
             
-            fetch('http://localhost:5000/api/registration', {
+            fetch('<%- url %>:<%- port %>/api/registration', {
                 method:'POST',
                 headers: {
                     "Content-Type": "application/json"
