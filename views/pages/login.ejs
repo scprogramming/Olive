@@ -31,8 +31,8 @@
             const payload = new FormData(form);
             let formDataObject = Object.fromEntries(payload.entries());
             let jsonData = JSON.stringify(formDataObject);
-
-            fetch('http://localhost:5000/api/login', {
+            
+            fetch('<%- url %>:<%- port %>/api/login', {
                 method:'POST',
                 headers: {
                     "Content-Type": "application/json"
