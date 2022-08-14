@@ -9,5 +9,6 @@ module.exports.Configuration = class Configuration{
         this.database = env.database;
         this.serverAddress = env.serverAddress;
         this.serverPort = env.serverPort;
+        this.registrationEnabled = env.registrationEnabled;
     }
 }
