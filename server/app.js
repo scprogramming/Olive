@@ -24,7 +24,7 @@ module.exports.appServer = class AppServer{
 
         this.app.get("/register", function(req,res){
 
-            if (conf.registrationEnabled === 'Yes'){
+            if (conf.registrationEnabled){
                 res.render("../views/pages/register", {
                     url:conf.serverAddress,
                     port:conf.serverPort
@@ -37,7 +37,7 @@ module.exports.appServer = class AppServer{
 
         this.app.post("/api/registration", async(req,res) => {
 
-            if (conf.registrationEnabled === 'Yes'){
+            if (conf.registrationEnabled){
                 var sqlConn = new sqlHandle.SqlHandler(this.conf.host,this.conf.port,
                     this.conf.user,this.conf.pass,this.conf.database);
 
