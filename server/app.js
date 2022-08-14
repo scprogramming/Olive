@@ -17,45 +17,59 @@ module.exports.appServer = class AppServer{
         this.app.get("/login", function(req,res){
             res.render("../views/pages/login", {
                 url:conf.serverAddress,
-                port:conf.serverPort
+                port:conf.serverPort,
+                regEnable:conf.registrationEnabled
             });
         });
 
         this.app.get("/register", function(req,res){
-            res.render("../views/pages/register", {
-                url:conf.serverAddress,
-                port:conf.serverPort
-            });
+
+            if (conf.registrationEnabled){
+                res.render("../views/pages/register", {
+                    url:conf.serverAddress,
+                    port:conf.serverPort
+                });
+            }else{
+                res.status(404);
+            }
+            
         })
 
         this.app.post("/api/registration", async(req,res) => {
 
-            var sqlConn = new sqlHandle.SqlHandler(this.conf.host,this.conf.port,
-                this.conf.user,this.conf.pass,this.conf.database);
+            if (conf.registrationEnabled){
+                var sqlConn = new sqlHandle.SqlHandler(this.conf.host,this.conf.port,
+                    this.conf.user,this.conf.pass,this.conf.database);
 
-            try{
-                const {email, user_password, confirm_password, first_name, last_name} = req.body;
-                var result = await auth.registerUser(email, user_password, confirm_password, first_name, last_name, sqlConn);
-            
-                if (result == 1){
-                    res.status(200);
-                    res.json("User created successfully!");
-                }else if (result == -2){
-                    res.status(400);
-                    res.json("User already exists, pick another username!");
-                }else if (result == -3){
-                    res.status(400);
-                    res.json("Passwords provided do not match!");
-                }else{
+                try{
+                    const {email, user_password, confirm_password, first_name, last_name} = req.body;
+                    var result = await auth.registerUser(email, user_password, confirm_password, first_name, last_name, sqlConn);
+                
+                    if (result == 1){
+                        res.status(200);
+                        res.json("User created successfully!");
+                    }else if (result == -2){
+                        res.status(400);
+                        res.json("User already exists, pick another username!");
+                    }else if (result == -3){
+                        res.status(400);
+                        res.json("Passwords provided do not match!");
+                    }else{
+                        res.status(500);
+                        res.json("Failed to register user!");
+                    }
+
+                }catch(err){
                     res.status(500);
                     res.json("Failed to register user!");
                 }
-
-            }catch(err){
-                res.status(500);
-                res.json("Failed to register user!");
+            }else{
+                res.status(404);
+                res.json("Registration is not a valid endpoint");
             }
-        });
+
+            });
+        
 
         this.app.post("/api/login", async(req,res) => {
 
