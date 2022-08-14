@@ -18,7 +18,9 @@
             <p id="status"></p>
             <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
 
-            <p>New user? <a href="/register">Sign up now!</a></p>
+            <% if(regEnable){ %>
+                <p>New user? <a href="/register">Sign up now!</a></p>
+            <% } %>
         </form>
     </body>
 
