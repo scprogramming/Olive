@@ -5,12 +5,8 @@ const sqlHandle = require('../handlers/DbHandler.js');
 
 module.exports.appServer = class AppServer{
 
-    constructor(host,port,user,pass,database){
-        this.host = host;
-        this.port = port;
-        this.user = user;
-        this.pass = pass;
-        this.database = database;
+    constructor(conf){
+        this.conf = conf;
 
         this.app = express()
         this.app.use(express.json());
@@ -28,7 +24,8 @@ module.exports.appServer = class AppServer{
 
         this.app.post("/api/registration", async(req,res) => {
 
-            var sqlConn = new sqlHandle.SqlHandler(this.host,this.port,this.user,this.pass,this.database);
+            var sqlConn = new sqlHandle.SqlHandler(this.conf.host,this.conf.port,
+                this.conf.user,this.conf.pass,this.conf.database);
 
             try{
                 const {email, user_password, confirm_password, first_name, last_name} = req.body;
@@ -56,7 +53,8 @@ module.exports.appServer = class AppServer{
 
         this.app.post("/api/login", async(req,res) => {
 
-            var sqlConn = new sqlHandle.SqlHandler(this.host,this.port,this.user,this.pass,this.database);
+            var sqlConn = new sqlHandle.SqlHandler(this.conf.host,this.conf.port,
+                this.conf.user,this.conf.pass,this.conf.database);
 
             try{
                 const {email, user_password} = req.body;
