@@ -7,7 +7,8 @@ const config = require("../utils/configuration")
 dotenv.config();
 
 conf = new config.Configuration(process.env.databaseAddress,
-    process.env.databasePort,process.env.databaseUser,process.env.databasePassword,"CmsSystemTest");
+    process.env.databasePort,process.env.databaseUser,process.env.databasePassword,"CmsSystemTest",
+    process.env.serverAddress, process.env.serverPort);
 
 
 const appServer = new server.appServer(conf);

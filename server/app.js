@@ -15,11 +15,17 @@ module.exports.appServer = class AppServer{
         this.app.use('/public',express.static(__dirname + '\\public'));
 
         this.app.get("/login", function(req,res){
-            res.render("../views/pages/login");
+            res.render("../views/pages/login", {
+                url:conf.serverAddress,
+                port:conf.serverPort
+            });
         });
 
         this.app.get("/register", function(req,res){
-            res.render("../views/pages/register")
+            res.render("../views/pages/register", {
+                url:conf.serverAddress,
+                port:conf.serverPort
+            });
         })
 
         this.app.post("/api/registration", async(req,res) => {
