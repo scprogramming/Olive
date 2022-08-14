@@ -15,6 +15,16 @@ module.exports.appServer = class AppServer{
         this.app = express()
         this.app.use(express.json());
         this.app.use(cors());
+        this.app.set('view engine','ejs');
+        this.app.use('/public',express.static(__dirname + '\\public'));
+
+        this.app.get("/login", function(req,res){
+            res.render("../views/pages/login");
+        });
+
+        this.app.get("/register", function(req,res){
+            res.render("../views/pages/register")
+        })
 
         this.app.post("/api/registration", async(req,res) => {
 
@@ -22,8 +32,6 @@ module.exports.appServer = class AppServer{
 
             try{
                 const {email, user_password, confirm_password, first_name, last_name} = req.body;
-                
-                
                 var result = await auth.registerUser(email, user_password, confirm_password, first_name, last_name, sqlConn);
             
                 if (result == 1){
