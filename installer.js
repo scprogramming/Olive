@@ -3,6 +3,7 @@ const readline = require("readline");
 const fs = require('fs');
 const dotenv = require("dotenv");
 const {Input,AutoComplete} = require('enquirer');
+const { getEnabledCategories } = require("trace_events");
 
 dotenv.config();
 
@@ -94,6 +95,16 @@ const serverPortIn = new Input({
     message:'Enter the port of your application server'
 });
 
+const enableRegistrationIn = new Input({
+    name:'enabledRegitrationIn',
+    message:'Allow users to register on the site?',
+    initial: 1,
+    choices: [
+        'Yes',
+        'No'
+    ]
+})
+
 const main = async() => {
     const confirm = await proceed.run();
 
@@ -108,6 +119,7 @@ const main = async() => {
         const databaseName = await databaseNameIn.run();
         const serverAddress = await serverAddressIn.run();
         const serverPort = await serverPortIn.run();
+        const allowRegistration = await enableRegistrationIn.run();
 
         const envFile = '.env';
 
@@ -144,6 +156,10 @@ const main = async() => {
         });
 
         fs.appendFileSync(envFile,'serverPort=' + serverPort + '\n', (err) =>{
+            if (err) throw err;
+        });
+
+        fs.appendFileSync(envFile,'registrationEnabled=' + allowRegistration + '\n', (err) =>{
             if (err) throw err;
         });
 
