@@ -95,7 +95,7 @@ const serverPortIn = new Input({
     message:'Enter the port of your application server'
 });
 
-const enableRegistrationIn = new Input({
+const enableRegistrationIn = new AutoComplete({
     name:'enabledRegitrationIn',
     message:'Allow users to register on the site?',
     initial: 1,
@@ -103,7 +103,17 @@ const enableRegistrationIn = new Input({
         'Yes',
         'No'
     ]
-})
+});
+
+const testDbToggle = new AutoComplete({
+    name:'testDbToggle',
+    message:'Enable test DB? (should be used for development only)',
+    initial: 1,
+    choices: [
+        'Yes',
+        'No'
+    ]
+});
 
 const main = async() => {
     const confirm = await proceed.run();
@@ -120,6 +130,7 @@ const main = async() => {
         const serverAddress = await serverAddressIn.run();
         const serverPort = await serverPortIn.run();
         const allowRegistration = await enableRegistrationIn.run();
+        const enableTestDb = await testDbToggle.run();
 
         const envFile = '.env';
 
@@ -167,7 +178,11 @@ const main = async() => {
             databasePort,databaseUser,databasePassword,"");
         
         await sqlConn.queryReturnNoParam("CREATE DATABASE IF NOT EXISTS CmsSystem");
-        await sqlConn.queryReturnNoParam("CREATE DATABASE IF NOT EXISTS CmsSystemTest")
+
+        if (enableTestDb === 'Yes'){
+            await sqlConn.queryReturnNoParam("CREATE DATABASE IF NOT EXISTS CmsSystemTest")
+        }
+        
         console.log("Created database");
 
         sqlConn.close();
@@ -179,14 +194,14 @@ const main = async() => {
         await runQueries(sqlConn);
         sqlConn.close();
 
-        sqlConn = new dbHandle.SqlHandler(databaseAddress,
-            databasePort,databaseUser,databasePassword,"CmsSystemTest");
-        await runQueries(sqlConn);
+        if (enableTestDb === 'Yes'){
+            sqlConn = new dbHandle.SqlHandler(databaseAddress,
+                databasePort,databaseUser,databasePassword,"CmsSystemTest");
+            await runQueries(sqlConn);
+            
+            sqlConn.close();
+        }
         
-        sqlConn.close();
-
-
-
     }else{
         console.log("Quitting!");
     }
