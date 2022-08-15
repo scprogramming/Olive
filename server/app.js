@@ -78,7 +78,7 @@ module.exports.appServer = class AppServer{
 
             try{
                 const {email, user_password} = req.body;
-                var result = await auth.login(email, user_password, sqlConn);
+                var result = await auth.login(email, user_password, sqlConn,this.conf);
 
                 if (result[0]){
                     res.status(200);

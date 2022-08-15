@@ -41,7 +41,7 @@ module.exports.registerUser =  async function registerUser(email, userPassword, 
     }
 }
 
-module.exports.login = async function login(email,password, sqlConn){
+module.exports.login = async function login(email,password, sqlConn,conf){
     
     try {
         var sql = "SELECT * FROM user_login WHERE email = ?";
@@ -49,26 +49,37 @@ module.exports.login = async function login(email,password, sqlConn){
         var result = await sqlConn.queryReturnWithParams(sql,[email]);
         var comp = await bcrypt.compare(password,result[0][0].user_password);
 
-        const token = jwt.sign(
-            {user:email},
-            process.env.jwtKey,
-            {
-                expiresIn: process.env.tokenExpires
-            }
-        );
+        var token;
+
+        if (conf.tokenExpires === 'none'){
+            token = jwt.sign(
+                {user:email},
+                conf.jwtKey
+            );
+        }else{
+            token = jwt.sign(
+                {user:email},
+                conf.jwtKey,
+                {
+                    expiresIn: conf.tokenExpires
+                }
+            );
+        }
+        
     
         return [comp,token];
     }catch(err){
+        console.log(err);
         return [false,""];
     }
 }
 
-module.exports.verify = async function validateJwt(token){
+module.exports.verify = async function validateJwt(token,conf){
     if (!token){
         return false;
     }else{
         try{
-            const decoded = jwt.verify(token,process.env.jwtKey);
+            const decoded = jwt.verify(token,conf.jwtKey);
             return true;
         }catch(err){
             return false;
