@@ -4,7 +4,7 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-module.exports.registerUser =  async function registerUser(email, userPassword, confirmPassword, firstName, lastName, sqlConn){
+module.exports.registerUser =  async function registerUser(email, userPassword, confirmPassword, firstName, lastName, sqlConn,conf){
     try{
 
         if (userPassword != confirmPassword){
@@ -15,8 +15,7 @@ module.exports.registerUser =  async function registerUser(email, userPassword, 
         var result = await sqlConn.queryReturnWithParams(sql,[email]);
         
         if (result[0][0].userCount == 0){
-            var saltRounds = 10;
-            var salt = await bcrypt.genSalt(saltRounds);
+            var salt = await bcrypt.genSalt(parseInt(conf.saltRounds));
             var passwordHash = await bcrypt.hash(userPassword,salt);
     
             var sql = `INSERT INTO user_login(email,user_password,active,role)

@@ -174,6 +174,10 @@ const main = async() => {
             if (err) throw err;
         });
 
+        fs.appendFileSync(envFile,'saltRounds=10\n', (err) =>{
+            if (err) throw err;
+        });
+
         var sqlConn = new dbHandle.SqlHandler(databaseAddress,
             databasePort,databaseUser,databasePassword,"");
         

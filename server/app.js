@@ -43,7 +43,7 @@ module.exports.appServer = class AppServer{
 
                 try{
                     const {email, user_password, confirm_password, first_name, last_name} = req.body;
-                    var result = await auth.registerUser(email, user_password, confirm_password, first_name, last_name, sqlConn);
+                    var result = await auth.registerUser(email, user_password, confirm_password, first_name, last_name, sqlConn,conf);
                 
                     if (result == 1){
                         res.status(200);
