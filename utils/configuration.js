@@ -11,6 +11,7 @@ module.exports.Configuration = class Configuration{
         this.serverPort = env.serverPort;
         this.jwtKey = env.jwtkey;
         this.tokenExpires = env.tokenExpires;
+        this.saltRounds = env.saltRounds;
 
         if (env.registrationEnabled === 'Yes'){
             this.registrationEnabled = true;
