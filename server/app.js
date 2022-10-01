@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require('cors');
 const auth = require('../utils/auth.js');
 const sqlHandle = require('../handlers/DbHandler.js');
+const posts = require("../utils/posts");
+const fs = require('fs');
 
 module.exports.appServer = class AppServer{
 
@@ -22,6 +24,29 @@ module.exports.appServer = class AppServer{
             });
         });
 
+        this.app.get("/addPost", async function(req,res){
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(cookie,conf);
+
+            if (authRes){
+                res.render("../views/pages/addPost",{
+                    url:conf.serverAddress,
+                    port:conf.serverPort
+                });
+            }else{
+                res.render("../views/pages/login", {
+                    url:conf.serverAddress,
+                    port:conf.serverPort,
+                    regEnable:conf.registrationEnabled
+                });
+            }
+        });
+
+        this.app.get("/admin",function(req,res){
+            res.render("../views/pages/admin");
+    
+        });
+
         this.app.get("/register", function(req,res){
 
             if (conf.registrationEnabled){
@@ -33,6 +58,30 @@ module.exports.appServer = class AppServer{
                 res.status(404);
             }
             
+        })
+
+        this.app.post("/api/addPost", async(req,res) => {
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(cookie,conf);
+
+            if (authRes){
+                console.log(req.body);
+                var sqlConn = new sqlHandle.SqlHandler(this.conf.host,this.conf.port,
+                    this.conf.user,this.conf.pass,this.conf.database);
+                
+                const {title,data} = req.body;
+                let result = await posts.processPost(sqlConn,title,data);
+                
+                if (result){
+                    res.json("Saved!");
+                }else{
+                    res.json("Failed to save");
+                }
+                
+            }else{
+                res.status(401);
+                res.json("Requires authorization");
+            }
         })
 
         this.app.post("/api/registration", async(req,res) => {
@@ -82,7 +131,7 @@ module.exports.appServer = class AppServer{
 
                 if (result[0]){
                     res.status(200);
-                    res.setHeader('Set-Cookie','auth=' + result[1] + '; HttpOnly');
+                    res.cookie('auth',result[1],{path:'/',httpOnly:true})
                     res.json("Login successful!");
                 }else{
                     res.status(400);
