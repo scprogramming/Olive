@@ -1,10 +1,6 @@
 
     <div class="wrapper">
         <nav id="sidebar">
-            <div class="sidebar-header">
-                <h3>Olive</h3>
-            </div>
-
             <ul class="list-unstyled components"> 
                 <li class="active">
                     <a class="sidebarlink" href="#">Dashboard</a>
@@ -17,15 +13,14 @@
                 <li>
                     <a href="#homeSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Website</a>
                     <ul class="collapse list-unstyled" id="homeSubmenu">
-                        <li><a href="#">Pages</a></li>
-                        <li><a href="#">Posts</a></li>
+                        <li><a class="sidebarlink indentitem" href="/dashboard/posts">Posts</a></li>
                     </ul>
                 </li>
 
                 <li>
                     <a href="#homeSubmenu2" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">Products</a>
                     <ul class="collapse list-unstyled" id="homeSubmenu2">
-                        <li><a class="sidebarlink" href="#">Courses</a></li>
+                        <li><a class="sidebarlink indentitem" href="#">Courses</a></li>
                     </ul>
                 </li>
 
@@ -47,17 +42,6 @@
                 
             </ul>
         </nav>
-
-        <div id = "content">
-            <nav class = "navbar navbar-expand-lg navbar-light bg-light">
-                <div class="container-fluid">
-                    <button type="button" id="sidebarCollapse" class="btn btn-info">
-                        <i class="fas fa-align-left"></i>
-                        <span>Toggle Sidebar</span>
-                    </button>
-                </div>
-            </nav>
-        </div>
     </div>
     
 
