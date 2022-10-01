@@ -26,7 +26,7 @@
               <div class="col-8">
                 <form>
                   <label for="title" class="sr-only">Article Title: </label>
-                  <input name="title" type="title" id="title" class="form-control" placeholder="Enter an article title" required autofocus>
+                  <input name="title" type="title" id="title" class="form-control" value="<%= posts[0].article_title %>" required autofocus>
               
                   <div id="toolbar-container">
                     <span class="ql-formats">
@@ -76,9 +76,7 @@
               
                     
                   <div id="editor">
-                    <p>Hello World!</p>
-                    <p>Some initial <strong>bold</strong> text</p>
-                    <p><br></p>
+                    <%- posts[0].content %>
                   </div>
               
                   <p id="status"></p>
@@ -110,8 +108,8 @@
       e.preventDefault();
       console.log(quill.root.innerHTML);
       var articleData = JSON.stringify({data:quill.root.innerHTML,
-      title:document.getElementById("title").value});
-      fetch('<%- url %>:<%- port %>/api/addPost', {
+      title:document.getElementById("title").value, id:'<%= posts[0].post_id %>'});
+      fetch('<%- url %>:<%- port %>/api/editPost', {
                 method:'POST',
                 headers: {
                     "Content-Type": "application/json"

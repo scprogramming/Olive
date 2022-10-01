@@ -24,12 +24,34 @@ module.exports.appServer = class AppServer{
             });
         });
 
+        this.app.get("/dashboard/editPost/:id", async function(req,res){
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(cookie,conf);
+
+            if (authRes){
+                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                    conf.user,conf.pass,conf.database);
+
+                let result = await posts.getPostWithId(sqlConn,req.params.id);
+                res.render("../views/pages/dashboard/editPost",{
+                    url:conf.serverAddress,
+                    port:conf.serverPort,
+                    posts:result[0]
+                });
+            }else{
+                res.render("../views/pages/login", {
+                    url:conf.serverAddress,
+                    port:conf.serverPort,
+                    regEnable:conf.registrationEnabled
+                });
+            }
+        });
+
         this.app.get("/viewPost/:id", async function(req,res){
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
 
             let result = await posts.getPostWithId(sqlConn,req.params.id);
-            console.log(result);
             res.render("../views/pages/client/viewPost",{
                 posts:result[0]
             });
@@ -45,6 +67,8 @@ module.exports.appServer = class AppServer{
 
                 let result = await posts.getAllPosts(sqlConn);
                 res.render("../views/pages/dashboard/posts",{
+                    url:conf.serverAddress,
+                    port:conf.serverPort,
                     posts:result[0]
                 });
             }else{
@@ -84,7 +108,7 @@ module.exports.appServer = class AppServer{
             }
         });
 
-        this.app.get("/admin",function(req,res){
+        this.app.get("/dashboard",function(req,res){
             res.render("../views/pages/dashboard/home");
     
         });
@@ -124,7 +148,52 @@ module.exports.appServer = class AppServer{
                 res.status(401);
                 res.json("Requires authorization");
             }
-        })
+        });
+
+        this.app.post("/api/deletePost/:id", async(req,res) => {
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(cookie,conf);
+
+            if (authRes){
+                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                    conf.user,conf.pass,conf.database);
+                
+                let result = await posts.deletePost(sqlConn,req.params.id);
+                
+                if (result){
+                    res.json("Deleted!");
+                }else{
+                    res.json("Failed to delete");
+                }
+                
+            }else{
+                res.status(401);
+                res.json("Requires authorization");
+            }
+        });
+
+        this.app.post("/api/editPost", async(req,res) => {
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(cookie,conf);
+
+            if (authRes){
+                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                    conf.user,conf.pass,conf.database);
+                
+                const {title,data,id} = req.body;
+                let result = await posts.editPost(sqlConn,title,data,id);
+                
+                if (result){
+                    res.json("Saved!");
+                }else{
+                    res.json("Failed to save");
+                }
+                
+            }else{
+                res.status(401);
+                res.json("Requires authorization");
+            }
+        });
 
         this.app.post("/api/registration", async(req,res) => {
 
