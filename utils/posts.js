@@ -11,7 +11,7 @@ module.exports.addPost = async function addPost(sqlConn,title,data){
 
         let getNextId = await sqlConn.queryReturnNoParam(`
         SELECT MAX(post_id) AS max_id FROM posts`);
-        let targetId = int(getNextId[0][0].max_id) + 1
+        let targetId = parseInt(getNextId[0][0].max_id) + 1
 
         await sqlConn.queryReturnWithParams(`INSERT INTO posts(post_id,article_title,content,date_created)
         VALUES (?,?,?,?)`,[targetId,title,data, yyyy + '-' + mm + '-' + dd]);
