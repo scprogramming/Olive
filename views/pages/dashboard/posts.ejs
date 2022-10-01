@@ -5,6 +5,7 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         <link rel="stylesheet" href="/public/sidebar.css">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
     </head>
 
     <body>
@@ -33,12 +34,13 @@
                                 <tr>
                                     <th scope="row"><%= posts[i].article_title %></th>
                                     <td><%= posts[i].date_created %></td>
-                                    <td><button class="btn" id="sidebarCollapse"><i class="fa fa-edit"></i></button></td>
-                                    <td><button class="btn" id="sidebarCollapse"><i class="fa fa-trash"></i></button></td>
+                                    <td><a href="/dashboard/editPost/<%= posts[i].post_id %>"><i class="fa fa-edit"></i></button></a></td>
+                                    <td><a href="#" onclick="deletePost(<%= posts[i].post_id %>,this)"><i class="fa fa-trash"></i></button></a></td>
                                 </tr>
                                 <% } %>
                             </tbody>
                         </table>
+                        <p id = "status"></p>
                     </div>
                 </div>
             </div>
@@ -48,5 +50,22 @@
 
         
     </body>
+
+    <script>
+        function deletePost(id,t){
+            fetch('<%- url %>:<%- port %>/api/deletePost/' + id, {
+                method:'POST',
+            })
+            .then(res => res.json())
+            .then(data => document.getElementById("status").innerHTML = data);
+
+            $tr = $(t).closest("tr");
+
+            $tr.remove();
+
+
+        }
+       
+    </script>
 
 </html>
