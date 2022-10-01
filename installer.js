@@ -29,6 +29,15 @@ async function runQueries(sqlConn){
         last_name VARCHAR(100)
         );`);
     
+    await sqlConn.queryReturnNoParam(`    
+    CREATE TABLE posts(
+    post_id DECIMAL(18,0) NOT NULL,
+    article_title VARCHAR(250) NOT NULL,
+    content longtext,
+    dateCreated DATE
+    );`);
+    
+
     console.log("Created tables");
 
     sqlConn.close();
