@@ -78,7 +78,10 @@ module.exports.verify = async function validateJwt(token,conf){
         return false;
     }else{
         try{
-            const decoded = jwt.verify(token,conf.jwtKey);
+
+            const parseTok = token.substring(token.indexOf("=")+1);
+            const decoded = jwt.verify(parseTok,conf.jwtKey);
+            
             return true;
         }catch(err){
             return false;

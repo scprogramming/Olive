@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require('cors');
 const auth = require('../utils/auth.js');
 const sqlHandle = require('../handlers/DbHandler.js');
+const posts = require("../utils/posts");
+const fs = require('fs');
 
 module.exports.appServer = class AppServer{
 
@@ -9,7 +11,7 @@ module.exports.appServer = class AppServer{
         this.conf = conf;
 
         this.app = express()
-        this.app.use(express.json());
+        this.app.use(express.json({limit: '50mb'}));
         this.app.use(cors());
         this.app.set('view engine','ejs');
         this.app.use('/public',express.static(__dirname + '\\public'));
@@ -20,6 +22,71 @@ module.exports.appServer = class AppServer{
                 port:conf.serverPort,
                 regEnable:conf.registrationEnabled
             });
+        });
+
+        this.app.get("/viewPost/:id", async function(req,res){
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+
+            let result = await posts.getPostWithId(sqlConn,req.params.id);
+            console.log(result);
+            res.render("../views/pages/client/viewPost",{
+                posts:result[0]
+            });
+        });
+
+        this.app.get("/dashboard/posts", async function(req,res){
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(cookie,conf);
+
+            if (authRes){
+                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                    conf.user,conf.pass,conf.database);
+
+                let result = await posts.getAllPosts(sqlConn);
+                res.render("../views/pages/dashboard/posts",{
+                    posts:result[0]
+                });
+            }else{
+                res.render("../views/pages/login", {
+                    url:conf.serverAddress,
+                    port:conf.serverPort,
+                    regEnable:conf.registrationEnabled
+                });
+            }
+        });
+
+        this.app.get("/", async function(req,res){
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+
+            let result = await posts.getAllPosts(sqlConn);
+            res.render("../views/pages/client/home",{
+                posts:result[0]
+            });
+        });
+
+        this.app.get("/dashboard/addPost", async function(req,res){
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(cookie,conf);
+
+            if (authRes){
+                res.render("../views/pages/dashboard/addPost",{
+                    url:conf.serverAddress,
+                    port:conf.serverPort
+                });
+            }else{
+                res.render("../views/pages/login", {
+                    url:conf.serverAddress,
+                    port:conf.serverPort,
+                    regEnable:conf.registrationEnabled
+                });
+            }
+        });
+
+        this.app.get("/admin",function(req,res){
+            res.render("../views/pages/dashboard/home");
+    
         });
 
         this.app.get("/register", function(req,res){
@@ -35,11 +102,35 @@ module.exports.appServer = class AppServer{
             
         })
 
+        this.app.post("/api/addPost", async(req,res) => {
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(cookie,conf);
+
+            if (authRes){
+                console.log(req.body);
+                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                    conf.user,conf.pass,conf.database);
+                
+                const {title,data} = req.body;
+                let result = await posts.addPost(sqlConn,title,data);
+                
+                if (result){
+                    res.json("Saved!");
+                }else{
+                    res.json("Failed to save");
+                }
+                
+            }else{
+                res.status(401);
+                res.json("Requires authorization");
+            }
+        })
+
         this.app.post("/api/registration", async(req,res) => {
 
             if (conf.registrationEnabled){
-                var sqlConn = new sqlHandle.SqlHandler(this.conf.host,this.conf.port,
-                    this.conf.user,this.conf.pass,this.conf.database);
+                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                    conf.user,conf.pass,conf.database);
 
                 try{
                     const {email, user_password, confirm_password, first_name, last_name} = req.body;
@@ -73,8 +164,8 @@ module.exports.appServer = class AppServer{
 
         this.app.post("/api/login", async(req,res) => {
 
-            var sqlConn = new sqlHandle.SqlHandler(this.conf.host,this.conf.port,
-                this.conf.user,this.conf.pass,this.conf.database);
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
 
             try{
                 const {email, user_password} = req.body;
@@ -82,7 +173,7 @@ module.exports.appServer = class AppServer{
 
                 if (result[0]){
                     res.status(200);
-                    res.setHeader('Set-Cookie','auth=' + result[1] + '; HttpOnly');
+                    res.cookie('auth',result[1],{path:'/',httpOnly:true})
                     res.json("Login successful!");
                 }else{
                     res.status(400);
