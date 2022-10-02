@@ -37,6 +37,12 @@ async function runQueries(sqlConn){
     dateCreated DATE
     );`);
     
+    await sqlConn.queryReturnNoParam(`
+    CREATE TABLE categories(
+        category_id INT,
+        category_name VARCHAR(100)
+        );
+    `)
 
     console.log("Created tables");
 

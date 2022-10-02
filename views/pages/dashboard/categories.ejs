@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="/public/sidebar.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+    </head>
+
+    <body>
+
+        <div class="modal fade" id="addCategory" tabindex="-1" role="dialog" aria-labelledby="catLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="catLabel">Add a new category</h5>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="categoryName" class="col-form-label">Category Name: </label>
+                                <input type="text" class="form-control" id="categoryName">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button id="catNameToAdd" type="button" class="btn btn-primary" data-dismiss="modal" onclick="addCategory()">Add Category</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="page-container">
+            <div class="content-wrap">
+                <div class="row">
+                    <%- include('navbar.ejs'); %>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <%- include('sidebar.ejs'); %>
+                    </div>
+                    <div class="col-8">
+                        <button type="button" data-toggle="modal" data-target="#addCategory" class="btn btn-primary" role="button">Add a New Category</button>
+                        <table class = "table" id="CatTable">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Edit</th>
+                                    <th scope="col">Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% for (var i = 0; i < cats.length; i++){ %>
+                                <tr>
+                                    <th scope="row"><%= cats[i].category_name %></th>
+                                    <td><a href="/dashboard/editCategory/<%= cats[i].category_id %>"><i class="fa fa-edit"></i></button></a></td>
+                                    <td><a href="#" onclick="deleteCategory(<%= cats[i].category_id %>,this)"><i class="fa fa-trash"></i></button></a></td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                        <p id = "status"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+
+        
+    </body>
+
+    <script>
+
+        function addCategory(){
+            fetch('<%= url %>:<%= port %>/api/addCategory', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body:JSON.stringify({category_name:document.getElementById("categoryName").value})
+                
+            })
+            .then(res => res.json);
+        }
+
+        function deleteCategory(id,t){
+            fetch('<%- url %>:<%- port %>/api/deleteCategory/' + id, {
+                method:'POST',
+            })
+            .then(res => res.json())
+            .then(data => document.getElementById("status").innerHTML = data);
+
+            $tr = $(t).closest("tr");
+
+            $tr.remove();
+
+
+        }
+       
+    </script>
+
+</html>
