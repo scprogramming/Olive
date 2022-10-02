@@ -128,7 +128,7 @@
                 let cell2 = row.insertCell(1);
                 let cell3 = row.insertCell(2);
 
-                cell1.outerHTML = `<th scope="row">${catName}</th>`;
+                cell1.outerHTML = `<th scope="row" id = catname-${data.id}>${catName}</th>`;
                 cell2.innerHTML = `<button id="${data.id}" type="button" data-toggle="modal" data-target="#editCategory" class="btn btn-primary"><i class="fa fa-edit"></i></button>`;
                 cell3.innerHTML = `<a href="#" onclick="deleteCategory(${data.id},this)"><i class="fa fa-trash"></i></button></a>`;
             }
