@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
+const dateUtil = require("../utils/dateUtil");
 
 dotenv.config();
 
@@ -40,51 +41,94 @@ module.exports.registerUser =  async function registerUser(email, userPassword, 
     }
 }
 
+function generateExpiry(expiry){
+    let today = new Date();
+
+    if (expiry.includes("d")){
+        let days = expiry.substring(0,expiry.indexOf("d"));
+        days = parseInt(days);
+        today.setDate(today.getDate() + days);
+        return today;
+    }
+}
+
 module.exports.login = async function login(email,password, sqlConn,conf){
     
     try {
+        var characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         var sql = "SELECT * FROM user_login WHERE email = ?";
+        var charLength = characters.length;
 
         var result = await sqlConn.queryReturnWithParams(sql,[email]);
         var comp = await bcrypt.compare(password,result[0][0].user_password);
 
-        var token;
+        if (comp){
+            var token = "";
 
-        if (conf.tokenExpires === 'none'){
-            token = jwt.sign(
-                {user:email},
-                conf.jwtKey
-            );
+            for (let i = 0; i < 256; i++){
+                token += characters.charAt(Math.floor(Math.random() * charLength))
+            }
+
+            if (conf.tokenExpires === 'none'){
+                sqlConn.queryReturnWithParams("INSERT INTO sessions VALUES (?,?,null)",[token,result[0][0].user_id]);
+            }else{
+                let expiryDate = generateExpiry(conf.tokenExpires);
+                let dateList = dateUtil.parseDate(expiryDate);
+
+                sqlConn.queryReturnWithParams("INSERT INTO sessions VALUES (?,?,?)",[token,result[0][0].user_id,dateList[0] + '-' + dateList[1] + '-' + dateList[2]]);
+            }
+
+            return [comp,token];
         }else{
-            token = jwt.sign(
-                {user:email},
-                conf.jwtKey,
-                {
-                    expiresIn: conf.tokenExpires
-                }
-            );
+            return [comp,""];
         }
         
-    
-        return [comp,token];
+        
     }catch(err){
         console.log(err);
         return [false,""];
     }
 }
 
-module.exports.verify = async function validateJwt(token,conf){
+module.exports.verify = async function verify(sqlConn, token,requiredRole){
     if (!token){
-        return false;
+        return [false,1];
     }else{
         try{
 
             const parseTok = token.substring(token.indexOf("=")+1);
-            const decoded = jwt.verify(parseTok,conf.jwtKey);
             
-            return true;
+            let result = await sqlConn.queryReturnWithParams(`SELECT expiry,active,role FROM sessions 
+            INNER JOIN user_login ON user_login.user_id = sessions.user_id
+            WHERE session_id=?;
+            `,[parseTok]);
+
+            if (result[0].length != 0){
+                let expiry = dateUtil.parseDate(result[0][0].expiry);
+                let today = dateUtil.parseDate(new Date());
+
+                if (parseInt(expiry[0]) >= parseInt(today[0]) && parseInt(expiry[1]) >= parseInt(today[1]) && parseInt(expiry[2]) >= parseInt(today[2])){
+                    if (result[0][0].active == "1"){
+                        if (result[0][0].role == requiredRole){
+                            return [true,0];
+                        }else{
+                            return [false,2];
+                        }
+                    }else{
+                        return [false,3];
+                    }
+                    
+                }else{
+                    return [false,4];
+                }
+
+            }else{
+                return [false,5];
+            }
+            
         }catch(err){
-            return false;
+            console.log(err);
+            return [false,6];
         }
     }
 }
