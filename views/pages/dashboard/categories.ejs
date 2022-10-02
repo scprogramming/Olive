@@ -15,6 +15,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="catLabel">Add a new category</h5>
+                        
                     </div>
                     <div class="modal-body">
                         <form>
@@ -28,7 +29,29 @@
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                         <button id="catNameToAdd" type="button" class="btn btn-primary" data-dismiss="modal" onclick="addCategory()">Add Category</button>
                     </div>
+                </div>
+            </div>
+        </div>
 
+        <div class="modal fade" id="editCategory" tabindex="-1" role="dialog" aria-labelledby="catLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <p hidden class="modal-hidden" id="idHidden"></p>
+                        <h5 class="modal-title" id="catLabel">Input a new category name</h5>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="categoryName" class="col-form-label">Category Name: </label>
+                                <input type="text" class="form-control" id="categoryName">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button id="catNameToAdd" type="button" class="btn btn-primary" data-dismiss="modal" onclick="editCategory()">Edit Category</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -56,7 +79,7 @@
                                 <% for (var i = 0; i < cats.length; i++){ %>
                                 <tr>
                                     <th scope="row"><%= cats[i].category_name %></th>
-                                    <td><a href="/dashboard/editCategory/<%= cats[i].category_id %>"><i class="fa fa-edit"></i></button></a></td>
+                                    <td><button id="<%= cats[i].category_id %>" type="button" data-toggle="modal" data-target="#editCategory" class="btn btn-primary"><i class="fa fa-edit"></i></button></td>
                                     <td><a href="#" onclick="deleteCategory(<%= cats[i].category_id %>,this)"><i class="fa fa-trash"></i></button></a></td>
                                 </tr>
                                 <% } %>
@@ -75,6 +98,12 @@
 
     <script>
 
+        $("#editCategory").on("show.bs.modal", function(event){
+            let button = $(event.relatedTarget);
+            var modal = $(this);
+            modal.find('.modal-hidden').text(button.attr('id'));
+        });
+
         function addCategory(){
             fetch('<%= url %>:<%= port %>/api/addCategory', {
                 method:'POST',
@@ -82,6 +111,18 @@
                     "Content-Type": "application/json"
                 },
                 body:JSON.stringify({category_name:document.getElementById("categoryName").value})
+                
+            })
+            .then(res => res.json);
+        }
+
+        function editCategory(){
+            fetch('<%= url %>:<%= port %>/api/editCategory', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body:JSON.stringify({category_id:document.getElementById("idHidden").textContent, category_name:document.getElementById("categoryName").value})
                 
             })
             .then(res => res.json);
