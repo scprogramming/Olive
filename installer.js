@@ -45,6 +45,14 @@ async function runQueries(sqlConn){
         );
     `)
 
+    await sqlConn.queryReturnNoParam(`
+    CREATE TABLE sessions
+	(session_id VARCHAR(256),
+      user_id int(11),
+      expiry DATE
+      );
+      `)
+
     console.log("Created tables");
 
     sqlConn.close();

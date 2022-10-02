@@ -3,8 +3,8 @@ const cors = require('cors');
 const auth = require('../utils/auth.js');
 const sqlHandle = require('../handlers/DbHandler.js');
 const posts = require("../utils/posts");
-const fs = require('fs');
 const categories = require("../utils/categories");
+const authRouter = require("./authRouter");
 
 module.exports.appServer = class AppServer{
 
@@ -25,51 +25,34 @@ module.exports.appServer = class AppServer{
             });
         });
 
+        
+
         this.app.get("/dashboard/categories", async function(req,res){
+
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(cookie,conf);
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
 
-            if (authRes){
-                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                    conf.user,conf.pass,conf.database);
-
-                let result = await categories.getAllCategories(sqlConn);
-
-                res.render("../views/pages/dashboard/categories",{
-                    url:conf.serverAddress,
-                    port:conf.serverPort,
-                    cats:result[0]
-                });
-            }else{
-                res.render("../views/pages/login", {
-                    url:conf.serverAddress,
-                    port:conf.serverPort,
-                    regEnable:conf.registrationEnabled
-                });
-            }
+            let redirect = await authRouter.determineRedirectLogin("categories",authRes, sqlConn,req);
+            res.render(redirect[0],redirect[1]);
+ 
         });
 
         this.app.get("/dashboard/editPost/:id", async function(req,res){
+
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(cookie,conf);
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
 
-            if (authRes){
-                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                    conf.user,conf.pass,conf.database);
+            let redirect = await authRouter.determineRedirectLogin("editPost",authRes, sqlConn,req);
+            res.render(redirect[0],redirect[1]);
 
-                let result = await posts.getPostWithId(sqlConn,req.params.id);
-                res.render("../views/pages/dashboard/editPost",{
-                    url:conf.serverAddress,
-                    port:conf.serverPort,
-                    posts:result[0]
-                });
-            }else{
-                res.render("../views/pages/login", {
-                    url:conf.serverAddress,
-                    port:conf.serverPort,
-                    regEnable:conf.registrationEnabled
-                });
-            }
+                
+           
         });
 
         this.app.get("/viewPost/:id", async function(req,res){
@@ -83,26 +66,15 @@ module.exports.appServer = class AppServer{
         });
 
         this.app.get("/dashboard/posts", async function(req,res){
+
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(cookie,conf);
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
 
-            if (authRes){
-                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                    conf.user,conf.pass,conf.database);
-
-                let result = await posts.getAllPosts(sqlConn);
-                res.render("../views/pages/dashboard/posts",{
-                    url:conf.serverAddress,
-                    port:conf.serverPort,
-                    posts:result[0]
-                });
-            }else{
-                res.render("../views/pages/login", {
-                    url:conf.serverAddress,
-                    port:conf.serverPort,
-                    regEnable:conf.registrationEnabled
-                });
-            }
+            let redirect = await authRouter.determineRedirectLogin("posts",authRes, sqlConn);
+            res.render(redirect[0],redirect[1]);
         });
 
         this.app.get("/", async function(req,res){
@@ -116,26 +88,16 @@ module.exports.appServer = class AppServer{
         });
 
         this.app.get("/dashboard/addPost", async function(req,res){
-            const cookie = req.headers.cookie;
-            const authRes = await auth.verify(cookie,conf);
 
-            if (authRes){
-                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                    conf.user,conf.pass,conf.database);
-    
-                let result = await categories.getAllCategories(sqlConn);
-                res.render("../views/pages/dashboard/addPost",{
-                    categories:result[0],
-                    url:conf.serverAddress,
-                    port:conf.serverPort
-                });
-            }else{
-                res.render("../views/pages/login", {
-                    url:conf.serverAddress,
-                    port:conf.serverPort,
-                    regEnable:conf.registrationEnabled
-                });
-            }
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
+
+            let redirect = await authRouter.determineRedirectLogin("addPost",authRes, sqlConn);
+            res.render(redirect[0],redirect[1]);
+           
         });
 
         this.app.get("/dashboard",function(req,res){
@@ -157,12 +119,13 @@ module.exports.appServer = class AppServer{
         })
 
         this.app.post("/api/addCategory", async(req,res) => {
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(cookie,conf);
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
 
-            if (authRes){
-                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                    conf.user,conf.pass,conf.database);
+            if (authRes[0]){
+                
                 
                 const {category_name} = req.body;
                 let result = await categories.addCategory(sqlConn,category_name);
@@ -183,13 +146,13 @@ module.exports.appServer = class AppServer{
         });
 
         this.app.post("/api/addPost", async(req,res) => {
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(cookie,conf);
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
 
-            if (authRes){
+            if (authRes[0]){
                 console.log(req.body);
-                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                    conf.user,conf.pass,conf.database);
                 
                 const {title,data,categoryId} = req.body;
                 let result = await posts.addPost(sqlConn,title,data,categoryId);
@@ -207,12 +170,13 @@ module.exports.appServer = class AppServer{
         });
 
         this.app.post("/api/deletePost/:id", async(req,res) => {
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(cookie,conf);
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
 
-            if (authRes){
-                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                    conf.user,conf.pass,conf.database);
+            if (authRes[0]){
+                
                 
                 let result = await posts.deletePost(sqlConn,req.params.id);
                 
@@ -229,12 +193,14 @@ module.exports.appServer = class AppServer{
         });
 
         this.app.post("/api/deleteCategory/:id", async(req,res) => {
-            const cookie = req.headers.cookie;
-            const authRes = await auth.verify(cookie,conf);
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
 
-            if (authRes){
-                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                    conf.user,conf.pass,conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
+
+            if (authRes[0]){
+                
                 
                 let result = await categories.deleteCategory(sqlConn,req.params.id);
                 
@@ -254,12 +220,14 @@ module.exports.appServer = class AppServer{
         });
 
         this.app.post("/api/editCategory", async(req,res) => {
-            const cookie = req.headers.cookie;
-            const authRes = await auth.verify(cookie,conf);
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
 
-            if (authRes){
-                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                    conf.user,conf.pass,conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
+
+            if (authRes[0]){
+                
                 
                 const {category_id, category_name} = req.body;
                 let result = await categories.editCategory(sqlConn,category_id,category_name);
@@ -280,15 +248,17 @@ module.exports.appServer = class AppServer{
         });
 
         this.app.post("/api/editPost", async(req,res) => {
-            const cookie = req.headers.cookie;
-            const authRes = await auth.verify(cookie,conf);
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
 
-            if (authRes){
-                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                    conf.user,conf.pass,conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
+
+            if (authRes[0]){
                 
-                const {title,data,id} = req.body;
-                let result = await posts.editPost(sqlConn,title,data,id);
+                
+                const {title,data,id,categoryId} = req.body;
+                let result = await posts.editPost(sqlConn,title,data,id,categoryId);
                 
                 if (result){
                     res.json("Saved!");

@@ -30,13 +30,16 @@ module.exports.addPost = async function addPost(sqlConn,title,data,categoryId){
     
 } 
 
-module.exports.editPost = async function editPost(sqlConn,title,data,id){
+module.exports.editPost = async function editPost(sqlConn,title,data,id, category){
 
     try{
         await sqlConn.queryReturnWithParams(`
         UPDATE posts SET content = ? WHERE post_id = ?`,[data,id]);
         await sqlConn.queryReturnWithParams(`
         UPDATE posts SET article_title = ? WHERE post_id = ?`, [title,id]);
+
+        await sqlConn.queryReturnWithParams(`
+        UPDATE posts SET category_id = ? WHERE post_id = ?`, [category, id])
 
         return true;
     }catch (err){
