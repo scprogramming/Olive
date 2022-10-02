@@ -167,15 +167,18 @@ module.exports.appServer = class AppServer{
                 const {category_name} = req.body;
                 let result = await categories.addCategory(sqlConn,category_name);
                 
-                if (result){
-                    res.json("Saved!");
+                if (result[0]){
+                    res.json({status:"Saved!",id:result[1]});
                 }else{
-                    res.json("Failed to save");
+                    res.json({status:"Failed to save"});
                 }
+
+                res.end();
                 
             }else{
                 res.status(401);
-                res.json("Requires authorization");
+                res.json({status:"Requires authorization"});
+                res.end();
             }
         });
 
@@ -237,13 +240,16 @@ module.exports.appServer = class AppServer{
                 
                 if (result){
                     res.json("Deleted!");
+                    res.end();
                 }else{
                     res.json("Failed to delete");
+                    res.end();
                 }
                 
             }else{
                 res.status(401);
                 res.json("Requires authorization");
+                res.end();
             }
         });
 
@@ -259,14 +265,17 @@ module.exports.appServer = class AppServer{
                 let result = await categories.editCategory(sqlConn,category_id,category_name);
                 
                 if (result){
-                    res.json("Saved!");
+                    res.json({status:"Saved!", id:category_id});
                 }else{
-                    res.json("Failed to save");
+                    res.json({status:"Failed to save"});
                 }
+
+                res.end();
                 
             }else{
                 res.status(401);
-                res.json("Requires authorization");
+                res.json({status:"Requires authorization"});
+                res.end();
             }
         });
 
