@@ -54,6 +54,16 @@
     </body>
 
     <script>
+        window.onload = expandSidebar();
+        
+
+        function expandSidebar(){
+            console.log("Here!");
+            document.getElementById("websiteSidebar").setAttribute('aria-expanded',true);
+            document.getElementById("websiteSidebar").setAttribute('class','dropdown-toggle');
+            document.getElementById("websiteSubmenu").setAttribute('class','list-unstyled collapse show');
+        }
+
         function deletePost(id,t){
             fetch('<%- url %>:<%- port %>/api/deletePost/' + id, {
                 method:'POST',

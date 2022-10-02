@@ -17,10 +17,10 @@ module.exports.addCategory = async function addCategory(sqlConn,cat){
         await sqlConn.queryReturnWithParams(`INSERT INTO categories(category_id, category_name)
         VALUES (?,?)`,[targetId,cat]);
         
-        return true;
+        return [true,targetId];
     }catch (err){
         console.log(err);
-        return false;
+        return [false,-1];
     }
     
 } 

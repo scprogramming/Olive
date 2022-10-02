@@ -26,8 +26,9 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                         <button id="catNameToAdd" type="button" class="btn btn-primary" data-dismiss="modal" onclick="addCategory()">Add Category</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        
                     </div>
                 </div>
             </div>
@@ -43,14 +44,15 @@
                     <div class="modal-body">
                         <form>
                             <div class="form-group">
-                                <label for="categoryName" class="col-form-label">Category Name: </label>
-                                <input type="text" class="form-control" id="categoryName">
+                                <label for="categoryNameEdit" class="col-form-label">Category Name: </label>
+                                <input type="text" class="form-control" id="categoryNameEdit">
                             </div>
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                         <button id="catNameToAdd" type="button" class="btn btn-primary" data-dismiss="modal" onclick="editCategory()">Edit Category</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        
                     </div>
                 </div>
             </div>
@@ -78,7 +80,7 @@
                             <tbody>
                                 <% for (var i = 0; i < cats.length; i++){ %>
                                 <tr>
-                                    <th scope="row"><%= cats[i].category_name %></th>
+                                    <th scope="row" id="catname-<%= cats[i].category_id %>"><%= cats[i].category_name %></th>
                                     <td><button id="<%= cats[i].category_id %>" type="button" data-toggle="modal" data-target="#editCategory" class="btn btn-primary"><i class="fa fa-edit"></i></button></td>
                                     <td><a href="#" onclick="deleteCategory(<%= cats[i].category_id %>,this)"><i class="fa fa-trash"></i></button></a></td>
                                 </tr>
@@ -105,15 +107,41 @@
         });
 
         function addCategory(){
+            let categoryName = document.getElementById("categoryName").value
             fetch('<%= url %>:<%= port %>/api/addCategory', {
                 method:'POST',
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body:JSON.stringify({category_name:document.getElementById("categoryName").value})
+                body:JSON.stringify({category_name:categoryName})
                 
             })
-            .then(res => res.json);
+            .then(res => updateTable(res, document.getElementById("categoryName").value));
+        }
+
+        async function updateTable(res, catName){
+            let data = await res.json();
+            if (data.status === "Saved!"){
+                let table = document.getElementById("CatTable");
+                let row = table.insertRow(1);
+                let cell1 = row.insertCell(0);
+                let cell2 = row.insertCell(1);
+                let cell3 = row.insertCell(2);
+
+                cell1.outerHTML = `<th scope="row">${catName}</th>`;
+                cell2.innerHTML = `<button id="${data.id}" type="button" data-toggle="modal" data-target="#editCategory" class="btn btn-primary"><i class="fa fa-edit"></i></button>`;
+                cell3.innerHTML = `<a href="#" onclick="deleteCategory(${data.id},this)"><i class="fa fa-trash"></i></button></a>`;
+            }
+            
+        }
+
+        async function editTable(res, catName){
+            let data = await res.json();
+            if (data.status === "Saved!"){
+                let target = document.getElementById(`catname-${data.id}`);
+                target.innerHTML = catName;
+            }
+
         }
 
         function editCategory(){
@@ -122,24 +150,29 @@
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body:JSON.stringify({category_id:document.getElementById("idHidden").textContent, category_name:document.getElementById("categoryName").value})
+                body:JSON.stringify({category_id:document.getElementById("idHidden").textContent, category_name:document.getElementById("categoryNameEdit").value})
                 
             })
-            .then(res => res.json);
+            .then(res => editTable(res, document.getElementById("categoryNameEdit").value));
+        }
+
+        async function deleteRow(res,t){
+            let data = await res.json();
+
+            if (data === "Deleted!"){
+                $tr = $(t).closest("tr");
+                $tr.remove();
+            }else{
+                document.getElementById("status").text = "An error was encountered trying to delete this element";
+            }
+            
         }
 
         function deleteCategory(id,t){
             fetch('<%- url %>:<%- port %>/api/deleteCategory/' + id, {
                 method:'POST',
             })
-            .then(res => res.json())
-            .then(data => document.getElementById("status").innerHTML = data);
-
-            $tr = $(t).closest("tr");
-
-            $tr.remove();
-
-
+            .then(res => deleteRow(res,t))
         }
        
     </script>
