@@ -1,4 +1,9 @@
-
+html,body{
+    height:100vh;
+}
+.row{
+    margin-right: 0;
+}
 .indentitem {
     font-size: 0.9em !important;
     padding-left: 30px !important;
@@ -41,9 +46,8 @@
 }
 
 #sidebar {
-    min-width: 250px;
-    max-width: 250px;
-    min-height: 100vh;
+    min-width: 100%;
+    min-height: 94vh;
     background: #1d1d1d;
     color: #fff;
     transition: all 0.3s;

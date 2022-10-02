@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="/public/sidebar.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <script src="https://code.jquery.com/jquery-3.6.1.js" integrity="sha256-3zlB5s2uwoUzrXK3BT7AX3FyvojsraNFxCc2vC/7pNI=" crossorigin="anonymous"></script>
+    </head>
+
+    <body>
+
+        <div class="modal fade" id="addCategory" tabindex="-1" role="dialog" aria-labelledby="catLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="catLabel">Add a new category</h5>
+                        
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="categoryName" class="col-form-label">Category Name: </label>
+                                <input type="text" class="form-control" id="categoryName">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="catNameToAdd" type="button" class="btn btn-primary" data-dismiss="modal" onclick="addCategory()">Add Category</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="editCategory" tabindex="-1" role="dialog" aria-labelledby="catLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <p hidden class="modal-hidden" id="idHidden"></p>
+                        <h5 class="modal-title" id="catLabel">Input a new category name</h5>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="categoryNameEdit" class="col-form-label">Category Name: </label>
+                                <input type="text" class="form-control" id="categoryNameEdit">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="catNameToAdd" type="button" class="btn btn-primary" data-dismiss="modal" onclick="editCategory()">Edit Category</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-container">
+            <div class="content-wrap">
+                <div class="row">
+                    <%- include('navbar.ejs'); %>
+                </div>
+                <div class="row">
+                    <div class="col-2">
+                        <%- include('sidebar.ejs'); %>
+                    </div>
+                    <div class="col-8">
+                        <button type="button" data-toggle="modal" data-target="#addCategory" class="btn btn-primary" role="button">Add a New Category</button>
+                        <table class = "table" id="CatTable">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Edit</th>
+                                    <th scope="col">Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% for (var i = 0; i < cats.length; i++){ %>
+                                <tr>
+                                    <th scope="row" id="catname-<%= cats[i].category_id %>"><%= cats[i].category_name %></th>
+                                    <td><button id="<%= cats[i].category_id %>" type="button" data-toggle="modal" data-target="#editCategory" class="btn btn-primary"><i class="fa fa-edit"></i></button></td>
+                                    <td><a href="#" onclick="deleteCategory(<%= cats[i].category_id %>,this)"><i class="fa fa-trash"></i></button></a></td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                        <p id = "status"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+
+        
+    </body>
+
+    <script>
+
+        $("#editCategory").on("show.bs.modal", function(event){
+            let button = $(event.relatedTarget);
+            var modal = $(this);
+            modal.find('.modal-hidden').text(button.attr('id'));
+        });
+
+        function addCategory(){
+            let categoryName = document.getElementById("categoryName").value
+            fetch('<%= url %>:<%= port %>/api/addCategory', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body:JSON.stringify({category_name:categoryName})
+                
+            })
+            .then(res => updateTable(res, document.getElementById("categoryName").value));
+        }
+
+        async function updateTable(res, catName){
+            let data = await res.json();
+            if (data.status === "Saved!"){
+                let table = document.getElementById("CatTable");
+                let row = table.insertRow(1);
+                let cell1 = row.insertCell(0);
+                let cell2 = row.insertCell(1);
+                let cell3 = row.insertCell(2);
+
+                cell1.outerHTML = `<th scope="row">${catName}</th>`;
+                cell2.innerHTML = `<button id="${data.id}" type="button" data-toggle="modal" data-target="#editCategory" class="btn btn-primary"><i class="fa fa-edit"></i></button>`;
+                cell3.innerHTML = `<a href="#" onclick="deleteCategory(${data.id},this)"><i class="fa fa-trash"></i></button></a>`;
+            }
+            
+        }
+
+        async function editTable(res, catName){
+            let data = await res.json();
+            if (data.status === "Saved!"){
+                let target = document.getElementById(`catname-${data.id}`);
+                target.innerHTML = catName;
+            }
+
+        }
+
+        function editCategory(){
+            fetch('<%= url %>:<%= port %>/api/editCategory', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body:JSON.stringify({category_id:document.getElementById("idHidden").textContent, category_name:document.getElementById("categoryNameEdit").value})
+                
+            })
+            .then(res => editTable(res, document.getElementById("categoryNameEdit").value));
+        }
+
+        async function deleteRow(res,t){
+            let data = await res.json();
+
+            if (data === "Deleted!"){
+                $tr = $(t).closest("tr");
+                $tr.remove();
+            }else{
+                document.getElementById("status").text = "An error was encountered trying to delete this element";
+            }
+            
+        }
+
+        function deleteCategory(id,t){
+            fetch('<%- url %>:<%- port %>/api/deleteCategory/' + id, {
+                method:'POST',
+            })
+            .then(res => deleteRow(res,t))
+        }
+       
+    </script>
+
+</html>

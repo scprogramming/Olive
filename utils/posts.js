@@ -1,6 +1,6 @@
 const sqlHandle = require('../handlers/DbHandler.js');
 
-module.exports.addPost = async function addPost(sqlConn,title,data){
+module.exports.addPost = async function addPost(sqlConn,title,data,categoryId){
 
     try{
 
@@ -19,8 +19,8 @@ module.exports.addPost = async function addPost(sqlConn,title,data){
         }
          
 
-        await sqlConn.queryReturnWithParams(`INSERT INTO posts(post_id,article_title,content,date_created)
-        VALUES (?,?,?,?)`,[targetId,title,data, yyyy + '-' + mm + '-' + dd]);
+        await sqlConn.queryReturnWithParams(`INSERT INTO posts(post_id,article_title,content,date_created,category_id)
+        VALUES (?,?,?,?,?)`,[targetId,title,data, yyyy + '-' + mm + '-' + dd,categoryId]);
         
         return true;
     }catch (err){
@@ -64,7 +64,9 @@ module.exports.getAllPosts = async function getAllPosts(sqlConn){
 
     try{
         let posts = await sqlConn.queryReturnNoParam(`
-        SELECT * FROM posts`);
+        SELECT article_title,content,date_created, post_id, category_name FROM posts
+        LEFT JOIN categories
+        ON categories.category_id = posts.category_id`);
         
         return posts;
     }catch (err){
@@ -77,7 +79,9 @@ module.exports.getPostWithId = async function getPostWithId(sqlConn,id){
 
     try{
         let posts = await sqlConn.queryReturnWithParams(`
-        SELECT * FROM posts WHERE post_id=?`,[id]);
+        SELECT article_title,content,date_created, post_id, category_name FROM posts
+        LEFT JOIN categories
+        ON categories.category_id = posts.category_id WHERE post_id=?`,[id]);
         
         return posts;
     }catch (err){
