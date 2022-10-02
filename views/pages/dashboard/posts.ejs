@@ -24,6 +24,7 @@
                             <thead>
                                 <tr>
                                     <th scope="col">Title</th>
+                                    <th scope="col">Category</th>
                                     <th scope="col">Date Created</th>
                                     <th scope="col">Edit</th>
                                     <th scope="col">Delete</th>
@@ -33,6 +34,7 @@
                                 <% for (var i = 0; i < posts.length; i++){ %>
                                 <tr>
                                     <th scope="row"><%= posts[i].article_title %></th>
+                                    <td><%= posts[i].category_name %></td>
                                     <td><%= posts[i].date_created %></td>
                                     <td><a href="/dashboard/editPost/<%= posts[i].post_id %>"><i class="fa fa-edit"></i></button></a></td>
                                     <td><a href="#" onclick="deletePost(<%= posts[i].post_id %>,this)"><i class="fa fa-trash"></i></button></a></td>
@@ -52,6 +54,16 @@
     </body>
 
     <script>
+        window.onload = expandSidebar();
+        
+
+        function expandSidebar(){
+            console.log("Here!");
+            document.getElementById("websiteSidebar").setAttribute('aria-expanded',true);
+            document.getElementById("websiteSidebar").setAttribute('class','dropdown-toggle');
+            document.getElementById("websiteSubmenu").setAttribute('class','list-unstyled collapse show');
+        }
+
         function deletePost(id,t){
             fetch('<%- url %>:<%- port %>/api/deletePost/' + id, {
                 method:'POST',

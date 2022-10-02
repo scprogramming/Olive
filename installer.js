@@ -34,9 +34,16 @@ async function runQueries(sqlConn){
     post_id DECIMAL(18,0) NOT NULL,
     article_title VARCHAR(250) NOT NULL,
     content longtext,
-    dateCreated DATE
+    dateCreated DATE,
+    category_id INT
     );`);
     
+    await sqlConn.queryReturnNoParam(`
+    CREATE TABLE categories(
+        category_id INT,
+        category_name VARCHAR(100)
+        );
+    `)
 
     console.log("Created tables");
 
