@@ -27,6 +27,13 @@
                 <form>
                   <label for="title" class="sr-only">Article Title: </label>
                   <input name="title" type="title" id="title" class="form-control" placeholder="Enter an article title" required autofocus>
+
+                  <label for="categories">Choose a category: </label>
+                  <select name="categories" id="categories">
+                    <% for (var i = 0; i < categories.length; i++){ %>
+                      <option value="<%= categories[i].category_id%>"><%= categories[i].category_name %></option>
+                    <%}%>
+                  </select>
               
                   <div id="toolbar-container">
                     <span class="ql-formats">
@@ -109,8 +116,11 @@
     form.addEventListener('submit',function(e){
       e.preventDefault();
       console.log(quill.root.innerHTML);
+
+      var select = document.getElementById("categories");
+
       var articleData = JSON.stringify({data:quill.root.innerHTML,
-      title:document.getElementById("title").value});
+      title:document.getElementById("title").value, categoryId:select.options[select.selectedIndex].value});
       fetch('<%- url %>:<%- port %>/api/addPost', {
                 method:'POST',
                 headers: {

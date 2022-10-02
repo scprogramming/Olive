@@ -120,7 +120,12 @@ module.exports.appServer = class AppServer{
             const authRes = await auth.verify(cookie,conf);
 
             if (authRes){
+                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                    conf.user,conf.pass,conf.database);
+    
+                let result = await categories.getAllCategories(sqlConn);
                 res.render("../views/pages/dashboard/addPost",{
+                    categories:result[0],
                     url:conf.serverAddress,
                     port:conf.serverPort
                 });
@@ -183,8 +188,8 @@ module.exports.appServer = class AppServer{
                 var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                     conf.user,conf.pass,conf.database);
                 
-                const {title,data} = req.body;
-                let result = await posts.addPost(sqlConn,title,data);
+                const {title,data,categoryId} = req.body;
+                let result = await posts.addPost(sqlConn,title,data,categoryId);
                 
                 if (result){
                     res.json("Saved!");
@@ -212,6 +217,51 @@ module.exports.appServer = class AppServer{
                     res.json("Deleted!");
                 }else{
                     res.json("Failed to delete");
+                }
+                
+            }else{
+                res.status(401);
+                res.json("Requires authorization");
+            }
+        });
+
+        this.app.post("/api/deleteCategory/:id", async(req,res) => {
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(cookie,conf);
+
+            if (authRes){
+                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                    conf.user,conf.pass,conf.database);
+                
+                let result = await categories.deleteCategory(sqlConn,req.params.id);
+                
+                if (result){
+                    res.json("Deleted!");
+                }else{
+                    res.json("Failed to delete");
+                }
+                
+            }else{
+                res.status(401);
+                res.json("Requires authorization");
+            }
+        });
+
+        this.app.post("/api/editCategory", async(req,res) => {
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(cookie,conf);
+
+            if (authRes){
+                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                    conf.user,conf.pass,conf.database);
+                
+                const {category_id, category_name} = req.body;
+                let result = await categories.editCategory(sqlConn,category_id,category_name);
+                
+                if (result){
+                    res.json("Saved!");
+                }else{
+                    res.json("Failed to save");
                 }
                 
             }else{
