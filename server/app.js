@@ -4,6 +4,7 @@ const auth = require('../utils/auth.js');
 const sqlHandle = require('../handlers/DbHandler.js');
 const posts = require("../utils/posts");
 const fs = require('fs');
+const categories = require("../utils/categories");
 
 module.exports.appServer = class AppServer{
 
@@ -22,6 +23,30 @@ module.exports.appServer = class AppServer{
                 port:conf.serverPort,
                 regEnable:conf.registrationEnabled
             });
+        });
+
+        this.app.get("/dashboard/categories", async function(req,res){
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(cookie,conf);
+
+            if (authRes){
+                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                    conf.user,conf.pass,conf.database);
+
+                let result = await categories.getAllCategories(sqlConn);
+
+                res.render("../views/pages/dashboard/categories",{
+                    url:conf.serverAddress,
+                    port:conf.serverPort,
+                    cats:result[0]
+                });
+            }else{
+                res.render("../views/pages/login", {
+                    url:conf.serverAddress,
+                    port:conf.serverPort,
+                    regEnable:conf.registrationEnabled
+                });
+            }
         });
 
         this.app.get("/dashboard/editPost/:id", async function(req,res){
@@ -125,6 +150,29 @@ module.exports.appServer = class AppServer{
             }
             
         })
+
+        this.app.post("/api/addCategory", async(req,res) => {
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(cookie,conf);
+
+            if (authRes){
+                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                    conf.user,conf.pass,conf.database);
+                
+                const {category_name} = req.body;
+                let result = await categories.addCategory(sqlConn,category_name);
+                
+                if (result){
+                    res.json("Saved!");
+                }else{
+                    res.json("Failed to save");
+                }
+                
+            }else{
+                res.status(401);
+                res.json("Requires authorization");
+            }
+        });
 
         this.app.post("/api/addPost", async(req,res) => {
             const cookie = req.headers.cookie;
