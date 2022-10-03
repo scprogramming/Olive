@@ -12,7 +12,7 @@ module.exports.appServer = class AppServer{
         this.conf = conf;
 
         this.app = express()
-        this.app.use(express.json({limit: '50mb'}));
+        this.app.use(express.json({limit: conf.postLimit}));
         this.app.use(cors());
         this.app.set('view engine','ejs');
         this.app.use('/public',express.static(__dirname + '\\public'));
