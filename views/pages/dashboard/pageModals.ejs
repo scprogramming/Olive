@@ -1,0 +1,44 @@
+<div class="modal fade" id="addHero" tabindex="-1" role="dialog" aria-labelledby="addHero" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="catLabel">Create a Page Hero</h5>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-3">
+                        <form id="heroForm">
+                            <div class="form-group">
+                                <label for="pageHeading" class="col-form-label">Heading: </label>
+                                <input type="text" class="form-control" id="pageHeading" oninput="updateText('mainHeading',document.getElementById('pageHeading').value);">
+                                
+                                <label for="pageSubHeading" class="col-form-label">Subheading: </label>
+                                <input type="text" class="form-control" id="pageSubHeading" oninput="updateText('subHeading',document.getElementById('pageSubHeading').value);">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-9" id="heroContent">
+                        <h1 id="mainHeading"></h1>
+                        <h2 id="subHeading"></h2>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="catNameToAdd" type="button" class="btn btn-primary" data-dismiss="modal" onclick="savePage('heroContent','heroForm')">Save</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="clearFormPre('heroForm','heroContent')">Close</button>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function clearFormPre(formName,contentName){
+        switch(contentName){
+            case "heroContent":
+                clearForm(formName,['mainHeading','subHeading']);
+                break;
+        }
+    }
+</script>

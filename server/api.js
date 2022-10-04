@@ -4,6 +4,7 @@ const auth = require('../utils/auth.js');
 const sqlHandle = require('../handlers/DbHandler.js');
 const posts = require("../utils/posts");
 const categories = require("../utils/categories");
+const pages = require('../utils/pages');
 
 module.exports.apiServer = class ApiServer{
 
@@ -12,7 +13,12 @@ module.exports.apiServer = class ApiServer{
 
         this.app = express()
         this.app.use(express.json({limit: conf.postLimit}));
-        this.app.use(cors());
+
+        this.app.use(cors({
+            origin: ['http://localhost:5000', 'http://localhost'],
+            credentials:true
+        }));
+        
         this.app.set('view engine','ejs');
         this.app.use('/public',express.static(__dirname + '\\public'));
 
@@ -67,6 +73,28 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
+        this.app.post("/api/addPage", async(req,res) => {
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
+
+            if (authRes[0]){
+                const {title,data} = req.body;
+                let result = await pages.addPage(sqlConn,title,data);
+                
+                if (result[0]){
+                    res.json({status:"Saved!",page_id:result[1]});
+                }else{
+                    res.json({status:"Failed to save"});
+                }
+                
+            }else{
+                res.status(401);
+                res.json({status:"Requires authorization"});
+            }
+        });
+
         this.app.post("/api/deletePost/:id", async(req,res) => {
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
@@ -77,6 +105,29 @@ module.exports.apiServer = class ApiServer{
                 
                 
                 let result = await posts.deletePost(sqlConn,req.params.id);
+                
+                if (result){
+                    res.json("Deleted!");
+                }else{
+                    res.json("Failed to delete");
+                }
+                
+            }else{
+                res.status(401);
+                res.json("Requires authorization");
+            }
+        });
+
+        this.app.post("/api/deletePage/:id", async(req,res) => {
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
+
+            if (authRes[0]){
+                
+                
+                let result = await pages.deletePage(sqlConn,req.params.id);
                 
                 if (result){
                     res.json("Deleted!");
@@ -142,6 +193,49 @@ module.exports.apiServer = class ApiServer{
                 res.status(401);
                 res.json({status:"Requires authorization"});
                 res.end();
+            }
+        });
+
+        this.app.post("/api/editPage", async(req,res) => {
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
+
+            if (authRes[0]){
+                
+                const {title,data,page_id} = req.body;
+                console.log(page_id);
+                let result = await pages.editPage(sqlConn,title,data,page_id);
+                
+                if (result){
+                    res.json("Saved!");
+                }else{
+                    res.json("Failed to save");
+                }
+                
+            }else{
+                res.status(401);
+                res.json("Requires authorization");
+            }
+        });
+
+        this.app.post("/api/getPage/:id", async(req,res) => {
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
+
+            if (authRes[0]){
+                
+                let result = await pages.getPageWithId(sqlConn, req.params.id);
+                res.json(result[0]);
+                
+            }else{
+                res.status(401);
+                res.json("Requires authorization");
             }
         });
 

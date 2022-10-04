@@ -113,6 +113,7 @@
                 headers: {
                     "Content-Type": "application/json"
                 },
+                credentials: 'include',
                 body:JSON.stringify({category_name:categoryName})
                 
             })
@@ -150,6 +151,7 @@
                 headers: {
                     "Content-Type": "application/json"
                 },
+                credentials: 'include',
                 body:JSON.stringify({category_id:document.getElementById("idHidden").textContent, category_name:document.getElementById("categoryNameEdit").value})
                 
             })
@@ -171,6 +173,7 @@
         function deleteCategory(id,t){
             fetch('<%- url %>:<%- port %>/api/deleteCategory/' + id, {
                 method:'POST',
+                credentials: 'include',
             })
             .then(res => deleteRow(res,t))
         }
