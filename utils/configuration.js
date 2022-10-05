@@ -12,8 +12,9 @@ module.exports.Configuration = class Configuration{
         this.jwtKey = env.jwtkey;
         this.tokenExpires = env.tokenExpires;
         this.saltRounds = env.saltRounds;
-        this.postLimit = env.postLimit
-
+        this.postLimit = env.postLimit;
+        this.apiPort = env.apiPort;
+        
         if (env.registrationEnabled === 'Yes'){
             this.registrationEnabled = true;
         }else{
