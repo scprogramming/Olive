@@ -3,7 +3,7 @@ const cors = require('cors');
 const auth = require('../utils/auth.js');
 const sqlHandle = require('../handlers/DbHandler.js');
 const posts = require("../utils/posts");
-const categories = require("../utils/categories");
+const pages = require("../utils/pages");
 const authRouter = require("./authRouter");
 
 module.exports.appServer = class AppServer{
@@ -120,8 +120,11 @@ module.exports.appServer = class AppServer{
                 conf.user,conf.pass,conf.database);
 
             let result = await posts.getAllPosts(sqlConn);
+            let pageRes = await pages.getAllPages(sqlConn);
+
             res.render("../views/pages/client/home",{
-                posts:result[0]
+                posts:result[0],
+                pages:pageRes[0]
             });
         });
 
@@ -143,6 +146,17 @@ module.exports.appServer = class AppServer{
     
         });
 
+        this.app.get("/pages/:path", async function(req,res){
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+
+            let getPage = await pages.getPageWithPath(sqlConn, req.params.path);
+
+            res.render("../views/pages/client/page",{
+                page:getPage[0][0]
+            });
+        });
+
         this.app.get("/register", function(req,res){
 
             if (conf.registrationEnabled){
@@ -155,6 +169,7 @@ module.exports.appServer = class AppServer{
             }
             
         });
+
     }
 }
 

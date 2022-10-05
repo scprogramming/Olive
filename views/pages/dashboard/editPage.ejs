@@ -22,6 +22,8 @@
               </div>
               <div class="col-8">
                 <%- include('pageModals.ejs'); %>
+                <input type="text" class="form-control" id="pageTitle">          
+                <button class="btn btn-primary" onclick="savePage()">Save Title</button>
                 <div id="pageContent">
 
                 </div>
@@ -48,13 +50,24 @@
     async function populatePage(res){
         let result = await res.json();
         document.getElementById("pageContent").innerHTML =  result[0].content;
+        document.getElementById("pageTitle").value = result[0].page_title;
+
     }
 
-    function savePage(contentTarget,formContent,preview){
+    function updateAndSave(contentTarget,formContent,preview){
         let content = document.getElementById(contentTarget).innerHTML;
-        let id = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
-
         document.getElementById("pageContent").innerHTML += content;
+        
+        savePage();
+        clearFormPre(formContent,contentTarget);
+
+    }
+
+    function savePage(){
+
+        let title = document.getElementById("pageTitle").value;
+        let data = document.getElementById("pageContent").innerHTML
+        let id = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
 
         fetch('<%= url %>:<%= port %>/api/editPage', {
                 method:'POST',
@@ -62,13 +75,9 @@
                     "Content-Type": "application/json"
                 },
                 credentials: 'include',
-                body:JSON.stringify({page_id:id, title:"",data:document.getElementById("pageContent").innerHTML})
+                body:JSON.stringify({page_id:id, title:title,data:data,page_path:""})
                 
-            })
-
-      clearFormPre(formContent,contentTarget);
-      
-
+            });
     }
 
     function clearForm(formContent,previewContent){

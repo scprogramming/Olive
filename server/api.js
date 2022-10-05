@@ -80,8 +80,8 @@ module.exports.apiServer = class ApiServer{
             const authRes = await auth.verify(sqlConn, cookie, "admin");
 
             if (authRes[0]){
-                const {title,data} = req.body;
-                let result = await pages.addPage(sqlConn,title,data);
+                const {title,data,page_path} = req.body;
+                let result = await pages.addPage(sqlConn,title,data,page_path);
                 
                 if (result[0]){
                     res.json({status:"Saved!",page_id:result[1]});

@@ -22,7 +22,10 @@
               </div>
               <div class="col-8">
                 <label for="pageTitle" class="col-form-label">Page Title: </label>
-                <input type="text" class="form-control" id="pageTitle">          
+                <input type="text" class="form-control" id="pageTitle">         
+                <label for="pagePath" class="col-form-label">URL Path: </label>
+                <p>/pages/</p> 
+                <input type="text" class="form-control" id="pagePath"> 
                 <button class="btn btn-primary" onclick="setupPage()">Save</button>
               </div>
             </div>
@@ -41,7 +44,7 @@
                     "Content-Type": "application/json"
                 },
                 credentials: 'include',
-                body:JSON.stringify({title:document.getElementById("pageTitle").value,data:""})
+                body:JSON.stringify({title:document.getElementById("pageTitle").value,data:"",page_path:document.getElementById("pagePath").value})
                 
             })
             .then(res => redirectId(res));
