@@ -1,6 +1,6 @@
 const sqlHandle = require('../handlers/DbHandler.js');
 
-module.exports.addPage = async function addPage(sqlConn,title,data,categoryId){
+module.exports.addPage = async function addPage(sqlConn,title,data,pagePath){
 
     try{
 
@@ -19,8 +19,8 @@ module.exports.addPage = async function addPage(sqlConn,title,data,categoryId){
         }
          
 
-        await sqlConn.queryReturnWithParams(`INSERT INTO pages(page_id, page_title, content, date_created)
-        VALUES (?,?,?,?)`,[targetId,title,data, yyyy + '-' + mm + '-' + dd]);
+        await sqlConn.queryReturnWithParams(`INSERT INTO pages(page_id, page_title, content, date_created,page_path)
+        VALUES (?,?,?,?,?)`,[targetId,title,data, yyyy + '-' + mm + '-' + dd,pagePath]);
         
         return [true,targetId];
     }catch (err){
@@ -78,6 +78,19 @@ module.exports.getPageWithId = async function getPageWithId(sqlConn,id){
     try{
         let pages = await sqlConn.queryReturnWithParams(`
         SELECT * FROM pages WHERE page_id = ?`,[id]);
+        
+        return pages;
+    }catch (err){
+        console.error(err);
+    }
+    
+} 
+
+module.exports.getPageWithPath = async function getPageWithPath(sqlConn,pagePath){
+
+    try{
+        let pages = await sqlConn.queryReturnWithParams(`
+        SELECT * FROM pages WHERE page_path = ?`,[pagePath]);
         
         return pages;
     }catch (err){
