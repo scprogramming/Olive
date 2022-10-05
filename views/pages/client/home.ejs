@@ -28,8 +28,28 @@
                                     <td><%= posts[i].date_created %></td>
                                 </tr>
                                 <% } %>
+                                
                             </tbody>
                         </table>
+
+                            <table class = "table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Title</th>
+                                        <th scope="col">Date Created</th>
+                                    </tr>
+                                </thead>
+                            <tbody>
+
+                                <% for (var i = 0; i < pages.length; i++){ %>
+                                    <tr>
+                                        <th scope="row"><a href="/pages/<%=pages[i].page_path %>"> <%= pages[i].page_title %> </a></th>
+                                        <td><%= pages[i].date_created %></td>
+                                    </tr>
+                                    <% } %>
+                            </tbody>
+                        </table>
+                        
                     </div>
                 </div>
             </div>

@@ -53,6 +53,16 @@ async function runQueries(sqlConn){
       );
       `)
 
+    await sqlConn.queryReturnNoParam(`
+    CREATE TABLE pages(
+        page_id INT(11),
+        page_title VARCHAR(250),
+        content LONGTEXT,
+        date_created DATE
+        
+    );
+    `)
+
     console.log("Created tables");
 
     sqlConn.close();
