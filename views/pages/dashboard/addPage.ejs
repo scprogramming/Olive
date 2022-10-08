@@ -52,46 +52,9 @@
 
     async function redirectId(res){
       let result = await res.json();
-      window.location.href = `/dashboard/editPage/${result.page_id}`;
+      window.location.href = `/dashboard/editPage/${result.page_id},${result.content_id}`;
     }
 
-    async function updateId(res){
-      let result = await res.json();
-
-      document.getElementById("pageId").innerHTML = result.page_id;
-    }
-
-    function savePage(contentTarget,formContent,preview){
-        let content = document.getElementById(contentTarget).innerHTML;
-        document.getElementById("pageContent").innerHTML += content;
-
-        fetch('<%= url %>:<%= port %>/api/editPage', {
-                method:'POST',
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: 'include',
-                body:JSON.stringify({page_id:document.getElementById("pageId").innerText, title:"",data:document.getElementById("pageContent").innerHTML})
-                
-            })
-
-      clearFormPre(formContent,contentTarget);
-      
-
-    }
-
-    function clearForm(formContent,previewContent){
-      document.getElementById(formContent).reset();
-      console.log(previewContent);
-      for (let i = 0; i < previewContent.length; i++){
-        document.getElementById(previewContent[i]).innerHTML = "";
-      }
-      
-    }
-
-    function updateText(target,textIn){
-        document.getElementById(target).innerText = textIn
-    }
 
 </script>
 

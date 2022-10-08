@@ -18,9 +18,42 @@ module.exports.addPage = async function addPage(sqlConn,title,data,pagePath){
             targetId = parseInt(getNextId[0][0].max_id) + 1
         }
          
+        let getNextIdContent = await sqlConn.queryReturnNoParam(`
+        SELECT MAX(content_id) AS max_id FROM page_content`);
 
-        await sqlConn.queryReturnWithParams(`INSERT INTO pages(page_id, page_title, content, date_created,page_path)
-        VALUES (?,?,?,?,?)`,[targetId,title,data, yyyy + '-' + mm + '-' + dd,pagePath]);
+        let contentId = 0;
+
+        if (getNextIdContent[0][0].max_id !== null){
+            contentId = parseInt(getNextIdContent[0][0].max_id) + 1
+        }
+         
+
+        await sqlConn.queryReturnWithParams(`INSERT INTO pages(page_id, page_title, content_id, date_created,page_path)
+        VALUES (?,?,?,?,?)`,[targetId,title,contentId, yyyy + '-' + mm + '-' + dd,pagePath]);
+        
+        return [true,targetId,contentId];
+    }catch (err){
+        console.log(err);
+        return [false];
+    }
+    
+} 
+
+module.exports.addBlock = async function addBlock(sqlConn,contentId,content,order){
+
+    try{
+
+        let getNextId = await sqlConn.queryReturnNoParam(`
+        SELECT MAX(block_id) AS max_id FROM page_content`);
+
+        let targetId = 0;
+
+        if (getNextId[0][0].max_id !== null){
+            targetId = parseInt(getNextId[0][0].max_id) + 1
+        }
+         
+        await sqlConn.queryReturnWithParams(`INSERT INTO page_content
+        VALUES (?,?,?,?)`,[targetId,contentId,content,order]);
         
         return [true,targetId];
     }catch (err){
@@ -29,6 +62,7 @@ module.exports.addPage = async function addPage(sqlConn,title,data,pagePath){
     }
     
 } 
+
 
 module.exports.editPage = async function editPage(sqlConn,title,data,id, category){
 
@@ -65,6 +99,19 @@ module.exports.getAllPages = async function getAllPages(sqlConn){
     try{
         let pages = await sqlConn.queryReturnNoParam(`
         SELECT * FROM pages;`);
+        
+        return pages;
+    }catch (err){
+        console.error(err);
+    }
+    
+} 
+
+module.exports.getAllContent = async function getAllContent(sqlConn,contentId){
+
+    try{
+        let pages = await sqlConn.queryReturnWithParams(`
+        SELECT * FROM page_content WHERE content_id=? ORDER BY content_order ASC;`,[contentId]);
         
         return pages;
     }catch (err){

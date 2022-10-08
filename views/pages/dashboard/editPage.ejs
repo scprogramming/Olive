@@ -25,9 +25,11 @@
                 <input type="text" class="form-control" id="pageTitle">          
                 <button class="btn btn-primary" onclick="savePage()">Save Title</button>
                 <div id="pageContent">
-
+                  <% for (var i = 0; i < content.length; i++){ %>
+                    <%- content[i].content %>
+                  <%}%>
                 </div>
-                <button class="btn btn-primary" data-toggle="modal" data-target="#addHero">Primary Button</button>
+                <button class="btn btn-primary" data-toggle="modal" data-target="#addHero" onclick="document.getElementById('hero_mode').innerHTML='add';">Primary Button</button>
               </div>
             </div>
       </div>
@@ -37,36 +39,90 @@
 </body>
  
 <script>
-    
-    window.onload = loadPage();
 
-    function loadPage(){
-        fetch(`<%= url %>:<%= port %>/api/getPage/${location.pathname.substring(location.pathname.lastIndexOf('/') + 1)}`, {
-            method:'POST',
-            credentials: 'include'
-        }).then(res => populatePage(res))
+  console.log(<%= pageId %>);
+
+  function sanitizeContent(content,type){
+    switch(type){
+      case "hero":
+        //Need to have block ID before all this happens
+        content.querySelector('#mainHeading').id = "mainHeadingUnique";
+        return content;
     }
+  }
 
-    async function populatePage(res){
-        let result = await res.json();
-        document.getElementById("pageContent").innerHTML =  result[0].content;
-        document.getElementById("pageTitle").value = result[0].page_title;
-
-    }
-
-    function updateAndSave(contentTarget,formContent,preview){
-        let content = document.getElementById(contentTarget).innerHTML;
-        document.getElementById("pageContent").innerHTML += content;
+    function updateAndSave(contentTarget,formContent,mode,editId,type){
+        console.log(mode);
         
-        savePage();
-        clearFormPre(formContent,contentTarget);
+        switch (mode){
+          case 'add':
+              
+              let content = document.querySelector(`#${contentTarget}`);
 
+              addBlock(sanitizeContent(content,type));
+            clearFormPre(formContent,contentTarget);
+            break;
+
+          case 'edit':
+            let newContent = document.getElementById(contentTarget).innerHTML;
+            document.getElementById(editId).innerHTML = newContent;
+
+            savePage();
+            clearFormPre(formContent, contentTarget);
+            break;
+
+        }
+        
+
+    }
+
+    async function updateContent(res,content){
+      let result = await res.json();
+      console.log(content);
+      document.getElementById("pageContent").innerHTML += `
+            <div class="buttonOverlay">
+              <a onclick="editBlock('hero','block${result.block_id}');"><i class="fa fa-edit"></i></button></a>  
+            </div>
+            <div id="block${result.block_id}">` + content.innerHTML + `</div>`;
+    }
+
+    function addBlock(content){
+
+      fetch('<%= url %>:<%= port %>/api/addBlock', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: 'include',
+                body:JSON.stringify({content_id:<%= contentId %>, content:content.innerHTML,order:0})
+                
+            }).then(res => updateContent(res,content));
+    }
+
+    function editBlock(editType,id){
+      switch(editType){
+        case 'hero':
+          document.getElementById("id_hero_hidden").innerHTML = id
+          document.getElementById("hero_mode").innerHTML = "edit";
+
+          document.getElementById('pageHeading').innerHTML = document.getElementById(`hero-block${id}`).getElementById('mainHeading').innerHTML;
+          $("#addHero").modal();
+          break;
+      }
     }
 
     function savePage(){
 
         let title = document.getElementById("pageTitle").value;
-        let data = document.getElementById("pageContent").innerHTML
+        let data = document.getElementById("pageContent");
+        let buttons = data.getElementsByClassName('buttonOverlay');
+
+        for (let i = 0; i < buttons.length; i++){
+          buttons.item(i).remove();
+        }
+
+        data = data.innerHTML;
+
         let id = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
 
         fetch('<%= url %>:<%= port %>/api/editPage', {
