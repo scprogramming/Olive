@@ -9,6 +9,7 @@
                     <div class="col-3">
                         <form id="heroForm">
                             <div class="form-group">
+                                <p hidden id="hero_mode"></p>
                                 <label for="pageHeading" class="col-form-label">Heading: </label>
                                 <input type="text" class="form-control" id="pageHeading" oninput="updateText('mainHeading',document.getElementById('pageHeading').value);">
                                 
@@ -38,7 +39,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="catNameToAdd" type="button" class="btn btn-primary" data-dismiss="modal" onclick="updateAndSave('heroContent','heroForm')">Save</button>
+                <button id="catNameToAdd" type="button" class="btn btn-primary" data-dismiss="modal" onclick="updateAndSave('heroContent','heroForm',document.getElementById('hero_mode').innerHTML, 0,'hero')">Save</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="clearFormPre('heroForm','heroContent')">Close</button>
                 
             </div>
