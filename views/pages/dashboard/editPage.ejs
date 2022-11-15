@@ -92,11 +92,12 @@
     async function addBlock(content,formContent,contentTarget){
 
       const res = await fetch('<%= url %>:<%= port %>/api/nextBlockId', {
-                method:'GET',
+                method:'POST',
                 headers: {
                     "Content-Type": "application/json"
                 },
-                credentials: 'include'
+                credentials: 'include',
+                body: JSON.stringify({page_id:<%= pageId %>})
             });
       let result = await res.json();
 
@@ -120,7 +121,7 @@
                     "Content-Type": "application/json"
                 },
                 credentials: 'include',
-                body:JSON.stringify({block_id:result.block_id, page_id:<%= pageId %>, content:content.innerHTML,order:0})
+                body:JSON.stringify({block_id:result.block_id, page_id:<%= pageId %>, content:content.innerHTML,order:result.order})
               });
               
               clearFormPre(formContent,contentTarget);

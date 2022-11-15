@@ -96,17 +96,18 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
-        this.app.get("/api/nextBlockId", async(req,res) => {
+        this.app.post("/api/nextBlockId", async(req,res) => {
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
             const cookie = req.headers.cookie;
             const authRes = await auth.verify(sqlConn, cookie, "admin");
 
             if (authRes[0]){
-                let result = await pages.nextBlockId(sqlConn);
+                const {page_id} = req.body;
+                let result = await pages.nextBlockId(sqlConn,page_id);
                 
                 if (result[0]){
-                    res.json({status:"Success!",block_id:result[1]});
+                    res.json({status:"Success!",block_id:result[1], order:result[2]});
                 }else{
                     res.json({status:"Failed to save"});
                 }
