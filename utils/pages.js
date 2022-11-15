@@ -60,7 +60,7 @@ module.exports.editPageTitle = async function editPageTitle(sqlConn,id,title){
     
 } 
 
-module.exports.nextBlockId = async function nextBlockId(sqlConn){
+module.exports.nextBlockId = async function nextBlockId(sqlConn, page_id){
     try{
         let getNextId = await sqlConn.queryReturnNoParam(`
         SELECT MAX(block_id) AS max_id FROM page_content`);
@@ -70,11 +70,20 @@ module.exports.nextBlockId = async function nextBlockId(sqlConn){
         if (getNextId[0][0].max_id !== null){
             targetId = parseInt(getNextId[0][0].max_id) + 1
         }
+
+        let getOrder = await sqlConn.queryReturnWithParams(`
+        SELECT MAX(content_order) AS maxOrder FROM page_content WHERE page_id = ?`,[page_id]);
+
+        let targetOrder = 0;
+
+        if (getOrder[0][0].maxOrder !== null){
+            targetOrder = parseInt(getOrder[0][0].maxOrder) + 1
+        }
          
-        return [true,targetId];
+        return [true,targetId,targetOrder];
     }catch (err){
         console.log(err);
-        return [false,-1];
+        return [false,-1,-1];
     }
 }
 
