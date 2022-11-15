@@ -78,6 +78,17 @@ module.exports.nextBlockId = async function nextBlockId(sqlConn){
     }
 }
 
+module.exports.deleteBlock = async function deleteBlock(sqlConn, blockId, pageId){
+    try{
+        await sqlConn.queryReturnWithParams(`DELETE FROM page_content WHERE block_id = ? AND page_id = ?`, [blockId, pageId]);
+
+        return true;
+    }catch (err){
+        console.log(err);
+        return false;
+    }
+}
+
 module.exports.editBlock = async function editBlock(sqlConn,blockId,content,order,pageId){
 
     try{
