@@ -22,11 +22,18 @@
               </div>
               <div class="col-8">
                 <%- include('pageModals.ejs'); %>
-                <input type="text" class="form-control" id="pageTitle">          
-                <button class="btn btn-primary" onclick="savePage()">Save Title</button>
+                <input type="text" class="form-control" id="pageTitle" value=<%= title[0].page_title %>>     
+                <button class="btn btn-primary" onclick="saveTitle()">Save Title</button>
                 <div id="pageContent">
+                  
                   <% for (var i = 0; i < content.length; i++){ %>
-                    <%- content[i].content %>
+
+                    <div class="buttonOverlay">
+                      <a onclick="editBlock('hero','block<%- content[i].block_id %>');"><i class="fa fa-edit"></i></button></a>  
+                    </div>
+                    <div id=block<%- content[i].block_id %>> <%- content[i].content %> </div>
+
+                    
                   <%}%>
                 </div>
                 <button class="btn btn-primary" data-toggle="modal" data-target="#addHero" onclick="document.getElementById('hero_mode').innerHTML='add';">Primary Button</button>
@@ -40,98 +47,110 @@
  
 <script>
 
-  console.log(<%= pageId %>);
+  let mode = "add";
+  let editId = -1;
 
-  function sanitizeContent(content,type){
-    switch(type){
-      case "hero":
-        //Need to have block ID before all this happens
-        content.querySelector('#mainHeading').id = "mainHeadingUnique";
-        return content;
-    }
-  }
-
-    function updateAndSave(contentTarget,formContent,mode,editId,type){
+    async function updateAndSave(contentTarget,formContent,type){
         console.log(mode);
         
         switch (mode){
           case 'add':
               
-              let content = document.querySelector(`#${contentTarget}`);
-
-              addBlock(sanitizeContent(content,type));
-            clearFormPre(formContent,contentTarget);
+              let content = document.querySelector(`#${contentTarget}`).cloneNode(true);
+              await addBlock(content,formContent,contentTarget);
+              
             break;
 
           case 'edit':
             let newContent = document.getElementById(contentTarget).innerHTML;
-            document.getElementById(editId).innerHTML = newContent;
+            console.log(editId);
+            document.getElementById(`block${editId}`).innerHTML = newContent;
 
-            savePage();
+            await updateBlock(newContent,editId);
+
             clearFormPre(formContent, contentTarget);
+            mode = 'add';
             break;
 
         }
         
-
     }
 
-    async function updateContent(res,content){
+    async function updateBlock(content, editId){
+      
+        fetch('<%= url %>:<%= port %>/api/editBlock', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: 'include',
+                body:JSON.stringify({blockId:editId, pageId:<%= pageId %>, content:content,order:0})
+              });
+    }
+
+    async function addBlock(content,formContent,contentTarget){
+
+      const res = await fetch('<%= url %>:<%= port %>/api/nextBlockId', {
+                method:'GET',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: 'include'
+            });
       let result = await res.json();
-      console.log(content);
+
+      console.log( content);
+      content.querySelector("#mainHeading").id += result.block_id;
+      content.querySelector("#subHeading").id +=  result.block_id;
+      content.querySelector("#callToAction").id += result.block_id;
+
       document.getElementById("pageContent").innerHTML += `
             <div class="buttonOverlay">
               <a onclick="editBlock('hero','block${result.block_id}');"><i class="fa fa-edit"></i></button></a>  
             </div>
             <div id="block${result.block_id}">` + content.innerHTML + `</div>`;
-    }
 
-    function addBlock(content){
-
-      fetch('<%= url %>:<%= port %>/api/addBlock', {
+        
+        console.log(content);
+        fetch('<%= url %>:<%= port %>/api/addBlock', {
                 method:'POST',
                 headers: {
                     "Content-Type": "application/json"
                 },
                 credentials: 'include',
-                body:JSON.stringify({content_id:<%= contentId %>, content:content.innerHTML,order:0})
-                
-            }).then(res => updateContent(res,content));
+                body:JSON.stringify({block_id:result.block_id, page_id:<%= pageId %>, content:content.innerHTML,order:0})
+              });
+              
+              clearFormPre(formContent,contentTarget);
     }
 
-    function editBlock(editType,id){
+    function editBlock(editType,block){
+      mode = 'edit';
+      editId = block.substring(5);
+
       switch(editType){
         case 'hero':
-          document.getElementById("id_hero_hidden").innerHTML = id
-          document.getElementById("hero_mode").innerHTML = "edit";
+        console.log(document.querySelector(`#mainHeading${editId}`).innerHTML);
+        document.querySelector("#pageHeading").value =  document.querySelector(`#mainHeading${editId}`).innerHTML;
+        document.querySelector("#pageSubHeading").value =  document.querySelector(`#subHeading${editId}`).innerHTML;
+        document.querySelector("#ctaButtonText").value = document.querySelector(`#callToAction${editId}`).innerHTML;
 
-          document.getElementById('pageHeading').innerHTML = document.getElementById(`hero-block${id}`).getElementById('mainHeading').innerHTML;
           $("#addHero").modal();
           break;
       }
     }
 
-    function savePage(){
+    function saveTitle(){
 
         let title = document.getElementById("pageTitle").value;
-        let data = document.getElementById("pageContent");
-        let buttons = data.getElementsByClassName('buttonOverlay');
 
-        for (let i = 0; i < buttons.length; i++){
-          buttons.item(i).remove();
-        }
-
-        data = data.innerHTML;
-
-        let id = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
-
-        fetch('<%= url %>:<%= port %>/api/editPage', {
+        fetch('<%= url %>:<%= port %>/api/editPageTitle', {
                 method:'POST',
                 headers: {
                     "Content-Type": "application/json"
                 },
                 credentials: 'include',
-                body:JSON.stringify({page_id:id, title:title,data:data,page_path:""})
+                body:JSON.stringify({page_id:<%= pageId %>, title:title})
                 
             });
     }
@@ -141,6 +160,8 @@
       for (let i = 0; i < previewContent.length; i++){
         document.getElementById(previewContent[i]).innerHTML = "";
       }
+
+      mode = 'add';
       
     }
 

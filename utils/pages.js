@@ -1,6 +1,6 @@
 const sqlHandle = require('../handlers/DbHandler.js');
 
-module.exports.addPage = async function addPage(sqlConn,title,data,pagePath){
+module.exports.addPage = async function addPage(sqlConn,title,pagePath){
 
     try{
 
@@ -18,42 +18,9 @@ module.exports.addPage = async function addPage(sqlConn,title,data,pagePath){
             targetId = parseInt(getNextId[0][0].max_id) + 1
         }
          
-        let getNextIdContent = await sqlConn.queryReturnNoParam(`
-        SELECT MAX(content_id) AS max_id FROM page_content`);
 
-        let contentId = 0;
-
-        if (getNextIdContent[0][0].max_id !== null){
-            contentId = parseInt(getNextIdContent[0][0].max_id) + 1
-        }
-         
-
-        await sqlConn.queryReturnWithParams(`INSERT INTO pages(page_id, page_title, content_id, date_created,page_path)
-        VALUES (?,?,?,?,?)`,[targetId,title,contentId, yyyy + '-' + mm + '-' + dd,pagePath]);
-        
-        return [true,targetId,contentId];
-    }catch (err){
-        console.log(err);
-        return [false];
-    }
-    
-} 
-
-module.exports.addBlock = async function addBlock(sqlConn,contentId,content,order){
-
-    try{
-
-        let getNextId = await sqlConn.queryReturnNoParam(`
-        SELECT MAX(block_id) AS max_id FROM page_content`);
-
-        let targetId = 0;
-
-        if (getNextId[0][0].max_id !== null){
-            targetId = parseInt(getNextId[0][0].max_id) + 1
-        }
-         
-        await sqlConn.queryReturnWithParams(`INSERT INTO page_content
-        VALUES (?,?,?,?)`,[targetId,contentId,content,order]);
+        await sqlConn.queryReturnWithParams(`INSERT INTO pages(page_id, page_title, date_created,page_path)
+        VALUES (?,?,?,?)`,[targetId,title, yyyy + '-' + mm + '-' + dd,pagePath]);
         
         return [true,targetId];
     }catch (err){
@@ -63,12 +30,25 @@ module.exports.addBlock = async function addBlock(sqlConn,contentId,content,orde
     
 } 
 
-
-module.exports.editPage = async function editPage(sqlConn,title,data,id, category){
+module.exports.addBlock = async function addBlock(sqlConn,block_id, pageId,content,order){
 
     try{
-        await sqlConn.queryReturnWithParams(`
-        UPDATE pages SET content = ? WHERE page_id = ?`,[data,id]);
+         
+        await sqlConn.queryReturnWithParams(`INSERT INTO page_content
+        VALUES (?,?,?,?)`,[block_id,pageId,content,order]);
+        
+        return true;
+    }catch (err){
+        console.log(err);
+        return false;
+    }
+    
+} 
+
+
+module.exports.editPageTitle = async function editPageTitle(sqlConn,id,title){
+
+    try{
         await sqlConn.queryReturnWithParams(`
         UPDATE pages SET page_title = ? WHERE page_id = ?`, [title,id]);
 
@@ -80,11 +60,48 @@ module.exports.editPage = async function editPage(sqlConn,title,data,id, categor
     
 } 
 
+module.exports.nextBlockId = async function nextBlockId(sqlConn){
+    try{
+        let getNextId = await sqlConn.queryReturnNoParam(`
+        SELECT MAX(block_id) AS max_id FROM page_content`);
+
+        let targetId = 0;
+
+        if (getNextId[0][0].max_id !== null){
+            targetId = parseInt(getNextId[0][0].max_id) + 1
+        }
+         
+        return [true,targetId];
+    }catch (err){
+        console.log(err);
+        return [false,-1];
+    }
+}
+
+module.exports.editBlock = async function editBlock(sqlConn,blockId,content,order,pageId){
+
+    try{
+        await sqlConn.queryReturnWithParams(`
+        UPDATE page_content SET content = ? WHERE block_id = ? AND page_id = ?`,[content,blockId,pageId]);
+        await sqlConn.queryReturnWithParams(`
+        UPDATE page_content SET content_order = ? WHERE block_id = ? AND page_id = ?`, [order,blockId,pageId]);
+
+        return [true, blockId];
+    }catch (err){
+        console.log(err);
+        return [false,-1];
+    }
+    
+} 
+
 module.exports.deletePage = async function deletePage(sqlConn,id){
 
     try{
         await sqlConn.queryReturnWithParams(`
         DELETE FROM pages WHERE page_id = ?`, [id]);
+
+        await sqlConn.queryReturnWithParams(`
+        DELETE FROM page_content WHERE page_id = ?`,[id]);
 
         return true;
     }catch (err){
@@ -107,13 +124,15 @@ module.exports.getAllPages = async function getAllPages(sqlConn){
     
 } 
 
-module.exports.getAllContent = async function getAllContent(sqlConn,contentId){
+module.exports.getAllContent = async function getAllContent(sqlConn,pageId){
 
     try{
         let pages = await sqlConn.queryReturnWithParams(`
-        SELECT * FROM page_content WHERE content_id=? ORDER BY content_order ASC;`,[contentId]);
+        SELECT * FROM page_content WHERE page_id=? ORDER BY content_order ASC;`,[pageId]);
+        let title = await sqlConn.queryReturnWithParams(`
+        SELECT page_title FROM pages WHERE page_id=?`, [pageId]);
         
-        return pages;
+        return [pages,title];
     }catch (err){
         console.error(err);
     }
@@ -138,8 +157,11 @@ module.exports.getPageWithPath = async function getPageWithPath(sqlConn,pagePath
     try{
         let pages = await sqlConn.queryReturnWithParams(`
         SELECT * FROM pages WHERE page_path = ?`,[pagePath]);
+
+        let content = await sqlConn.queryReturnWithParams(`
+        SELECT * FROM page_content WHERE page_id = ? ORDER BY content_order ASC`, [pages[0][0].page_id])
         
-        return pages;
+        return content;
     }catch (err){
         console.error(err);
     }

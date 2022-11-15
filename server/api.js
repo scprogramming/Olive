@@ -80,8 +80,52 @@ module.exports.apiServer = class ApiServer{
             const authRes = await auth.verify(sqlConn, cookie, "admin");
 
             if (authRes[0]){
-                const {content_id,content,order} = req.body;
-                let result = await pages.addBlock(sqlConn,content_id, content,order);
+                const {block_id, page_id,content,order} = req.body;
+                console.log(page_id);
+                let result = await pages.addBlock(sqlConn,block_id, page_id, content,order);
+                
+                if (result){
+                    res.json({status:"Saved!"});
+                }else{
+                    res.json({status:"Failed to save"});
+                }
+                
+            }else{
+                res.status(401);
+                res.json({status:"Requires authorization"});
+            }
+        });
+
+        this.app.get("/api/nextBlockId", async(req,res) => {
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
+
+            if (authRes[0]){
+                let result = await pages.nextBlockId(sqlConn);
+                
+                if (result[0]){
+                    res.json({status:"Success!",block_id:result[1]});
+                }else{
+                    res.json({status:"Failed to save"});
+                }
+                
+            }else{
+                res.status(401);
+                res.json({status:"Requires authorization"});
+            }
+        });
+
+        this.app.post("/api/editBlock", async(req,res) => {
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
+
+            if (authRes[0]){
+                const {blockId,pageId,content,order} = req.body;
+                let result = await pages.editBlock(sqlConn,blockId, content,order,pageId);
                 
                 if (result[0]){
                     res.json({status:"Saved!",block_id:result[1]});
@@ -106,7 +150,7 @@ module.exports.apiServer = class ApiServer{
                 let result = await pages.addPage(sqlConn,title,page_path);
                 
                 if (result[0]){
-                    res.json({status:"Saved!",page_id:result[1],content_id:result[2]});
+                    res.json({status:"Saved!",page_id:result[1]});
                 }else{
                     res.json({status:"Failed to save"});
                 }
@@ -218,7 +262,7 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
-        this.app.post("/api/editPage", async(req,res) => {
+        this.app.post("/api/editPageTitle", async(req,res) => {
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
 
@@ -227,9 +271,8 @@ module.exports.apiServer = class ApiServer{
 
             if (authRes[0]){
                 
-                const {title,data,page_id} = req.body;
-                console.log(page_id);
-                let result = await pages.editPage(sqlConn,title,data,page_id);
+                const {page_id,title} = req.body;
+                let result = await pages.editPageTitle(sqlConn,page_id,title);
                 
                 if (result){
                     res.json("Saved!");
