@@ -161,6 +161,28 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
+        this.app.post("/api/deleteBlock/", async(req,res) => {
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
+
+            if (authRes[0]){
+                const {block_id,page_id} = req.body;
+                let result = await pages.deleteBlock(sqlConn,block_id, page_id);
+                
+                if (result){
+                    res.json("Deleted!");
+                }else{
+                    res.json("Failed to delete");
+                }
+                
+            }else{
+                res.status(401);
+                res.json("Requires authorization");
+            }
+        });
+
         this.app.post("/api/deletePost/:id", async(req,res) => {
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
