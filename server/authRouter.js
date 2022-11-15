@@ -51,15 +51,13 @@ module.exports.determineRedirectLogin =  async function determineRedirectLogin(p
                     port:conf.apiPort
                 }];
             case "editPage":
-                const idSplit = req.params.id.split(',')
-                let dataContent = await pages.getAllContent(sqlConn,idSplit[1]);
-
+                let dataContent = await pages.getAllContent(sqlConn,req.params.id);
                 return ["../views/pages/dashboard/editPage",{
                     url:conf.serverAddress,
                     port:conf.apiPort,
-                    pageId:idSplit[0],
-                    contentId:idSplit[1],
-                    content:dataContent[0]
+                    pageId:req.params.id,
+                    title:dataContent[1][0],
+                    content:dataContent[0][0]
                 }];
         }
     }else{

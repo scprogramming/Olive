@@ -162,7 +162,7 @@ module.exports.appServer = class AppServer{
             if (conf.registrationEnabled){
                 res.render("../views/pages/register", {
                     url:conf.serverAddress,
-                    port:conf.serverPort
+                    port:conf.apiPort
                 });
             }else{
                 res.status(404);

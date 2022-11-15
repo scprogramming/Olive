@@ -52,7 +52,7 @@
 
     async function redirectId(res){
       let result = await res.json();
-      window.location.href = `/dashboard/editPage/${result.page_id},${result.content_id}`;
+      window.location.href = `/dashboard/editPage/${result.page_id}`;
     }
 
 
