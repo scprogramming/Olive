@@ -37,7 +37,7 @@
                     
                   <%}%>
                 </div>
-                <button class="btn btn-primary" data-toggle="modal" data-target="#addHero" onclick="document.getElementById('hero_mode').innerHTML='add';">Primary Button</button>
+                <a href="/dashboard/addBlock/<%=pageId %>/hero">Primary Button</button>
               </div>
             </div>
       </div>
@@ -63,11 +63,19 @@
             break;
 
           case 'edit':
-            let newContent = document.getElementById(contentTarget).innerHTML;
-            console.log(editId);
-            document.getElementById(`block${editId}`).innerHTML = newContent;
+            let newContent = document.getElementById(contentTarget);
+            
+            newContent.querySelector("#mainHeading").id += editId;
+            newContent.querySelector("#subHeading").id +=  editId;
+            newContent.querySelector("#callToAction").id += editId;
+
+            console.log(newContent.innerHTML);
+            document.getElementById(`block${editId}`).innerHTML = newContent.innerHTML;
+            
 
             await updateBlock(newContent,editId);
+
+            
 
             clearFormPre(formContent, contentTarget);
             mode = 'add';
@@ -175,14 +183,8 @@
             });
     }
 
-    function clearForm(formContent,previewContent){
-      document.getElementById(formContent).reset();
-      for (let i = 0; i < previewContent.length; i++){
-        document.getElementById(previewContent[i]).innerHTML = "";
-      }
-
-      mode = 'add';
-      
+    function flipMode(newMode){
+      mode = newMode;
     }
 
     function updateText(target,textIn){

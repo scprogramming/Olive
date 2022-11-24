@@ -63,6 +63,19 @@ async function runQueries(sqlConn){
     );
     `)
 
+    await sqlConn.queryReturnNoParam(`
+    CREATE TABLE blocks(
+        block_id VARCHAR(40),
+        content TEXT,
+        scripts TEXT,
+        mode VARCHAR(4)
+    );
+    `)
+
+    await sqlConn.queryReturnNoParam(fs.readFileSync('db_struct.sql'));
+
+    
+
     console.log("Created tables");
 
     sqlConn.close();
