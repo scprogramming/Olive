@@ -69,6 +69,18 @@ module.exports.appServer = class AppServer{
 
         });
 
+        this.app.get("/dashboard/addBlock/:id/:type", async function(req,res){
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin");
+
+            let redirect = await authRouter.determineRedirectLogin("addBlock",authRes, sqlConn,req);
+            res.render(redirect[0],redirect[1]);
+
+        });
+
         this.app.get("/viewPost/:id", async function(req,res){
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);

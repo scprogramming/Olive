@@ -98,6 +98,17 @@ module.exports.deleteBlock = async function deleteBlock(sqlConn, blockId, pageId
     }
 }
 
+module.exports.getBlock = async function getBlock(sqlConn, blockType){
+    try{
+        let res = await sqlConn.queryReturnWithParams(`SELECT content,scripts FROM blocks WHERE block_type=? AND mode = 'add'`,[blockType]);
+
+        return [res[0][0].content, res[0][0].scripts];
+    }catch(err){
+        console.log(err);
+        return "";
+    }
+}
+
 module.exports.editBlock = async function editBlock(sqlConn,blockId,content,order,pageId){
 
     try{

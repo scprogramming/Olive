@@ -50,6 +50,16 @@ module.exports.determineRedirectLogin =  async function determineRedirectLogin(p
                     url:conf.serverAddress,
                     port:conf.apiPort
                 }];
+            case "addBlock":
+                result = await pages.getBlock(sqlConn, req.params.type);
+
+                return ["../views/pages/dashboard/addBlock",{
+                    url:conf.serverAddress,
+                    port:conf.apiPort,
+                    content:result[0],
+                    scripts:result[1],
+                    pageId:req.params.id
+                }];
             case "editPage":
                 let dataContent = await pages.getAllContent(sqlConn,req.params.id);
                 return ["../views/pages/dashboard/editPage",{
