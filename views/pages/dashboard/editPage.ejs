@@ -22,12 +22,22 @@
               </div>
               <div class="col-8">
                 <%- include('pageModals.ejs'); %>
-                <input type="text" class="form-control" id="pageTitle">          
-                <button class="btn btn-primary" onclick="savePage()">Save Title</button>
+                <input type="text" class="form-control" id="pageTitle" value=<%= title[0].page_title %>>     
+                <button class="btn btn-primary" onclick="saveTitle()">Save Title</button>
                 <div id="pageContent">
+                  
+                  <% for (var i = 0; i < content.length; i++){ %>
 
+                    <div class="buttonOverlay" id = 'block<%- content[i].block_id %>buttons'>
+                      <a onclick="editBlock(<%=pageId%>,'hero','<%- content[i].block_id%>');"><i class="fa fa-edit"></i></button></a>  
+                      <a onclick="deleteBlock('block<%- content[i].block_id %>');"><i class="fa fa-trash"></i></button></a>  
+                    </div>
+                    <div id=block<%- content[i].block_id %>> <%- content[i].content %> </div>
+
+                    
+                  <%}%>
                 </div>
-                <button class="btn btn-primary" data-toggle="modal" data-target="#addHero">Primary Button</button>
+                <a href="/dashboard/addBlock/<%=pageId %>/hero">Primary Button</button>
               </div>
             </div>
       </div>
@@ -37,55 +47,132 @@
 </body>
  
 <script>
-    
-    window.onload = loadPage();
 
-    function loadPage(){
-        fetch(`<%= url %>:<%= port %>/api/getPage/${location.pathname.substring(location.pathname.lastIndexOf('/') + 1)}`, {
-            method:'POST',
-            credentials: 'include'
-        }).then(res => populatePage(res))
-    }
+  let mode = "add";
+  let editId = -1;
 
-    async function populatePage(res){
-        let result = await res.json();
-        document.getElementById("pageContent").innerHTML =  result[0].content;
-        document.getElementById("pageTitle").value = result[0].page_title;
-
-    }
-
-    function updateAndSave(contentTarget,formContent,preview){
-        let content = document.getElementById(contentTarget).innerHTML;
-        document.getElementById("pageContent").innerHTML += content;
+    async function updateAndSave(contentTarget,formContent,type){
+        console.log(mode);
         
-        savePage();
-        clearFormPre(formContent,contentTarget);
+        switch (mode){
+          case 'add':
+              
+              let content = document.querySelector(`#${contentTarget}`).cloneNode(true);
+              await addBlock(content,formContent,contentTarget);
+              
+            break;
 
+          case 'edit':
+            let newContent = document.getElementById(contentTarget);
+            
+            newContent.querySelector("#mainHeading").id += editId;
+            newContent.querySelector("#subHeading").id +=  editId;
+            newContent.querySelector("#callToAction").id += editId;
+
+            console.log(newContent.innerHTML);
+            document.getElementById(`block${editId}`).innerHTML = newContent.innerHTML;
+            
+
+            await updateBlock(newContent,editId);
+
+            
+
+            clearFormPre(formContent, contentTarget);
+            mode = 'add';
+            break;
+
+        }
+        
     }
 
-    function savePage(){
-
-        let title = document.getElementById("pageTitle").value;
-        let data = document.getElementById("pageContent").innerHTML
-        let id = location.pathname.substring(location.pathname.lastIndexOf('/') + 1);
-
-        fetch('<%= url %>:<%= port %>/api/editPage', {
+    async function updateBlock(content, editId){
+      
+        fetch('<%= url %>:<%= port %>/api/editBlock', {
                 method:'POST',
                 headers: {
                     "Content-Type": "application/json"
                 },
                 credentials: 'include',
-                body:JSON.stringify({page_id:id, title:title,data:data,page_path:""})
+                body:JSON.stringify({blockId:editId, pageId:<%= pageId %>, content:content,order:0})
+              });
+    }
+
+    async function addBlock(content,formContent,contentTarget){
+
+      const res = await fetch('<%= url %>:<%= port %>/api/nextBlockId', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: 'include',
+                body: JSON.stringify({page_id:<%= pageId %>})
+            });
+      let result = await res.json();
+
+      console.log( content);
+      content.querySelector("#mainHeading").id += result.block_id;
+      content.querySelector("#subHeading").id +=  result.block_id;
+      content.querySelector("#callToAction").id += result.block_id;
+
+      document.getElementById("pageContent").innerHTML += `
+            <div class="buttonOverlay" id = 'block${result.block_id}buttons'>
+              <a onclick="editBlock('hero','block${result.block_id}');"><i class="fa fa-edit"></i></button></a> 
+              <a onclick="deleteBlock('block${result.block_id}');"><i class="fa fa-trash"></i></button></a>  
+            </div>
+            <div id="block${result.block_id}">` + content.innerHTML + `</div>`;
+
+        
+        console.log(content);
+        fetch('<%= url %>:<%= port %>/api/addBlock', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: 'include',
+                body:JSON.stringify({block_id:result.block_id, page_id:<%= pageId %>, content:content.innerHTML,order:result.order})
+              });
+              
+              clearFormPre(formContent,contentTarget);
+    }
+
+    function deleteBlock(blockId){
+      const deleteId = blockId.substring(5);
+      console.log(deleteId);
+      fetch('<%- url %>:<%- port %>/api/deleteBlock/', {
+        method:'POST',
+        headers: {
+                    "Content-Type": "application/json"
+                },
+        credentials:'include',
+        body:JSON.stringify({block_id:deleteId, page_id: <%= pageId %>})
+      })
+      .then(res => res.json());
+
+      document.getElementById(blockId).remove();
+      document.getElementById(blockId + 'buttons').remove();
+    }
+
+    function editBlock(pageId,editType,block){
+      location.href = `/dashboard/editBlock/${pageId}/${editType}/${block}`
+    }
+
+    function saveTitle(){
+
+        let title = document.getElementById("pageTitle").value;
+
+        fetch('<%= url %>:<%= port %>/api/editPageTitle', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: 'include',
+                body:JSON.stringify({page_id:<%= pageId %>, title:title})
                 
             });
     }
 
-    function clearForm(formContent,previewContent){
-      document.getElementById(formContent).reset();
-      for (let i = 0; i < previewContent.length; i++){
-        document.getElementById(previewContent[i]).innerHTML = "";
-      }
-      
+    function flipMode(newMode){
+      mode = newMode;
     }
 
     function updateText(target,textIn){
