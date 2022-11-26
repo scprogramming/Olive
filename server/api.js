@@ -26,7 +26,7 @@ module.exports.apiServer = class ApiServer{
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 
@@ -53,7 +53,7 @@ module.exports.apiServer = class ApiServer{
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin", conf);
 
             if (authRes[0]){
                 console.log(req.body);
@@ -77,7 +77,7 @@ module.exports.apiServer = class ApiServer{
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 const {block_id, page_id,content,order} = req.body;
@@ -100,7 +100,7 @@ module.exports.apiServer = class ApiServer{
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 const {page_id} = req.body;
@@ -122,11 +122,11 @@ module.exports.apiServer = class ApiServer{
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             if (authRes[0]){
-                const {blockId,pageId,content,order} = req.body;
-                let result = await pages.editBlock(sqlConn,blockId, content,order,pageId);
+                const {blockId,pageId,content} = req.body;
+                let result = await pages.editBlock(sqlConn,blockId, content,pageId);
                 
                 if (result[0]){
                     res.json({status:"Saved!",block_id:result[1]});
@@ -144,18 +144,26 @@ module.exports.apiServer = class ApiServer{
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 const {title,page_path} = req.body;
-                let result = await pages.addPage(sqlConn,title,page_path);
-                
-                if (result[0]){
-                    res.json({status:"Saved!",page_id:result[1]});
+
+                if (title === ''){
+                    res.json({code:-1,status:"Failed to save, title cannot be empty"});
+                }else if (page_path == ''){
+                    res.json({code:-1,status:"Path cannot be blank"});
+                }else if (await pages.checkPath(sqlConn, page_path) == -1){
+                    res.json({code:-1, status:"Page path already exists, select a unique path"});
                 }else{
-                    res.json({status:"Failed to save"});
-                }
+                    let result = await pages.addPage(sqlConn,title,page_path);
                 
+                    if (result[0]){
+                        res.json({status:"Saved!",page_id:result[1]});
+                    }else{
+                        res.json({status:"Failed to save"});
+                    }
+                }  
             }else{
                 res.status(401);
                 res.json({status:"Requires authorization"});
@@ -166,7 +174,7 @@ module.exports.apiServer = class ApiServer{
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 const {block_id,page_id} = req.body;
@@ -188,7 +196,7 @@ module.exports.apiServer = class ApiServer{
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 
@@ -211,7 +219,7 @@ module.exports.apiServer = class ApiServer{
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 
@@ -235,7 +243,7 @@ module.exports.apiServer = class ApiServer{
                 conf.user,conf.pass,conf.database);
 
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 
@@ -262,7 +270,7 @@ module.exports.apiServer = class ApiServer{
                 conf.user,conf.pass,conf.database);
 
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 
@@ -290,7 +298,7 @@ module.exports.apiServer = class ApiServer{
                 conf.user,conf.pass,conf.database);
 
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 
@@ -314,7 +322,7 @@ module.exports.apiServer = class ApiServer{
                 conf.user,conf.pass,conf.database);
 
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 
@@ -332,7 +340,7 @@ module.exports.apiServer = class ApiServer{
                 conf.user,conf.pass,conf.database);
 
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 
