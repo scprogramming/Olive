@@ -27,6 +27,7 @@
                 <p>/pages/</p> 
                 <input type="text" class="form-control" id="pagePath"> 
                 <button class="btn btn-primary" onclick="setupPage()">Save</button>
+                <p id = "status"></p>
               </div>
             </div>
       </div>
@@ -52,7 +53,13 @@
 
     async function redirectId(res){
       let result = await res.json();
-      window.location.href = `/dashboard/editPage/${result.page_id}`;
+
+      if (result.code == -1){
+        document.getElementById("status").innerHTML = result.status;
+      }else{
+        window.location.href = `/dashboard/editPage/${result.page_id}`;
+      }
+      
     }
 
 

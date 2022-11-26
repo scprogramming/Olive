@@ -1,6 +1,7 @@
 const posts = require("../utils/posts");
 const categories = require("../utils/categories");
 const pages = require('../utils/pages');
+const jsdom = require('jsdom');
 
 module.exports.determineRedirectLogin =  async function determineRedirectLogin(page,status,sqlConn,req){
     if (status[0]){
@@ -51,7 +52,7 @@ module.exports.determineRedirectLogin =  async function determineRedirectLogin(p
                     port:conf.apiPort
                 }];
             case "addBlock":
-                result = await pages.getBlock(sqlConn, req.params.type);
+                result = await pages.getBlock(sqlConn, req.params.type,'add');
 
                 return ["../views/pages/dashboard/addBlock",{
                     url:conf.serverAddress,
@@ -60,15 +61,34 @@ module.exports.determineRedirectLogin =  async function determineRedirectLogin(p
                     scripts:result[1],
                     pageId:req.params.id
                 }];
-            case "editPage":
-                let dataContent = await pages.getAllContent(sqlConn,req.params.id);
-                return ["../views/pages/dashboard/editPage",{
+            case "editBlock":
+                result = await pages.getBlock(sqlConn, req.params.type,'edit');
+                const existingContent = await pages.getBlockContent(sqlConn, req.params.id, req.params.blockId);
+
+                return ["../views/pages/dashboard/editBlock",{
                     url:conf.serverAddress,
                     port:conf.apiPort,
+                    content:result[0],
+                    scripts:result[1],
                     pageId:req.params.id,
-                    title:dataContent[1][0],
-                    content:dataContent[0][0]
+                    blockId: req.params.blockId,
+                    editContent: existingContent
                 }];
+            case "editPage":
+                let dataContent = await pages.getAllContent(sqlConn,req.params.id);
+                
+                if (dataContent[1][0].length == 0){
+                    return ["../views/pages/pageNotFound"]
+                }else{
+                    return ["../views/pages/dashboard/editPage",{
+                        url:conf.serverAddress,
+                        port:conf.apiPort,
+                        pageId:req.params.id,
+                        title:dataContent[1][0],
+                        content:dataContent[0][0]
+                    }];
+                }
+                
         }
     }else{
         switch(status[1]){

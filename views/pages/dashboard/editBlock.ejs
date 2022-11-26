@@ -22,25 +22,27 @@
               </div>
               <%- content %>
 
-              <button class="btn btn-primary" onclick="saveBlock(<%=pageId%>,'<%=url%>', '<%=port%>')">Save</button>
+              <button class="btn btn-primary" onclick="editBlock(<%=pageId%>,'<%=url%>', '<%=port%>',<%=blockId%>)">Save</button>
               <button class="btn btn-primary" onclick="redirect(<%=pageId%>)">Exit</button>
           </div>
         </div>
       </div>
                 
 </body>
-<%- scripts %>
 
 <script>
   window.onload = function populateData(event){
-    document.querySelector('#pageHeading').value = "Main Header";
-    document.querySelector('#pageSubHeading').value = "Subheading";
-    document.querySelector('#ctaButtonText').value = "Call to action";
+    const edit = `<%- editContent %>`;
 
-    document.querySelector('#mainHeading').innerHTML = "Main Header";
-    document.querySelector('#subHeading').innerHTML = "Subheading";
-    document.querySelector('#callToAction').innerHTML = "Call to action";
+    document.querySelector('#heroJumbotron').innerHTML = edit;
+
+    document.querySelector('#pageHeading').value = document.querySelector('#mainHeading').innerHTML;
+    document.querySelector('#pageSubHeading').value = document.querySelector('#subHeading').innerHTML;
+    document.querySelector('#ctaButtonText').value = document.querySelector('#callToAction').innerHTML;
   }
 </script>
+
+<%- scripts %>
+
 
 </html>

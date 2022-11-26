@@ -98,9 +98,20 @@ module.exports.deleteBlock = async function deleteBlock(sqlConn, blockId, pageId
     }
 }
 
-module.exports.getBlock = async function getBlock(sqlConn, blockType){
+module.exports.getBlockContent = async function getBlockContent(sqlConn, pageId, blockId){
     try{
-        let res = await sqlConn.queryReturnWithParams(`SELECT content,scripts FROM blocks WHERE block_type=? AND mode = 'add'`,[blockType]);
+        let res = await sqlConn.queryReturnWithParams('SELECT content FROM page_content WHERE page_id = ? AND block_id = ?', [pageId, blockId]);
+
+        return res[0][0].content;
+    }catch(err){
+        console.log(err);
+        return "";
+    }
+}
+
+module.exports.getBlock = async function getBlock(sqlConn, blockType,blockMode){
+    try{
+        let res = await sqlConn.queryReturnWithParams(`SELECT content,scripts FROM blocks WHERE block_type=? AND mode = ?`,[blockType,blockMode]);
 
         return [res[0][0].content, res[0][0].scripts];
     }catch(err){
@@ -109,13 +120,11 @@ module.exports.getBlock = async function getBlock(sqlConn, blockType){
     }
 }
 
-module.exports.editBlock = async function editBlock(sqlConn,blockId,content,order,pageId){
+module.exports.editBlock = async function editBlock(sqlConn,blockId,content,pageId){
 
     try{
         await sqlConn.queryReturnWithParams(`
         UPDATE page_content SET content = ? WHERE block_id = ? AND page_id = ?`,[content,blockId,pageId]);
-        await sqlConn.queryReturnWithParams(`
-        UPDATE page_content SET content_order = ? WHERE block_id = ? AND page_id = ?`, [order,blockId,pageId]);
 
         return [true, blockId];
     }catch (err){
@@ -169,6 +178,21 @@ module.exports.getAllContent = async function getAllContent(sqlConn,pageId){
     }
     
 } 
+
+module.exports.checkPath = async function checkPath(sqlConn, page_path){
+    try{
+        let pathCount = await sqlConn.queryReturnWithParams(`
+        SELECT COUNT(page_path) AS page_count FROM pages WHERE page_path = ?`, [page_path]);
+
+        if (pathCount[0][0].page_count != 0){
+            return -1
+        }else{
+            return 1;
+        }
+    }catch (err){
+        console.error(err);
+    }
+}
 
 module.exports.getPageWithId = async function getPageWithId(sqlConn,id){
 

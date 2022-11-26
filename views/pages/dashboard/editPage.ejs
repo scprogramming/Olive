@@ -29,7 +29,7 @@
                   <% for (var i = 0; i < content.length; i++){ %>
 
                     <div class="buttonOverlay" id = 'block<%- content[i].block_id %>buttons'>
-                      <a onclick="editBlock('hero','block<%- content[i].block_id %>');"><i class="fa fa-edit"></i></button></a>  
+                      <a onclick="editBlock(<%=pageId%>,'hero','<%- content[i].block_id%>');"><i class="fa fa-edit"></i></button></a>  
                       <a onclick="deleteBlock('block<%- content[i].block_id %>');"><i class="fa fa-trash"></i></button></a>  
                     </div>
                     <div id=block<%- content[i].block_id %>> <%- content[i].content %> </div>
@@ -152,20 +152,8 @@
       document.getElementById(blockId + 'buttons').remove();
     }
 
-    function editBlock(editType,block){
-      mode = 'edit';
-      editId = block.substring(5);
-
-      switch(editType){
-        case 'hero':
-        console.log(document.querySelector(`#mainHeading${editId}`).innerHTML);
-        document.querySelector("#pageHeading").value =  document.querySelector(`#mainHeading${editId}`).innerHTML;
-        document.querySelector("#pageSubHeading").value =  document.querySelector(`#subHeading${editId}`).innerHTML;
-        document.querySelector("#ctaButtonText").value = document.querySelector(`#callToAction${editId}`).innerHTML;
-
-          $("#addHero").modal();
-          break;
-      }
+    function editBlock(pageId,editType,block){
+      location.href = `/dashboard/editBlock/${pageId}/${editType}/${block}`
     }
 
     function saveTitle(){
