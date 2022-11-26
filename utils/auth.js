@@ -90,7 +90,7 @@ module.exports.login = async function login(email,password, sqlConn,conf){
     }
 }
 
-module.exports.verify = async function verify(sqlConn, token,requiredRole){
+module.exports.verify = async function verify(sqlConn, token,requiredRole,conf){
     if (!token){
         return [false,1];
     }else{
@@ -104,10 +104,8 @@ module.exports.verify = async function verify(sqlConn, token,requiredRole){
             `,[parseTok]);
 
             if (result[0].length != 0){
-                let expiry = dateUtil.parseDate(result[0][0].expiry);
-                let today = dateUtil.parseDate(new Date());
 
-                if (parseInt(expiry[0]) >= parseInt(today[0]) && parseInt(expiry[1]) >= parseInt(today[1]) && parseInt(expiry[2]) >= parseInt(today[2])){
+                if (conf.tokenExpires === 'none'){
                     if (result[0][0].active == "1"){
                         if (result[0][0].role == requiredRole){
                             return [true,0];
@@ -117,14 +115,30 @@ module.exports.verify = async function verify(sqlConn, token,requiredRole){
                     }else{
                         return [false,3];
                     }
-                    
+                }else if (conf.tokenExpires !== 'none'){
+                    let expiry = dateUtil.parseDate(result[0][0].expiry);
+                    let today = dateUtil.parseDate(new Date());
+    
+                    if (parseInt(expiry[0]) >= parseInt(today[0]) && parseInt(expiry[1]) >= parseInt(today[1]) && parseInt(expiry[2]) >= parseInt(today[2])){
+                        if (result[0][0].active == "1"){
+                            if (result[0][0].role == requiredRole){
+                                return [true,0];
+                            }else{
+                                return [false,2];
+                            }
+                        }else{
+                            return [false,3];
+                        }
+                        
+                    }else{
+                        return [false,4];
+                    }
+    
                 }else{
-                    return [false,4];
+                    return [false,5];
                 }
-
-            }else{
-                return [false,5];
-            }
+                }
+                
             
         }catch(err){
             console.log(err);

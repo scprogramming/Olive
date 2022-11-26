@@ -10,7 +10,13 @@ dotenv.config();
 async function runQueries(sqlConn){
     await sqlConn.queryReturnNoParam("DROP TABLE IF EXISTS user_login");
     await sqlConn.queryReturnNoParam("DROP TABLE IF EXISTS user_details");
-    
+    await sqlConn.queryReturnNoParam("DROP TABLE IF EXISTS categories");
+    await sqlConn.queryReturnNoParam("DROP TABLE IF EXISTS page_content");
+    await sqlConn.queryReturnNoParam("DROP TABLE IF EXISTS pages");
+    await sqlConn.queryReturnNoParam("DROP TABLE IF EXISTS posts");
+    await sqlConn.queryReturnNoParam("DROP TABLE IF EXISTS sessions");
+    await sqlConn.queryReturnNoParam("DROP TABLE IF EXISTS blocks");
+
     console.log("Dropped tables");
 
     await sqlConn.queryReturnNoParam(`CREATE TABLE user_login(
@@ -62,6 +68,19 @@ async function runQueries(sqlConn){
         
     );
     `)
+
+    await sqlConn.queryReturnNoParam(`
+    CREATE TABLE blocks(
+        block_id VARCHAR(40),
+        content TEXT,
+        scripts TEXT,
+        mode VARCHAR(4)
+    );
+    `)
+
+    await sqlConn.queryReturnNoParam(fs.readFileSync('db_struct.sql').toString().replace(/(\r\n|\n|\r)/gm, " "));
+
+    
 
     console.log("Created tables");
 

@@ -36,7 +36,7 @@ module.exports.appServer = class AppServer{
                 conf.user,conf.pass,conf.database);
 
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             let redirect = await authRouter.determineRedirectLogin("categories",authRes, sqlConn,req);
             res.render(redirect[0],redirect[1]);
@@ -49,7 +49,7 @@ module.exports.appServer = class AppServer{
                 conf.user,conf.pass,conf.database);
 
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             let redirect = await authRouter.determineRedirectLogin("editPost",authRes, sqlConn,req);
             res.render(redirect[0],redirect[1]);
@@ -62,9 +62,33 @@ module.exports.appServer = class AppServer{
                 conf.user,conf.pass,conf.database);
 
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             let redirect = await authRouter.determineRedirectLogin("editPage",authRes, sqlConn,req);
+            res.render(redirect[0],redirect[1]);
+
+        });
+
+        this.app.get("/dashboard/addBlock/:id/:type", async function(req,res){
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+
+            let redirect = await authRouter.determineRedirectLogin("addBlock",authRes, sqlConn,req);
+            res.render(redirect[0],redirect[1]);
+
+        });
+
+        this.app.get("/dashboard/editBlock/:id/:type/:blockId", async function(req,res){
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+
+            let redirect = await authRouter.determineRedirectLogin("editBlock",authRes, sqlConn,req);
             res.render(redirect[0],redirect[1]);
 
         });
@@ -85,7 +109,7 @@ module.exports.appServer = class AppServer{
                 conf.user,conf.pass,conf.database);
 
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             let redirect = await authRouter.determineRedirectLogin("posts",authRes, sqlConn);
             res.render(redirect[0],redirect[1]);
@@ -97,7 +121,7 @@ module.exports.appServer = class AppServer{
                 conf.user,conf.pass,conf.database);
 
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             let redirect = await authRouter.determineRedirectLogin("pages",authRes, sqlConn);
             res.render(redirect[0],redirect[1]);
@@ -109,7 +133,7 @@ module.exports.appServer = class AppServer{
                 conf.user,conf.pass,conf.database);
 
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             let redirect = await authRouter.determineRedirectLogin("addPage",authRes, sqlConn);
             res.render(redirect[0],redirect[1]);
@@ -134,7 +158,7 @@ module.exports.appServer = class AppServer{
                 conf.user,conf.pass,conf.database);
 
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin");
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
 
             let redirect = await authRouter.determineRedirectLogin("addPost",authRes, sqlConn);
             res.render(redirect[0],redirect[1]);
@@ -162,7 +186,7 @@ module.exports.appServer = class AppServer{
             if (conf.registrationEnabled){
                 res.render("../views/pages/register", {
                     url:conf.serverAddress,
-                    port:conf.serverPort
+                    port:conf.apiPort
                 });
             }else{
                 res.status(404);
