@@ -115,7 +115,6 @@
     var form = document.querySelector('form');
     form.addEventListener('submit',function(e){
       e.preventDefault();
-      console.log(quill.root.innerHTML);
 
       var select = document.getElementById("categories");
 
@@ -129,9 +128,14 @@
                 credentials: 'include',
                 body:articleData
             })
-            .then(res => res.json())
-            .then(data => document.getElementById("status").innerHTML = data);
+            .then(res => updateStatus(res));
     });
+
+    async function updateStatus(res){
+      let result = await res.json();
+      console.log(result);
+      document.getElementById("status").innerHTML = result.status;
+    }
 
   </script>
 

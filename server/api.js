@@ -35,16 +35,16 @@ module.exports.apiServer = class ApiServer{
                 let result = await categories.addCategory(sqlConn,category_name);
                 
                 if (result[0]){
-                    res.json({status:"Saved!",id:result[1]});
+                    res.json({code:1, status:"Saved!",id:result[1]});
                 }else{
-                    res.json({status:"Failed to save"});
+                    res.json({code: -1, status:"Failed to save"});
                 }
 
                 res.end();
                 
             }else{
                 res.status(401);
-                res.json({status:"Requires authorization"});
+                res.json({code:-1, status:"Requires authorization"});
                 res.end();
             }
         });
@@ -62,14 +62,14 @@ module.exports.apiServer = class ApiServer{
                 let result = await posts.addPost(sqlConn,title,data,categoryId);
                 
                 if (result){
-                    res.json("Saved!");
+                    res.json({code:1, status:"Saved!"});
                 }else{
-                    res.json("Failed to save");
+                    res.json({code:-1, status:"Failed to save"});
                 }
                 
             }else{
                 res.status(401);
-                res.json("Requires authorization");
+                res.json({code:-1, status:"Requires authorization"});
             }
         });
 
@@ -85,14 +85,14 @@ module.exports.apiServer = class ApiServer{
                 let result = await pages.addBlock(sqlConn,block_id, page_id, content,order);
                 
                 if (result){
-                    res.json({status:"Saved!"});
+                    res.json({code:1, status:"Saved!"});
                 }else{
-                    res.json({status:"Failed to save"});
+                    res.json({code: -1, status:"Failed to save"});
                 }
                 
             }else{
                 res.status(401);
-                res.json({status:"Requires authorization"});
+                res.json({code: -1, status:"Requires authorization"});
             }
         });
 
@@ -107,14 +107,14 @@ module.exports.apiServer = class ApiServer{
                 let result = await pages.nextBlockId(sqlConn,page_id);
                 
                 if (result[0]){
-                    res.json({status:"Success!",block_id:result[1], order:result[2]});
+                    res.json({code:1, status:"Success!",block_id:result[1], order:result[2]});
                 }else{
-                    res.json({status:"Failed to save"});
+                    res.json({code:1, status:"Failed to save"});
                 }
                 
             }else{
                 res.status(401);
-                res.json({status:"Requires authorization"});
+                res.json({code:1, status:"Requires authorization"});
             }
         });
 
@@ -129,14 +129,14 @@ module.exports.apiServer = class ApiServer{
                 let result = await pages.editBlock(sqlConn,blockId, content,pageId);
                 
                 if (result[0]){
-                    res.json({status:"Saved!",block_id:result[1]});
+                    res.json({code:1, status:"Saved!",block_id:result[1]});
                 }else{
-                    res.json({status:"Failed to save"});
+                    res.json({code: -1, status:"Failed to save"});
                 }
                 
             }else{
                 res.status(401);
-                res.json({status:"Requires authorization"});
+                res.json({code: -1, status:"Requires authorization"});
             }
         });
 
@@ -303,12 +303,17 @@ module.exports.apiServer = class ApiServer{
             if (authRes[0]){
                 
                 const {page_id,title} = req.body;
-                let result = await pages.editPageTitle(sqlConn,page_id,title);
-                
-                if (result){
-                    res.json("Saved!");
+
+                if (title === ''){
+                    res.json({code:-1,status:"Failed to save, title cannot be empty"});
                 }else{
-                    res.json("Failed to save");
+                    let result = await pages.editPageTitle(sqlConn,page_id,title);
+                
+                    if (result){
+                        res.json({code: 1, status:"Saved!"});
+                    }else{
+                        res.json({code: -1, status:"Failed to save"});
+                    }
                 }
                 
             }else{
