@@ -21,9 +21,9 @@
                   <%- include('sidebar.ejs'); %>
               </div>
               <div class="col-8">
-                <%- include('pageModals.ejs'); %>
                 <input type="text" class="form-control" id="pageTitle" value=<%= title[0].page_title %>>     
                 <button class="btn btn-primary" onclick="saveTitle()">Save Title</button>
+                <p id="status"></p>
                 <div id="pageContent">
                   
                   <% for (var i = 0; i < content.length; i++){ %>
@@ -48,96 +48,9 @@
  
 <script>
 
-  let mode = "add";
-  let editId = -1;
-
-    async function updateAndSave(contentTarget,formContent,type){
-        console.log(mode);
-        
-        switch (mode){
-          case 'add':
-              
-              let content = document.querySelector(`#${contentTarget}`).cloneNode(true);
-              await addBlock(content,formContent,contentTarget);
-              
-            break;
-
-          case 'edit':
-            let newContent = document.getElementById(contentTarget);
-            
-            newContent.querySelector("#mainHeading").id += editId;
-            newContent.querySelector("#subHeading").id +=  editId;
-            newContent.querySelector("#callToAction").id += editId;
-
-            console.log(newContent.innerHTML);
-            document.getElementById(`block${editId}`).innerHTML = newContent.innerHTML;
-            
-
-            await updateBlock(newContent,editId);
-
-            
-
-            clearFormPre(formContent, contentTarget);
-            mode = 'add';
-            break;
-
-        }
-        
-    }
-
-    async function updateBlock(content, editId){
-      
-        fetch('<%= url %>:<%= port %>/api/editBlock', {
-                method:'POST',
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: 'include',
-                body:JSON.stringify({blockId:editId, pageId:<%= pageId %>, content:content,order:0})
-              });
-    }
-
-    async function addBlock(content,formContent,contentTarget){
-
-      const res = await fetch('<%= url %>:<%= port %>/api/nextBlockId', {
-                method:'POST',
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: 'include',
-                body: JSON.stringify({page_id:<%= pageId %>})
-            });
-      let result = await res.json();
-
-      console.log( content);
-      content.querySelector("#mainHeading").id += result.block_id;
-      content.querySelector("#subHeading").id +=  result.block_id;
-      content.querySelector("#callToAction").id += result.block_id;
-
-      document.getElementById("pageContent").innerHTML += `
-            <div class="buttonOverlay" id = 'block${result.block_id}buttons'>
-              <a onclick="editBlock('hero','block${result.block_id}');"><i class="fa fa-edit"></i></button></a> 
-              <a onclick="deleteBlock('block${result.block_id}');"><i class="fa fa-trash"></i></button></a>  
-            </div>
-            <div id="block${result.block_id}">` + content.innerHTML + `</div>`;
-
-        
-        console.log(content);
-        fetch('<%= url %>:<%= port %>/api/addBlock', {
-                method:'POST',
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                credentials: 'include',
-                body:JSON.stringify({block_id:result.block_id, page_id:<%= pageId %>, content:content.innerHTML,order:result.order})
-              });
-              
-              clearFormPre(formContent,contentTarget);
-    }
 
     function deleteBlock(blockId){
       const deleteId = blockId.substring(5);
-      console.log(deleteId);
       fetch('<%- url %>:<%- port %>/api/deleteBlock/', {
         method:'POST',
         headers: {
@@ -168,17 +81,15 @@
                 credentials: 'include',
                 body:JSON.stringify({page_id:<%= pageId %>, title:title})
                 
-            });
+            }).then(res => setResult(res));
     }
 
-    function flipMode(newMode){
-      mode = newMode;
+    async function setResult(res){
+      let result = await res.json();
+      document.getElementById("status").innerHTML = result.status;
     }
 
-    function updateText(target,textIn){
-        document.getElementById(target).innerText = textIn
-    }
-
+  
 </script>
 
 
