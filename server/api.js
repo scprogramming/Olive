@@ -303,12 +303,17 @@ module.exports.apiServer = class ApiServer{
             if (authRes[0]){
                 
                 const {page_id,title} = req.body;
-                let result = await pages.editPageTitle(sqlConn,page_id,title);
-                
-                if (result){
-                    res.json("Saved!");
+
+                if (title === ''){
+                    res.json({code:-1,status:"Failed to save, title cannot be empty"});
                 }else{
-                    res.json("Failed to save");
+                    let result = await pages.editPageTitle(sqlConn,page_id,title);
+                
+                    if (result){
+                        res.json({code: 1, status:"Saved!"});
+                    }else{
+                        res.json({code: -1, status:"Failed to save"});
+                    }
                 }
                 
             }else{
