@@ -179,6 +179,32 @@ module.exports.getAllContent = async function getAllContent(sqlConn,pageId){
     
 } 
 
+module.exports.updateOrder = async function updateOrder(sqlConn,blockId1, blockId2, pageId){
+
+    try{
+        let currentOrderRes1 = await sqlConn.queryReturnWithParams(`
+        SELECT content_order FROM page_content WHERE page_id=? AND block_id = ? ORDER BY content_order ASC;`,[pageId, blockId1]);
+
+        let currentOrderRes2 = await sqlConn.queryReturnWithParams(`
+        SELECT content_order FROM page_content WHERE page_id=? AND block_id = ? ORDER BY content_order ASC;`,[pageId, blockId2]);
+
+        const currentOrder1 = currentOrderRes1[0][0].content_order;
+        const currentOrder2 = currentOrderRes2[0][0].content_order;
+
+        await sqlConn.queryReturnWithParams(`
+        UPDATE page_content SET content_order = ? WHERE page_id = ? AND block_id = ?`, [currentOrder2, pageId, blockId1]);
+
+        await sqlConn.queryReturnWithParams(`
+        UPDATE page_content SET content_order = ? WHERE page_id = ? AND block_id = ?`, [currentOrder1, pageId, blockId2]);
+        
+        return true;
+    }catch (err){
+        console.error(err);
+        return false;
+    }
+    
+} 
+
 module.exports.checkPath = async function checkPath(sqlConn, page_path){
     try{
         let pathCount = await sqlConn.queryReturnWithParams(`

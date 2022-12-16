@@ -25,19 +25,17 @@
                 <button class="btn btn-primary" onclick="saveTitle()">Save Title</button>
                 <p id="status"></p>
                 <div id="pageContent">
-                  
-                  <% for (var i = 0; i < content.length; i++){ %>
+                  <a href="/dashboard/addBlock/<%=pageId %>/hero">Primary Button</button>      
+                    <% for (var i = 0; i < content.length; i++){ %>
 
-                    <div class="buttonOverlay" id = 'block<%- content[i].block_id %>buttons'>
-                      <a onclick="editBlock(<%=pageId%>,'hero','<%- content[i].block_id%>');"><i class="fa fa-edit"></i></button></a>  
-                      <a onclick="deleteBlock('block<%- content[i].block_id %>');"><i class="fa fa-trash"></i></button></a>  
-                    </div>
-                    <div id=block<%- content[i].block_id %>> <%- content[i].content %> </div>
-
-                    
+                      <div class="buttonOverlay" id = 'block<%- content[i].block_id %>buttons'>
+                        <a onclick="editBlock(<%=pageId%>,'hero','<%- content[i].block_id%>');"><i class="fa fa-edit"></i></button></a>  
+                        <a onclick="deleteBlock('block<%- content[i].block_id %>');"><i class="fa fa-trash"></i></button></a>  
+                      </div>
+                      <div id=block<%- content[i].block_id %> draggable="true" class="draggable"> <%- content[i].content %> </div>
                   <%}%>
                 </div>
-                <a href="/dashboard/addBlock/<%=pageId %>/hero">Primary Button</button>
+                
               </div>
             </div>
       </div>
@@ -47,6 +45,51 @@
 </body>
  
 <script>
+
+  let dragSrcEl = "";
+
+  function handleDrop(e){
+    e.stopPropagation();
+    if (dragSrcEl !== this){
+      dragSrcEl.innerHTML = this.innerHTML;
+      this.innerHTML = e.dataTransfer.getData('text/html');
+
+      const dragSrcId = dragSrcEl.id;
+      const currentId = this.id;
+
+      console.log(dragSrcId.substring(5));
+
+      fetch('<%- url %>:<%- port %>/api/updatePageOrder/', {
+        method:'POST',
+        headers: {
+                    "Content-Type": "application/json"
+                },
+        credentials:'include',
+        body:JSON.stringify({block_id1:dragSrcId.substring(5), block_id2: currentId.substring(5), page_id: <%= pageId %>})
+      })
+      .then(res => res.json()); 
+
+    }
+
+    return false;
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    return false;
+  }
+
+  function handleDragStart(e){
+    this.style.opacity = '0.4';
+    dragSrcEl = this;
+
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html',this.innerHTML);
+  }
+
+  function handleDragEnd(e){
+    this.style.opacity = '1';
+  }
 
 
     function deleteBlock(blockId){
@@ -88,6 +131,14 @@
       let result = await res.json();
       document.getElementById("status").innerHTML = result.status;
     }
+
+    let items = document.querySelectorAll('.draggable');
+    items.forEach(function (item){
+      item.addEventListener('dragstart',handleDragStart);
+      item.addEventListener('dragend', handleDragEnd);
+      item.addEventListener('drop',handleDrop);
+      item.addEventListener('dragover',handleDragOver);
+    });
 
   
 </script>

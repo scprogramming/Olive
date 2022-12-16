@@ -293,6 +293,33 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
+        this.app.post("/api/updatePageOrder", async(req,res) => {
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                
+                const {block_id1, block_id2, page_id} = req.body;
+                let result = await pages.updateOrder(sqlConn,block_id1, block_id2, page_id);
+                
+                if (result){
+                    res.json({status:"Saved!"});
+                }else{
+                    res.json({status:"Failed to save"});
+                }
+
+                res.end();
+                
+            }else{
+                res.status(401);
+                res.json({status:"Requires authorization"});
+                res.end();
+            }
+        });
+
         this.app.post("/api/editPageTitle", async(req,res) => {
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
