@@ -141,7 +141,7 @@
 
         async function editTable(res, catName){
             let data = await res.json();
-            if (data.status === "Saved!"){
+            if (data.code == 1){
                 let target = document.getElementById(`catname-${data.id}`);
                 target.innerHTML = catName;
             }
@@ -164,7 +164,7 @@
         async function deleteRow(res,t){
             let data = await res.json();
 
-            if (data === "Deleted!"){
+            if (data.code == 1){
                 $tr = $(t).closest("tr");
                 $tr.remove();
             }else{
