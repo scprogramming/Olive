@@ -19,7 +19,7 @@ module.exports.determineRedirectLogin =  async function determineRedirectLogin(p
             case "editPost":
                 result = await posts.getPostWithId(sqlConn,req.params.id);
                 let cats = await categories.getAllCategories(sqlConn);
-                return ["../views/pages/dashboard/editPost",{
+                return ["../views/pages/dashboard/post/editPost",{
                     url:conf.serverAddress,
                     port:conf.apiPort,
                     posts:result[0],
@@ -27,34 +27,34 @@ module.exports.determineRedirectLogin =  async function determineRedirectLogin(p
                 }];
             case "posts":
                 result = await posts.getAllPosts(sqlConn);
-                return ["../views/pages/dashboard/posts",{
+                return ["../views/pages/dashboard/post/posts",{
                     url:conf.serverAddress,
                     port:conf.apiPort,
                     posts:result[0]
                 }];
             case "addPost":
                 result = await categories.getAllCategories(sqlConn);
-                return["../views/pages/dashboard/addPost",{
+                return["../views/pages/dashboard/post/addPost",{
                     categories:result[0],
                     url:conf.serverAddress,
                     port:conf.apiPort}
                 ];
             case "pages":
                 result = await pages.getAllPages(sqlConn);
-                return ["../views/pages/dashboard/pages", {
+                return ["../views/pages/dashboard/page/pages", {
                     pages:result[0],
                     url:conf.serverAddress,
                     port:conf.apiPort
                 }];
             case "addPage":
-                return ["../views/pages/dashboard/addPage",{
+                return ["../views/pages/dashboard/page/addPage",{
                     url:conf.serverAddress,
                     port:conf.apiPort
                 }];
             case "addBlock":
                 result = await pages.getBlock(sqlConn, req.params.type,'add');
 
-                return ["../views/pages/dashboard/addBlock",{
+                return ["../views/pages/dashboard/page/addBlock",{
                     url:conf.serverAddress,
                     port:conf.apiPort,
                     content:result[0],
@@ -65,7 +65,7 @@ module.exports.determineRedirectLogin =  async function determineRedirectLogin(p
                 result = await pages.getBlock(sqlConn, req.params.type,'edit');
                 const existingContent = await pages.getBlockContent(sqlConn, req.params.id, req.params.blockId);
 
-                return ["../views/pages/dashboard/editBlock",{
+                return ["../views/pages/dashboard/page/editBlock",{
                     url:conf.serverAddress,
                     port:conf.apiPort,
                     content:result[0],
@@ -80,7 +80,7 @@ module.exports.determineRedirectLogin =  async function determineRedirectLogin(p
                 if (dataContent[1][0].length == 0){
                     return ["../views/pages/pageNotFound"]
                 }else{
-                    return ["../views/pages/dashboard/editPage",{
+                    return ["../views/pages/dashboard/page/editPage",{
                         url:conf.serverAddress,
                         port:conf.apiPort,
                         pageId:req.params.id,
