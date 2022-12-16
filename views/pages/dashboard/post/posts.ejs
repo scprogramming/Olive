@@ -12,32 +12,32 @@
         <div class="page-container">
             <div class="content-wrap">
                 <div class="row">
-                    <%- include('navbar.ejs'); %>
+                    <%- include('../navbar.ejs'); %>
                 </div>
                 <div class="row">
                     <div class="col-2">
-                        <%- include('sidebar.ejs'); %>
+                        <%- include('../sidebar.ejs'); %>
                     </div>
                     <div class="col-8">
-                        <a href="/dashboard/addPage" class="btn btn-primary" role="button">Add a New Page</a>
+                        <a href="/dashboard/addPost" class="btn btn-primary" role="button">Add a New Post</a>
                         <table class = "table">
                             <thead>
                                 <tr>
                                     <th scope="col">Title</th>
+                                    <th scope="col">Category</th>
                                     <th scope="col">Date Created</th>
-                                    <th scope="col">URL Path</th>
                                     <th scope="col">Edit</th>
                                     <th scope="col">Delete</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <% for (var i = 0; i < pages.length; i++){ %>
+                                <% for (var i = 0; i < posts.length; i++){ %>
                                 <tr>
-                                    <th scope="row"><%= pages[i].page_title %></th>
-                                    <td><%= pages[i].date_created %></td>
-                                    <td><%= pages[i].page_path %></td>
-                                    <td><a href="/dashboard/editPage/<%= pages[i].page_id %>"><i class="fa fa-edit"></i></button></a></td>
-                                    <td><a href="#" onclick="deletePage(<%= pages[i].page_id %>,this)"><i class="fa fa-trash"></i></button></a></td>
+                                    <th scope="row"><%= posts[i].article_title %></th>
+                                    <td><%= posts[i].category_name %></td>
+                                    <td><%= posts[i].date_created %></td>
+                                    <td><a href="/dashboard/editPost/<%= posts[i].post_id %>"><i class="fa fa-edit"></i></button></a></td>
+                                    <td><a href="#" onclick="deletePost(<%= posts[i].post_id %>,this)"><i class="fa fa-trash"></i></button></a></td>
                                 </tr>
                                 <% } %>
                             </tbody>
@@ -58,13 +58,14 @@
         
 
         function expandSidebar(){
+            console.log("Here!");
             document.getElementById("websiteSidebar").setAttribute('aria-expanded',true);
             document.getElementById("websiteSidebar").setAttribute('class','dropdown-toggle');
             document.getElementById("websiteSubmenu").setAttribute('class','list-unstyled collapse show');
         }
 
-        function deletePage(id,t){
-            fetch('<%- url %>:<%- port %>/api/deletePage/' + id, {
+        function deletePost(id,t){
+            fetch('<%- url %>:<%- port %>/api/deletePost/' + id, {
                 method:'POST',
                 credentials: 'include'
             })
