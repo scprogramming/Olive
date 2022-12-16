@@ -165,14 +165,14 @@ module.exports.apiServer = class ApiServer{
                     let result = await pages.addPage(sqlConn,title,page_path);
                 
                     if (result[0]){
-                        res.json({status:"Saved!",page_id:result[1]});
+                        res.json({code:1, status:"Saved!",page_id:result[1]});
                     }else{
-                        res.json({status:"Failed to save"});
+                        res.json({code: -1, status:"Failed to save"});
                     }
                 }  
             }else{
                 res.status(401);
-                res.json({status:"Requires authorization"});
+                res.json({code: -1, status:"Requires authorization"});
             }
         });
 
@@ -187,14 +187,14 @@ module.exports.apiServer = class ApiServer{
                 let result = await pages.deleteBlock(sqlConn,block_id, page_id);
                 
                 if (result){
-                    res.json("Deleted!");
+                    res.json({code:1,status:"Deleted!"});
                 }else{
-                    res.json("Failed to delete");
+                    res.json({code:-1,status:"Failed to delete"});
                 }
                 
             }else{
                 res.status(401);
-                res.json("Requires authorization");
+                res.json({code:1,status:"Requires authorization"});
             }
         });
 
@@ -210,14 +210,14 @@ module.exports.apiServer = class ApiServer{
                 let result = await posts.deletePost(sqlConn,req.params.id);
                 
                 if (result){
-                    res.json("Deleted!");
+                    res.json({code:1,status:"Deleted!"});
                 }else{
-                    res.json("Failed to delete");
+                    res.json({code:-1,status:"Failed to delete"});
                 }
                 
             }else{
                 res.status(401);
-                res.json("Requires authorization");
+                res.json({code:-1, status:"Requires authorization"});
             }
         });
 
@@ -233,14 +233,14 @@ module.exports.apiServer = class ApiServer{
                 let result = await pages.deletePage(sqlConn,req.params.id);
                 
                 if (result){
-                    res.json("Deleted!");
+                    res.json({code:1, status:"Deleted!"});
                 }else{
-                    res.json("Failed to delete");
+                    res.json({code:-1, status:"Failed to delete"});
                 }
                 
             }else{
                 res.status(401);
-                res.json("Requires authorization");
+                res.json({code:-1,status:"Requires authorization"});
             }
         });
 
@@ -257,16 +257,16 @@ module.exports.apiServer = class ApiServer{
                 let result = await categories.deleteCategory(sqlConn,req.params.id);
                 
                 if (result){
-                    res.json("Deleted!");
+                    res.json({code:1,status:"Deleted!"});
                     res.end();
                 }else{
-                    res.json("Failed to delete");
+                    res.json({code:-1, status:"Failed to delete"});
                     res.end();
                 }
                 
             }else{
                 res.status(401);
-                res.json("Requires authorization");
+                res.json({code:-1,status:"Requires authorization"});
                 res.end();
             }
         });
@@ -285,16 +285,16 @@ module.exports.apiServer = class ApiServer{
                 let result = await categories.editCategory(sqlConn,category_id,category_name);
                 
                 if (result){
-                    res.json({status:"Saved!", id:category_id});
+                    res.json({code:1,status:"Saved!", id:category_id});
                 }else{
-                    res.json({status:"Failed to save"});
+                    res.json({code:-1,status:"Failed to save"});
                 }
 
                 res.end();
                 
             }else{
                 res.status(401);
-                res.json({status:"Requires authorization"});
+                res.json({code:-1,status:"Requires authorization"});
                 res.end();
             }
         });
@@ -312,16 +312,16 @@ module.exports.apiServer = class ApiServer{
                 let result = await pages.updateOrder(sqlConn,block_id1, block_id2, page_id);
                 
                 if (result){
-                    res.json({status:"Saved!"});
+                    res.json({code:1, status:"Saved!"});
                 }else{
-                    res.json({status:"Failed to save"});
+                    res.json({code: -1, status:"Failed to save"});
                 }
 
                 res.end();
                 
             }else{
                 res.status(401);
-                res.json({status:"Requires authorization"});
+                res.json({code:-1, status:"Requires authorization"});
                 res.end();
             }
         });
@@ -351,25 +351,7 @@ module.exports.apiServer = class ApiServer{
                 
             }else{
                 res.status(401);
-                res.json("Requires authorization");
-            }
-        });
-
-        this.app.post("/api/getPage/:id", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
-
-            const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
-
-            if (authRes[0]){
-                
-                let result = await pages.getPageWithId(sqlConn, req.params.id);
-                res.json(result[0]);
-                
-            }else{
-                res.status(401);
-                res.json("Requires authorization");
+                res.json({code: -1, status:"Requires authorization"});
             }
         });
 
@@ -387,14 +369,14 @@ module.exports.apiServer = class ApiServer{
                 let result = await posts.editPost(sqlConn,title,data,id,categoryId);
                 
                 if (result){
-                    res.json("Saved!");
+                    res.json({code:1, status:"Saved!"});
                 }else{
-                    res.json("Failed to save");
+                    res.json({code: -1, status:"Failed to save"});
                 }
                 
             }else{
                 res.status(401);
-                res.json("Requires authorization");
+                res.json({code:-1,status:"Requires authorization"});
             }
         });
 
@@ -410,25 +392,25 @@ module.exports.apiServer = class ApiServer{
                 
                     if (result == 1){
                         res.status(200);
-                        res.json("User created successfully!");
+                        res.json({code:1, status:"User created successfully!"});
                     }else if (result == -2){
                         res.status(400);
-                        res.json("User already exists, pick another username!");
+                        res.json({code:-2, status:"User already exists, pick another username!"});
                     }else if (result == -3){
                         res.status(400);
-                        res.json("Passwords provided do not match!");
+                        res.json({code:-3,status:"Passwords provided do not match!"});
                     }else{
                         res.status(500);
-                        res.json("Failed to register user!");
+                        res.json({code:-1, status:"Failed to register user!"});
                     }
 
                 }catch(err){
                     res.status(500);
-                    res.json("Failed to register user!");
+                    res.json({code:-1, status:"Failed to register user!"});
                 }
             }else{
                 res.status(404);
-                res.json("Registration is not a valid endpoint");
+                res.json({code:-1,status:"Registration is not a valid endpoint"});
             }
 
             });
@@ -446,14 +428,14 @@ module.exports.apiServer = class ApiServer{
                 if (result[0]){
                     res.status(200);
                     res.cookie('auth',result[1],{path:'/',httpOnly:true})
-                    res.json("Login successful!");
+                    res.json({code:1, status:"Login successful!"});
                 }else{
                     res.status(400);
-                    res.json("Invalid username or password!");
+                    res.json({code:-1, status:"Invalid username or password!"});
                 }
             }catch(err){
                 res.status(500);
-                res.json("Failed to login!");
+                res.json({code:-1,status:"Failed to login!"});
             }
         });
 
