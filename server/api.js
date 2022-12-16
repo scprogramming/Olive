@@ -59,13 +59,19 @@ module.exports.apiServer = class ApiServer{
                 console.log(req.body);
                 
                 const {title,data,categoryId} = req.body;
-                let result = await posts.addPost(sqlConn,title,data,categoryId);
-                
-                if (result){
-                    res.json({code:1, status:"Saved!"});
+
+                if (title === ''){
+                    res.json({code:-1,status:"Failed to save, title cannot be empty"});
                 }else{
-                    res.json({code:-1, status:"Failed to save"});
-                }
+                    
+                    let result = await posts.addPost(sqlConn,title,data,categoryId);
+                
+                    if (result){
+                        res.json({code:1, status:"Saved!"});
+                    }else{
+                        res.json({code:-1, status:"Failed to save"});
+                    }
+                    }
                 
             }else{
                 res.status(401);
