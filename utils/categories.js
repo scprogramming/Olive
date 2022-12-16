@@ -4,20 +4,28 @@ module.exports.addCategory = async function addCategory(sqlConn,cat){
 
     try{
 
-        let getNextId = await sqlConn.queryReturnNoParam(`
-        SELECT MAX(category_id) AS max_id FROM categories`);
+        let nameExists = await sqlConn.queryReturnWithParams(`
+        SELECT COUNT(*) AS cat_count FROM categories WHERE category_name = ?`, [cat])
 
-        let targetId = 0;
-
-        if (getNextId[0][0].max_id !== null){
-            targetId = parseInt(getNextId[0][0].max_id) + 1
+        if (nameExists[0][0].cat_count == 0){
+            let getNextId = await sqlConn.queryReturnNoParam(`
+            SELECT MAX(category_id) AS max_id FROM categories`);
+    
+            let targetId = 0;
+    
+            if (getNextId[0][0].max_id !== null){
+                targetId = parseInt(getNextId[0][0].max_id) + 1
+            }
+             
+    
+            await sqlConn.queryReturnWithParams(`INSERT INTO categories(category_id, category_name)
+            VALUES (?,?)`,[targetId,cat]);
+            
+            return [true,targetId];
+        }else{
+            return [false];
         }
-         
-
-        await sqlConn.queryReturnWithParams(`INSERT INTO categories(category_id, category_name)
-        VALUES (?,?)`,[targetId,cat]);
         
-        return [true,targetId];
     }catch (err){
         console.log(err);
         return [false,-1];
