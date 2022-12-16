@@ -66,8 +66,7 @@
                 },
         credentials:'include',
         body:JSON.stringify({block_id1:dragSrcId.substring(5), block_id2: currentId.substring(5), page_id: <%= pageId %>})
-      })
-      .then(res => res.json()); 
+      });
 
     }
 
