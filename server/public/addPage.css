@@ -15,3 +15,7 @@
 #heroContent{
     border-style:solid
 }
+
+.draggable{
+  cursor: move;
+}
