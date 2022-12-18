@@ -43,6 +43,19 @@ module.exports.appServer = class AppServer{
  
         });
 
+        this.app.get("/dashboard/courses", async function(req,res){
+
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+
+            let redirect = await authRouter.determineRedirectLogin("courses",authRes, sqlConn,req);
+            res.render(redirect[0],redirect[1]);
+ 
+        });
+
         this.app.get("/dashboard/editPost/:id", async function(req,res){
 
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,

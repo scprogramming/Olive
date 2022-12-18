@@ -1,13 +1,20 @@
 const posts = require("../utils/posts");
 const categories = require("../utils/categories");
 const pages = require('../utils/pages');
-const jsdom = require('jsdom');
+const courses = require('../utils/courses');
 
 module.exports.determineRedirectLogin =  async function determineRedirectLogin(page,status,sqlConn,req){
     if (status[0]){
         let result = "";
         switch(page){
-            
+            case "courses":
+                result = await courses.getAllCourses(sqlConn);
+
+                return ["../views/pages/dashboard/course/courses",{
+                    url:conf.serverAddress,
+                    port:conf.apiPort,
+                    courses:result[0][0]
+                }];
             case "categories":                        
                 result = await categories.getAllCategories(sqlConn);
 
