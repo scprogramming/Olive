@@ -7,6 +7,24 @@ module.exports.determineRedirectLogin =  async function determineRedirectLogin(p
     if (status[0]){
         let result = "";
         switch(page){
+            case "editCourse":
+                let courseContent = await courses.getAllContent(sqlConn,req.params.id);
+                
+                if (courseContent[0][0].length == 0){
+                    return ["../views/pages/pageNotFound"]
+                }else{
+                    return ["../views/pages/dashboard/course/editCourse",{
+                        url:conf.serverAddress,
+                        port:conf.apiPort,
+                        courseId:req.params.id,
+                        title:courseContent[0][0],
+                    }];
+                }
+            case "addCourse":
+                return ["../views/pages/dashboard/course/addCourse",{
+                    url:conf.serverAddress,
+                    port:conf.apiPort
+                }];
             case "courses":
                 result = await courses.getAllCourses(sqlConn);
 
