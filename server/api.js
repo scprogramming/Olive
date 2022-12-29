@@ -5,6 +5,7 @@ const sqlHandle = require('../handlers/DbHandler.js');
 const posts = require("../utils/posts");
 const categories = require("../utils/categories");
 const pages = require('../utils/pages');
+const courses = require('../utils/courses');
 
 module.exports.apiServer = class ApiServer{
 
@@ -140,6 +141,37 @@ module.exports.apiServer = class ApiServer{
                     res.json({code: -1, status:"Failed to save"});
                 }
                 
+            }else{
+                res.status(401);
+                res.json({code: -1, status:"Requires authorization"});
+            }
+        });
+
+        this.app.post("/api/addCourse", async(req,res) => {
+
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                const {title,course_path} = req.body;
+
+                if (title === ''){
+                    res.json({code:-1,status:"Failed to save, title cannot be empty"});
+                }else if (course_path == ''){
+                    res.json({code:-1,status:"Path cannot be blank"});
+                }else if (await courses.checkPath(sqlConn, course_path) == -1){
+                    res.json({code:-1, status:"Page path already exists, select a unique path"});
+                }else{
+                    let result = await courses.addCourse(sqlConn,title,course_path);
+                
+                    if (result[0]){
+                        res.json({code:1, status:"Saved!",course_id:result[1]});
+                    }else{
+                        res.json({code: -1, status:"Failed to save"});
+                    }
+                }  
             }else{
                 res.status(401);
                 res.json({code: -1, status:"Requires authorization"});

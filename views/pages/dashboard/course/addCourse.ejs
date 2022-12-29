@@ -45,7 +45,7 @@
                     "Content-Type": "application/json"
                 },
                 credentials: 'include',
-                body:JSON.stringify({title:document.getElementById("courseTitle").value,data:"",page_path:document.getElementById("coursePath").value})
+                body:JSON.stringify({title:document.getElementById("courseTitle").value,data:"",course_path:document.getElementById("coursePath").value})
                 
             })
             .then(res => redirectId(res));
