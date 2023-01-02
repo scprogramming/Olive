@@ -14,6 +14,7 @@ html,body{
     display: flex;
     align-items: stretch;
 }
+
 #sidebar.active {
     margin-left: -250px;
 }
@@ -67,10 +68,5 @@ html,body{
 #sidebar ul li a:hover {
     color: #1d1d1d;
     background: #fff;
-}
-
-#sidebar ul li.active > a, a[aria-expanded="true"] {
-    color: #fff;
-    background: #6d7fcc;
 }
 

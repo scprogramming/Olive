@@ -50,6 +50,31 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
+        this.app.post("/api/addModule", async(req,res) => {
+            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
+                conf.user,conf.pass,conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                const {courseId,moduleTitle} = req.body;
+                let result = await courses.addModule(sqlConn,courseId,moduleTitle);
+                
+                if (result[0]){
+                    res.json({code:1, status:"Saved!",id:result[1]});
+                }else{
+                    res.json({code: -1, status:"Failed to save"});
+                }
+
+                res.end();
+                
+            }else{
+                res.status(401);
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
+            }
+        });
+
         this.app.post("/api/addPost", async(req,res) => {
             var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
                 conf.user,conf.pass,conf.database);
