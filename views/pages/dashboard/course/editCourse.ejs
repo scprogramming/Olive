@@ -21,7 +21,7 @@
                   <%- include('../sidebar.ejs'); %>
               </div>
               <div class="col-10">
-                <input type="text" class="form-control" id="courseTitle" value=<%= title[0].course_title %>>     
+                <input type="text" class="form-control" id="courseTitle" value="">     
                 <button class="btn btn-primary" onclick="saveTitle()">Save Title</button>
                 <p id="status"></p>
                 <div id="pageContent">
@@ -31,24 +31,53 @@
                     <button class="tablinks" onclick="openSection(event,'landing')">Landing Page</button>
                   </div>
 
+                  
+
                   <div id="curriculum" class="tabcontent">
                     <div class="row">
-                      <div class="col-4">
-                        <h2>Module Name</h2>
+                      <div class="col-6">
+                      <nav id="courseSidebar">
+                          <ul class="list-unstyled modComponents"> 
+                            <% for (let i = 0; i < content.length; i++) {%>
+                              <% console.log(content[i]) %>
+                              <% let module_title = content[i].module_title%>
+                              <% console.log(module_title)%>
 
-                        <div onclick="showLesson(event,'lesson-id')">
-                          <strong>Lesson 1</strong>
-                        </div>
+                              <li>
+                                <a id = "<%=module_title%>" href="#<%=module_title%>" data-toggle="collapse" aria-expanded="false" class="moddropdown-toggle"><%=module_title%></a>
+                                <ul class = "collapse list-unstyled" id="<%=module_title%>">
+                                  <li onclick="showLesson(event, 'lesson<%=content[i].lessons.lesson_id%>"><a class="modsidebarlink modindentitem"><%=content[i].lessons.lesson_title%></a></li>
+                                </ul>
+                              </li>
+                            <%}%>
 
-                      </div>
+                              <li>
+                                  <a id = "module1" href="#module1lessons" data-toggle="collapse" aria-expanded="false" class="moddropdown-toggle">Module 1</a>
+                                  <ul class="collapse list-unstyled" id="module1lessons">
+                                      <li onclick="showLesson(event,'lesson-id')"><a class="modsidebarlink modindentitem">Lesson1</a></li>
+                                      <li onclick="showLesson(event,'lesson-id2')"><a class="modsidebarlink modindentitem">Lesson2</a></li>
+                                      <li><button class="button btn-secondary">Add Lesson</button></li>
+                                  </ul>
+                              </li>
+              
+                              
+                              
+                          </ul>
+                      </nav>
 
-                      <div class="col-8">
-                        <div id="lesson-id" style="display:none;" class="lessons">
-                          <h2>Content!</h2>
-                        </div>
-                      </div>
-
+                      <button class="button btn-primary">Add Module</button>
                     </div>
+
+                    <div class="col-6" id="lessonContainer">
+                      <div id="lesson-id" style="display:none;" class="lessons">
+                        <h2>Content!</h2>
+                      </div>
+                      <div id="lesson-id2" style="display:none;" class="lessons">
+                        <h2>Content2!</h2>
+                      </div>
+                    </div>
+
+                  </div>
                   </div>
 
                   <div id="pricing" class="tabcontent" style="display:none;">
@@ -69,6 +98,9 @@
 </body>
  
 <script>
+
+  
+  
 
   function showLesson(event,lesson){
     let i, tabContent, tabLinks;
