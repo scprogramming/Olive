@@ -1,6 +1,6 @@
 const sqlHandle = require('../handlers/DbHandler.js');
 
-module.exports.addPost = async function addPost(sqlConn,title,data,categoryId){
+module.exports.addPost = async function addPost(mongoConn,title,data,categoryId){
 
     try{
 
@@ -9,19 +9,8 @@ module.exports.addPost = async function addPost(sqlConn,title,data,categoryId){
         var mm = String(today.getMonth() + 1).padStart(2,'0');
         var yyyy = today.getFullYear();
 
-        let getNextId = await sqlConn.queryReturnNoParam(`
-        SELECT MAX(post_id) AS max_id FROM posts`);
+        await mongoConn.singleInsert("Posts",{article_title:title, content:data, date_created:yyyy + '-' + mm + '-' + dd, category_id:categoryId});
 
-        let targetId = 0;
-
-        if (getNextId[0][0].max_id !== null){
-            targetId = parseInt(getNextId[0][0].max_id) + 1
-        }
-         
-
-        await sqlConn.queryReturnWithParams(`INSERT INTO posts(post_id,article_title,content,date_created,category_id)
-        VALUES (?,?,?,?,?)`,[targetId,title,data, yyyy + '-' + mm + '-' + dd,categoryId]);
-        
         return true;
     }catch (err){
         console.log(err);
@@ -30,17 +19,10 @@ module.exports.addPost = async function addPost(sqlConn,title,data,categoryId){
     
 } 
 
-module.exports.editPost = async function editPost(sqlConn,title,data,id, category){
+module.exports.editPost = async function editPost(mongoConn,title,data,id, category){
 
     try{
-        await sqlConn.queryReturnWithParams(`
-        UPDATE posts SET content = ? WHERE post_id = ?`,[data,id]);
-        await sqlConn.queryReturnWithParams(`
-        UPDATE posts SET article_title = ? WHERE post_id = ?`, [title,id]);
-
-        await sqlConn.queryReturnWithParams(`
-        UPDATE posts SET category_id = ? WHERE post_id = ?`, [category, id])
-
+        await mongoConn.singleUpdateWithId("Posts",id,{$set: {content:data,article_title:title, category_id:category}});
         return true;
     }catch (err){
         console.log(err);
