@@ -3,12 +3,12 @@ const categories = require("../utils/categories");
 const pages = require('../utils/pages');
 const courses = require('../utils/courses');
 
-module.exports.determineRedirectLogin =  async function determineRedirectLogin(page,status,sqlConn,req){
+module.exports.determineRedirectLogin =  async function determineRedirectLogin(page,status,mongoConn,req){
     if (status[0]){
         let result = "";
         switch(page){
             case "editCourse":
-                let courseContent = await courses.getAllContent(sqlConn,req.params.id);
+                let courseContent = await courses.getAllContent(mongoConn,req.params.id);
                 console.log(courseContent[1]);
                 if (courseContent[0] === ""){
                     return ["../views/pages/pageNotFound"]
@@ -89,7 +89,7 @@ module.exports.determineRedirectLogin =  async function determineRedirectLogin(p
                 }];
             case "editBlock":
                 result = await pages.getBlock(sqlConn, req.params.type,'edit');
-                const existingContent = await pages.getBlockContent(sqlConn, req.params.id, req.params.blockId);
+                const existingContent = await pages.getBlockContent(mongoConn, req.params.id, req.params.blockId);
 
                 return ["../views/pages/dashboard/page/editBlock",{
                     url:conf.serverAddress,
@@ -101,7 +101,7 @@ module.exports.determineRedirectLogin =  async function determineRedirectLogin(p
                     editContent: existingContent
                 }];
             case "editPage":
-                let dataContent = await pages.getAllContent(sqlConn,req.params.id);
+                let dataContent = await pages.getAllContent(mongoConn,req.params.id);
                 
                 if (dataContent[1][0].length == 0){
                     return ["../views/pages/pageNotFound"]

@@ -41,4 +41,12 @@ module.exports.MongoDbHandler = class MongoDbHandler{
         const o_id = new mongo.ObjectId(id);
         coll.deleteOne({_id:o_id});
     }
+
+    async getAll(collection){
+        await this.client.connect();
+        const database = this.client.db(this.db);
+        const coll = database.collection(collection);
+
+        return coll.find({});
+    }
 }
