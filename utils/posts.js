@@ -1,4 +1,5 @@
 const sqlHandle = require('../handlers/DbHandler.js');
+const mongodb = require('mongodb');
 
 module.exports.addPost = async function addPost(mongoConn,title,data,categoryId){
 
@@ -31,11 +32,10 @@ module.exports.editPost = async function editPost(mongoConn,title,data,id, categ
     
 } 
 
-module.exports.deletePost = async function deletePost(sqlConn,id){
+module.exports.deletePost = async function deletePost(mongoConn,id){
 
     try{
-        await sqlConn.queryReturnWithParams(`
-        DELETE FROM posts WHERE post_id = ?`, [id]);
+        await mongoConn.singleDeleteWithId("Posts",id);
 
         return true;
     }catch (err){
@@ -45,13 +45,10 @@ module.exports.deletePost = async function deletePost(sqlConn,id){
     
 } 
 
-module.exports.getAllPosts = async function getAllPosts(sqlConn){
+module.exports.getAllPosts = async function getAllPosts(mongoConn){
 
     try{
-        let posts = await sqlConn.queryReturnNoParam(`
-        SELECT article_title,content,date_created, post_id, category_name FROM posts
-        LEFT JOIN categories
-        ON categories.category_id = posts.category_id`);
+        let posts = await mongoConn.getAll("Posts")
         
         return posts;
     }catch (err){
@@ -60,13 +57,11 @@ module.exports.getAllPosts = async function getAllPosts(sqlConn){
     
 } 
 
-module.exports.getPostWithId = async function getPostWithId(sqlConn,id){
+module.exports.getPostWithId = async function getPostWithId(mongoConn,id){
 
     try{
-        let posts = await sqlConn.queryReturnWithParams(`
-        SELECT article_title,content,date_created, post_id, category_name FROM posts
-        LEFT JOIN categories
-        ON categories.category_id = posts.category_id WHERE post_id=?`,[id]);
+
+        let posts = await mongoConn.singleFind("Posts", {_id: mongodb.ObjectId(id)});
         
         return posts;
     }catch (err){
