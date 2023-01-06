@@ -1,26 +1,50 @@
-const sqlHandle = require('../handlers/DbHandler.js');
 const mongodb = require('mongodb');
 
 module.exports.addModule = async function addModule(mongoConn,courseId,moduleTitle){
     try{
 
         let course = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
-        course.lessons.push({lesson_title:moduleTitle, content:[{content:""}]});
-        await mongoConn.singleUpdateWithId("Courses",courseId,{$set: {lessons:course.lessons}});
+        course.modules.push({module_title:moduleTitle, lessons:[{lesson_title:"Lesson1",content:[{content:''}]}]});
+        await mongoConn.singleUpdateWithId("Courses",courseId,{$set: {modules:course.modules}});
         
-        return [true]
+        return [true,course.modules.length - 1]
     }catch(err){
         console.error(err);
-        return [false]
+        return [false,-1]
     }
 }
 
-module.exports.getAllCourses = async function getAllCourses(sqlConn){
+module.exports.saveVideo = async function saveVideo(mongoConn,formData){
+    try{
+        console.log(formData);
+        console.log(formData[0].data);
+
+    }catch(err){
+        console.error(err);
+        return [false,-1]
+    }
+}
+
+module.exports.addLesson = async function addLesson(mongoConn,courseId,lessonTitle,moduleId){
+    try{
+        
+        let course = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
+        course.modules[moduleId].lessons.push({lesson_title:lessonTitle,content:[{content:''}]});
+        await mongoConn.singleUpdateWithId("Courses",courseId,{$set: {modules:course.modules}});
+        
+        return [true,course.modules[moduleId].lessons.length - 1]
+    }catch(err){
+        console.error(err);
+        return [false,-1]
+    }
+}
+
+module.exports.getAllCourses = async function getAllCourses(mongoConn){
 
     try{
-        let courses = await sqlConn.queryReturnWithParams(`SELECT * FROM courses`);
+        let courses = await mongoConn.getAll("Courses");
         
-        return [courses];
+        return courses;
     }catch (err){
         console.error(err);
     }
@@ -62,7 +86,9 @@ module.exports.addCourse = async function addCourse(mongoConn,title,coursePath){
         var mm = String(today.getMonth() + 1).padStart(2,'0');
         var yyyy = today.getFullYear();
 
-        let res = await mongoConn.singleInsert("Courses",{course_title:title, date_created: yyyy + '-' + mm + '-' + dd, course_path:coursePath, lessons: [{lesson_title:"Lesson1", content: [{content:""}]}]});
+        let res = await mongoConn.singleInsert("Courses",{course_title:title, date_created: yyyy + '-' + mm + '-' + dd, course_path:coursePath, 
+        modules: [{module_title:"Module1", lessons: [{lesson_title:"Lesson1", content: [{content:""}] } ] } ]}
+        );
         
         return [true,res.insertedId.toString()];
     }catch (err){

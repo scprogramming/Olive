@@ -1,4 +1,3 @@
-const sqlHandle = require('../handlers/DbHandler.js');
 const mongodb = require('mongodb');
 
 module.exports.addPage = async function addPage(mongoConn,title,pagePath){
@@ -91,11 +90,12 @@ module.exports.getBlockContent = async function getBlockContent(mongoConn, pageI
     }
 }
 
-module.exports.getBlock = async function getBlock(sqlConn, blockType,blockMode){
+module.exports.getBlock = async function getBlock(mongoConn, blockType,blockMode){
     try{
-        let res = await sqlConn.queryReturnWithParams(`SELECT content,scripts FROM blocks WHERE block_type=? AND mode = ?`,[blockType,blockMode]);
 
-        return [res[0][0].content, res[0][0].scripts];
+        let res = await mongoConn.singleFind("Blocks", {block_type:blockType,mode:blockMode});
+
+        return [res.content, res.scripts];
     }catch(err){
         console.log(err);
         return "";
@@ -106,8 +106,10 @@ module.exports.editBlock = async function editBlock(mongoConn,blockId,content,pa
 
     try{
         let res = await mongoConn.singleFind("Pages",{_id:mongodb.ObjectId(pageId)});
-        res.page_content[blockId] = content;
-        await mongoConn.singleUpdateWithId("Pages",pageId,{$set: {page_content:res.page_content}});
+        const resContent = res.page_content;
+        resContent[blockId] = {content:content};
+
+        await mongoConn.singleUpdateWithId("Pages",pageId,{$set: {page_content:resContent}});
 
         return [true, blockId];
     }catch (err){
@@ -147,7 +149,7 @@ module.exports.getAllContent = async function getAllContent(mongoConn,pageId){
     try{
         let pages = await mongoConn.singleFind("Pages",{_id:mongodb.ObjectId(pageId)})
         
-        return [pages.page_content,pages.title];
+        return [pages.page_content,pages.page_title];
     }catch (err){
         console.error(err);
     }

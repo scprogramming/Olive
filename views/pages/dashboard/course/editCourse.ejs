@@ -26,9 +26,9 @@
                 <p id="status"></p>
                 <div id="pageContent">
                   <div class="tab">
-                    <button class="tablinks" onclick="openSection(event,'curriculum')">Curriculum</button>
-                    <button class="tablinks" onclick="openSection(event,'pricing')">Pricing</button>
-                    <button class="tablinks" onclick="openSection(event,'landing')">Landing Page</button>
+                    <button class="tablinks" onclick="openSection(event,'curriculum','tabcontent','tablinks')">Curriculum</button>
+                    <button class="tablinks" onclick="openSection(event,'pricing','tabcontent','tablinks')">Pricing</button>
+                    <button class="tablinks" onclick="openSection(event,'landing', 'tabcontent','tablinks')">Landing Page</button>
                   </div>
 
                   
@@ -37,46 +37,77 @@
                     <div class="row">
                       <div class="col-6">
                       <nav id="courseSidebar">
-                          <ul class="list-unstyled modComponents"> 
-                            <% for (let i = 0; i < content.length; i++) {%>
-                              <% console.log(content[i]) %>
-                              <% let module_title = content[i].module_title%>
-                              <% console.log(module_title)%>
-
+                          <ul id="moduleList" class="list-unstyled modComponents"> 
+                            <% let modules = content.modules%>
+                            <% for (let i = 0; i < modules.length; i++) {%>
+                              <% let module_title = modules[i].module_title%>
                               <li>
-                                <a id = "<%=module_title%>" href="#<%=module_title%>" data-toggle="collapse" aria-expanded="false" class="moddropdown-toggle"><%=module_title%></a>
-                                <ul class = "collapse list-unstyled" id="<%=module_title%>">
-                                  <li onclick="showLesson(event, 'lesson<%=content[i].lessons.lesson_id%>"><a class="modsidebarlink modindentitem"><%=content[i].lessons.lesson_title%></a></li>
+                                <a id = "module-<%=i%>" href="#module<%=i%>Lessons" data-toggle="collapse" aria-expanded="false" class="moddropdown-toggle"><%=module_title%></a>
+                                <ul class = "collapse list-unstyled" id="module<%=i%>Lessons">
+                                  <%let lessons = modules[i].lessons; %>
+                                  
+                                  <div id = "lessonListContentModule<%=i%>">
+                                    <% for (let j = 0; j < lessons.length; j++) {%>
+                                      <li onclick="showLesson(event, 'module<%=i%>-lesson-<%=j%>')">
+                                        <a class="modsidebarlink modindentitem"><%=lessons[j].lesson_title%></a>
+                                      </li>
+                                    <%}%>
+                                  </div>
+                                  
+
+                                  <div id="newLesson-<%=i%>">
+
+                                  </div>
+                                  <li><button class="button btn-secondary" onclick="promptLessonTitle('<%=i%>')">Add Lesson</button></li>
                                 </ul>
                               </li>
-                            <%}%>
-
-                              <li>
-                                  <a id = "module1" href="#module1lessons" data-toggle="collapse" aria-expanded="false" class="moddropdown-toggle">Module 1</a>
-                                  <ul class="collapse list-unstyled" id="module1lessons">
-                                      <li onclick="showLesson(event,'lesson-id')"><a class="modsidebarlink modindentitem">Lesson1</a></li>
-                                      <li onclick="showLesson(event,'lesson-id2')"><a class="modsidebarlink modindentitem">Lesson2</a></li>
-                                      <li><button class="button btn-secondary">Add Lesson</button></li>
-                                  </ul>
-                              </li>
-              
-                              
-                              
+                              <%}%>
                           </ul>
                       </nav>
 
-                      <button class="button btn-primary">Add Module</button>
+                      <div id="newModule">
+
+                      </div>
+                      
+
+                      <button class="button btn-primary" onclick="promptModuleTitle()">Add Module</button>
                     </div>
 
                     <div class="col-6" id="lessonContainer">
-                      <div id="lesson-id" style="display:none;" class="lessons">
-                        <h2>Content!</h2>
+                    <% for (i = 0; i < modules.length; i++) {%>
+                      <%let lessons = modules[i].lessons; %>
+                    <% for (j = 0; j < lessons.length; j++) {%>
+                      <%let content = lessons[j].content %>
+
+                      
+                        <div id="module<%=i%>-lesson-<%=j%>" style="display:none;" class="lessons">
+                          <h2><%- lessons[j].lesson_title%></h2>
+                      <% for (let k = 0; k < content.length; k++) {%>
+                            
+                            <%-content[k].content%>
+                    <%}%>
+                    <div id="newBlock">
+                      <p>Add a new block of content</p>
+                      <button type="button btn-secondary" class="lessonContentButton" onclick="openSection(event, 'newVideoLesson<%=j%>', 'lessonBlock', 'lessonContentButton')">Video</button>
+                      <button type="button btn-secondary" class="lessonContentButton" onclick="openSection(event, 'newRichTextLesson<%=j%>', 'lessonBlock', 'lessonContentButton')">Rich Text</button>
+                      <div id="newVideoLesson<%=j%>" style="display:none;" class="lessonBlock">
+                        <h2>Upload a video</h2>
+                        <input type="file" accept="video/*" id="videoLesson<%=j%>Input" onchange="readVideo(event,'<%=j%>')" style="display:block">
+                        <video controls id="video-tagLesson<%=j%>" width="100%" height="50%">
+
+                        </video>
+
                       </div>
-                      <div id="lesson-id2" style="display:none;" class="lessons">
-                        <h2>Content2!</h2>
+
+                      <div id="newRichTextLesson<%=j%>" style="display:none;" class="lessonBlock">
+                        <h2>Here is the rich text content</h2>
                       </div>
                     </div>
-
+                    </div>
+                
+                    <%}%>
+                    <%}%>
+                  </div>
                   </div>
                   </div>
 
@@ -99,8 +130,98 @@
  
 <script>
 
+  async function uploadVideo(id){
+
+  }
+
+  async function readVideo(event,id){
+    console.log(event.target.files[0]);
+    let file = event.target.files[0];
+    let blobURL = URL.createObjectURL(file);
+    document.getElementById("video-tagLesson" + id).src = blobURL;
+
+    console.log(await file.arrayBuffer());
+    
+    const fd = new FormData();
+    fd.append('video',file);
+
+    fetch('<%= url %>:<%= port %>/api/uploadVideo', {
+      method:'POST',
+      credentials: 'include',
+      body:fd
+    });
+  }
+
+  function promptLessonTitle(modId){
+    document.getElementById('newLesson-' + modId).innerHTML += `<input id="newLessonName" type="text" placeholder="Input lesson name"></input>
+    <button class="button btn-secondary" onclick="addLesson('${modId}')">Save</button>`
+    
+  }
+
+  async function addLesson(modId){
+    let lessonTitle = document.getElementById('newLessonName').value
+    let res = await fetch('<%= url %>:<%= port %>/api/addLesson', {
+      method:'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body:JSON.stringify({courseId: '<%=courseId%>',lessonTitle:lessonTitle, moduleId:modId})
+    });
+
+    let lessonId = await res.json();
+    document.getElementById('newLesson-' + modId).innerHTML = "";
+    document.getElementById("lessonListContentModule" + modId).innerHTML += `
+      <li onclick="showLesson(event, 'module${modId}-lesson-${lessonId.id}')">
+        <a class="modsidebarlink modindentitem">${lessonTitle}</a>
+      </li>
+    `
+
+    document.getElementById('lessonContainer').innerHTML += `
+              <div id="module${modId}-lesson-${lessonId.id}" style="display:none;" class="lessons">
+                <h2>Test</h2>
+              </div>
+            `
+    console.log(lessonId.id);
+  }
+
+  function promptModuleTitle(){
+    document.getElementById('newModule').innerHTML += `<input id = "newModuleName" type="text" placeholder="Input module name"></input> 
+    <button class="button btn-secondary" onclick="addModule()">Save</button>`
+  }
   
-  
+  async function addModule(){
+    let moduleTitle = document.getElementById('newModuleName').value
+    let res = await fetch('<%= url %>:<%= port %>/api/addModule', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: 'include',
+                body:JSON.stringify({courseId:'<%=courseId%>', moduleTitle:moduleTitle})
+            });
+            
+            let modId = await res.json().id;
+            
+            document.getElementById('newModule').innerHTML = "";
+            document.getElementById("moduleList").innerHTML += `
+             <li>
+                <a id="module${modId}" class="moddropdown-toggle collapsed" href="#module${modId}Lessons" data-toggle="collapse" aria-expanded="false">${moduleTitle}</a>
+                <ul id="module${modId}Lessons" class="list-unstyled collapse">
+                  <li onclick="showLesson(event,'module-${modId}-lesson-0')">
+                    <a class="modsidebarlink modindentitem">Lesson1</a>  
+                  </li>
+                  <li><button class="button btn-secondary">Add Lessson</button> </li>  
+                </ul>
+              </li>
+            `
+
+            document.getElementById('lessonContainer').innerHTML += `
+              <div id="module-${modId}-lesson-0" style="display:none;" class="lessons">
+                <h2>Test</h2>
+              </div>
+            `
+  }
 
   function showLesson(event,lesson){
     let i, tabContent, tabLinks;
@@ -109,20 +230,20 @@
     for (i = 0; i < lessonContent.length; i++){
       lessonContent[i].style.display = "none";
     }
-
+    
     document.getElementById(lesson).style.display = "block";
   }
 
 
-  function openSection(event, page){
+  function openSection(event, page, contentClass, tabClass){
     let i, tabContent, tabLinks;
-    tabContent = document.getElementsByClassName("tabcontent");
+    tabContent = document.getElementsByClassName(contentClass);
 
     for (i = 0; i < tabContent.length; i++){
       tabContent[i].style.display = "none";
     }
 
-    tabLinks = document.getElementsByClassName('tablinks');
+    tabLinks = document.getElementsByClassName(tabClass);
     for (i = 0; i < tabLinks.length; i++){
       tabLinks[i].className = tabLinks[i].className.replace(" active", "");
     }

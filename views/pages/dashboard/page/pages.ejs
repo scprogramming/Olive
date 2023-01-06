@@ -36,8 +36,8 @@
                                     <th scope="row"><%= pages[i].page_title %></th>
                                     <td><%= pages[i].date_created %></td>
                                     <td><%= pages[i].page_path %></td>
-                                    <td><a href="/dashboard/editPage/<%= pages[i].page_id %>"><i class="fa fa-edit"></i></button></a></td>
-                                    <td><a href="#" onclick="deletePage(<%= pages[i].page_id %>,this)"><i class="fa fa-trash"></i></button></a></td>
+                                    <td><a href="/dashboard/editPage/<%= pages[i]._id %>"><i class="fa fa-edit"></i></button></a></td>
+                                    <td><a href="#" onclick="deletePage('<%= pages[i]._id %>',this)"><i class="fa fa-trash"></i></button></a></td>
                                 </tr>
                                 <% } %>
                             </tbody>
