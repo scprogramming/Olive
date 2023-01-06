@@ -1,10 +1,10 @@
 const express = require("express");
 const cors = require('cors');
 const auth = require('../utils/auth.js');
-const sqlHandle = require('../handlers/DbHandler.js');
 const posts = require("../utils/posts");
 const pages = require("../utils/pages");
 const authRouter = require("./authRouter");
+const mongoHandle = require('../handlers/MongoDbHandler')
 
 module.exports.appServer = class AppServer{
 
@@ -119,7 +119,7 @@ module.exports.appServer = class AppServer{
             const cookie = req.headers.cookie;
             const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
-            let redirect = await authRouter.determineRedirectLogin("editBlock",authRes, mongoConns,req);
+            let redirect = await authRouter.determineRedirectLogin("editBlock",authRes, mongoConn,req);
             res.render(redirect[0],redirect[1]);
 
         });
@@ -172,8 +172,8 @@ module.exports.appServer = class AppServer{
             let pageRes = await pages.getAllPages(mongoConn);
 
             res.render("../views/pages/client/home",{
-                posts:result[0],
-                pages:pageRes[0]
+                posts:result,
+                pages:pageRes
             });
         });
 

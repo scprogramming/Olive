@@ -1,19 +1,18 @@
 const express = require("express");
 const cors = require('cors');
 const auth = require('../utils/auth.js');
-const sqlHandle = require('../handlers/DbHandler.js');
 const posts = require("../utils/posts");
 const categories = require("../utils/categories");
 const pages = require('../utils/pages');
 const courses = require('../utils/courses');
-
 const mongoHandle = require('../handlers/MongoDbHandler.js');
+const parseMp = require('express-parse-multipart');
 
 module.exports.apiServer = class ApiServer{
 
     constructor(conf){
         this.conf = conf;
-
+        
         this.app = express()
         this.app.use(express.json({limit: conf.postLimit}));
 
@@ -24,7 +23,7 @@ module.exports.apiServer = class ApiServer{
         
         this.app.set('view engine','ejs');
         this.app.use('/public',express.static(__dirname + '\\public'));
-
+        
        
 
         this.app.post("/api/addModule", async(req,res) => {
@@ -35,6 +34,53 @@ module.exports.apiServer = class ApiServer{
             if (authRes[0]){
                 const {courseId,moduleTitle} = req.body;
                 let result = await courses.addModule(mongoConn,courseId,moduleTitle);
+                
+                if (result[0]){
+                    res.json({code:1, status:"Saved!",id:result[1]});
+                }else{
+                    res.json({code: -1, status:"Failed to save"});
+                }
+
+                res.end();
+                
+            }else{
+                res.status(401);
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
+            }
+        });
+
+        this.app.post("/api/uploadVideo", parseMp, async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+            
+            if (authRes[0]){
+                let result = await courses.saveVideo(mongoConn,req.formData);
+                
+                if (result[0]){
+                    res.json({code:1, status:"Saved!",id:result[1]});
+                }else{
+                    res.json({code: -1, status:"Failed to save"});
+                }
+
+                res.end();
+                
+            }else{
+                res.status(401);
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
+            }
+        });
+
+        this.app.post("/api/addLesson", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                const {courseId,lessonTitle,moduleId} = req.body;
+                let result = await courses.addLesson(mongoConn,courseId,lessonTitle,moduleId);
                 
                 if (result[0]){
                     res.json({code:1, status:"Saved!",id:result[1]});
@@ -382,13 +428,13 @@ module.exports.apiServer = class ApiServer{
             const authRes = await auth.verify(mongoConn, cookie, "admin", conf);
 
             if (authRes[0]){
-                const {title,data,categoryId} = req.body;
+                const {title,data,category} = req.body;
 
                 if (title === ''){
                     res.json({code:-1,status:"Failed to save, title cannot be empty"});
                 }else{
                     
-                    let result = await posts.addPost(mongoConn,title,data,categoryId);
+                    let result = await posts.addPost(mongoConn,title,data,category);
                 
                     if (result){
                         res.json({code:1, status:"Saved!"});

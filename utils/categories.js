@@ -1,5 +1,3 @@
-const sqlHandle = require('../handlers/DbHandler.js');
-
 module.exports.addCategory = async function addCategory(mongoConn,cat){
 
     try{
@@ -40,13 +38,12 @@ module.exports.deleteCategory = async function deleteCategory(mongoConn,id){
     
 } 
 
-module.exports.getAllCategories = async function getAllCategories(sqlConn){
+module.exports.getAllCategories = async function getAllCategories(mongoConn){
 
     try{
-        let posts = await sqlConn.queryReturnNoParam(`
-        SELECT * FROM categories`);
+        let categories = await mongoConn.getAll("Categories");
         
-        return posts;
+        return categories;
     }catch (err){
         console.error(err);
     }

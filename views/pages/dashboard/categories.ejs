@@ -81,9 +81,9 @@
                             <tbody>
                                 <% for (var i = 0; i < cats.length; i++){ %>
                                 <tr>
-                                    <th scope="row" id="catname-<%= cats[i].category_id %>"><%= cats[i].category_name %></th>
-                                    <td><button id="<%= cats[i].category_id %>" type="button" data-toggle="modal" data-target="#editCategory" class="btn btn-primary"><i class="fa fa-edit"></i></button></td>
-                                    <td><a href="#" onclick="deleteCategory(<%= cats[i].category_id %>,this)"><i class="fa fa-trash"></i></button></a></td>
+                                    <th scope="row" id="catname-<%= cats[i]._id %>"><%= cats[i].category_name %></th>
+                                    <td><button id="<%= cats[i]._id %>" type="button" data-toggle="modal" data-target="#editCategory" class="btn btn-primary"><i class="fa fa-edit"></i></button></td>
+                                    <td><a href="#" onclick="deleteCategory('<%= cats[i]._id %>',this)"><i class="fa fa-trash"></i></button></a></td>
                                 </tr>
                                 <% } %>
                             </tbody>

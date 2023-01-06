@@ -26,7 +26,7 @@
               <div class="col-8">
                 <form>
                   <label for="title" class="sr-only">Article Title: </label>
-                  <input name="title" type="title" id="title" class="form-control" value="<%= posts[0].article_title %>" required autofocus>
+                  <input name="title" type="title" id="title" class="form-control" value="<%= posts.article_title %>" required autofocus>
                   <select name="categories" id="categories">
                     <% for (var i = 0; i < categories.length; i++){ %>
                       <option value="<%= categories[i].category_id%>"><%= categories[i].category_name %></option>
@@ -81,7 +81,7 @@
               
                     
                   <div id="editor">
-                    <%- posts[0].content %>
+                    <%- posts.content %>
                   </div>
               
                   <p id="status"></p>
@@ -114,7 +114,7 @@
       
       var select = document.getElementById("categories");
       var articleData = JSON.stringify({data:quill.root.innerHTML,
-      title:document.getElementById("title").value, id:'<%= posts[0].post_id %>',categoryId:select.options[select.selectedIndex].value});
+      title:document.getElementById("title").value, id:'<%= posts._id %>',categoryId:select.options[select.selectedIndex].value});
       fetch('<%- url %>:<%- port %>/api/editPost', {
                 method:'POST',
                 headers: {

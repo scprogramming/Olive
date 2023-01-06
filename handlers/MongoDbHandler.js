@@ -47,6 +47,8 @@ module.exports.MongoDbHandler = class MongoDbHandler{
         const database = this.client.db(this.db);
         const coll = database.collection(collection);
 
-        return coll.find({});
+        const res = await coll.find({}).toArray();
+
+        return res;
     }
 }

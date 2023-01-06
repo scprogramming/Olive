@@ -1,7 +1,6 @@
-const sqlHandle = require('../handlers/DbHandler.js');
 const mongodb = require('mongodb');
 
-module.exports.addPost = async function addPost(mongoConn,title,data,categoryId){
+module.exports.addPost = async function addPost(mongoConn,title,data,category){
 
     try{
 
@@ -10,7 +9,7 @@ module.exports.addPost = async function addPost(mongoConn,title,data,categoryId)
         var mm = String(today.getMonth() + 1).padStart(2,'0');
         var yyyy = today.getFullYear();
 
-        await mongoConn.singleInsert("Posts",{article_title:title, content:data, date_created:yyyy + '-' + mm + '-' + dd, category_id:categoryId});
+        await mongoConn.singleInsert("Posts",{article_title:title, content:data, date_created:yyyy + '-' + mm + '-' + dd, category:category});
 
         return true;
     }catch (err){
