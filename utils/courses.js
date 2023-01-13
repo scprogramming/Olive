@@ -4,7 +4,7 @@ module.exports.addModule = async function addModule(mongoConn,courseId,moduleTit
     try{
 
         let course = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
-        course.modules.push({module_title:moduleTitle, lessons:[{lesson_title:"Lesson1",content:[{content:''}]}]});
+        course.modules.push({module_title:moduleTitle, lessons:[{lesson_title:"Lesson1",content: {data:"",type:""}}]});
         await mongoConn.singleUpdateWithId("Courses",courseId,{$set: {modules:course.modules}});
         
         return [true,course.modules.length - 1]
@@ -14,11 +14,15 @@ module.exports.addModule = async function addModule(mongoConn,courseId,moduleTit
     }
 }
 
-module.exports.saveVideo = async function saveVideo(mongoConn,formData){
+module.exports.saveVideo = async function saveVideo(mongoConn,video,lessonId, moduleId, courseId){
     try{
-        console.log(formData);
-        console.log(formData[0].data);
+        const videoPath = '/public/uploads/' + video[0].filename;
+        let course = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
+        course.modules[moduleId].lessons[lessonId].content.data = videoPath;
+        course.modules[moduleId].lessons[lessonId].content.type = "serverVideo";
 
+        await mongoConn.singleUpdateWithId("Courses",courseId,{$set: {modules:course.modules}})
+        return [true,videoPath];
     }catch(err){
         console.error(err);
         return [false,-1]
@@ -29,7 +33,7 @@ module.exports.addLesson = async function addLesson(mongoConn,courseId,lessonTit
     try{
         
         let course = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
-        course.modules[moduleId].lessons.push({lesson_title:lessonTitle,content:[{content:''}]});
+        course.modules[moduleId].lessons.push({lesson_title:lessonTitle,content: {data:"",type:""}});
         await mongoConn.singleUpdateWithId("Courses",courseId,{$set: {modules:course.modules}});
         
         return [true,course.modules[moduleId].lessons.length - 1]
@@ -87,7 +91,7 @@ module.exports.addCourse = async function addCourse(mongoConn,title,coursePath){
         var yyyy = today.getFullYear();
 
         let res = await mongoConn.singleInsert("Courses",{course_title:title, date_created: yyyy + '-' + mm + '-' + dd, course_path:coursePath, 
-        modules: [{module_title:"Module1", lessons: [{lesson_title:"Lesson1", content: [{content:""}] } ] } ]}
+        modules: [{module_title:"Module1", lessons: [{lesson_title:"Lesson1", content: {data:"",type:""} } ] } ]}
         );
         
         return [true,res.insertedId.toString()];

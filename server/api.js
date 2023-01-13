@@ -6,7 +6,21 @@ const categories = require("../utils/categories");
 const pages = require('../utils/pages');
 const courses = require('../utils/courses');
 const mongoHandle = require('../handlers/MongoDbHandler.js');
-const parseMp = require('express-parse-multipart');
+
+const multer = require('multer');
+const storage = multer.diskStorage(
+    {
+        destination:'server/public/uploads/',
+        filename: function(req, file, cb){
+            const orgName = file.originalname
+            const indexOfExtension = orgName.indexOf('.')
+            cb(null, orgName.substring(0,indexOfExtension) + '-' + Date.now() + orgName.substring(indexOfExtension));
+        }
+    }
+)
+const upload = multer({storage:storage, 
+                        limits:{fileSize: '500MB'},
+                        });
 
 module.exports.apiServer = class ApiServer{
 
@@ -17,7 +31,7 @@ module.exports.apiServer = class ApiServer{
         this.app.use(express.json({limit: conf.postLimit}));
 
         this.app.use(cors({
-            origin: [conf.serverAdress + ':' + conf.apiPort, conf.serverAddress],
+            origin: [conf.serverAddress + ':' + conf.apiPort, conf.serverAddress],
             credentials:true
         }));
         
@@ -50,16 +64,17 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
-        this.app.post("/api/uploadVideo", parseMp, async(req,res) => {
+        this.app.post("/api/uploadVideo", upload.array('video'), async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
             const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
-            
+
+
             if (authRes[0]){
-                let result = await courses.saveVideo(mongoConn,req.formData);
+                let result = await courses.saveVideo(mongoConn,req.files, req.body.lessonId, req.body.moduleId, req.body.courseId);
                 
                 if (result[0]){
-                    res.json({code:1, status:"Saved!",id:result[1]});
+                    res.json({code:1, status:"Saved!",video:result[1]});
                 }else{
                     res.json({code: -1, status:"Failed to save"});
                 }
