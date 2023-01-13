@@ -14,7 +14,7 @@ module.exports.appServer = class AppServer{
         this.app = express()
         this.app.use(express.json({limit: conf.postLimit}));
         this.app.use(cors({
-            origin: [conf.serverAdress + ':' + conf.apiPort, conf.serverAddress],
+            origin: [conf.serverAddress + ':' + conf.apiPort, conf.serverAddress],
             credentials:true
         }));
         this.app.set('view engine','ejs');

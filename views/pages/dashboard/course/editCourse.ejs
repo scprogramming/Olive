@@ -81,29 +81,36 @@
 
                       
                         <div id="module<%=i%>-lesson-<%=j%>" style="display:none;" class="lessons">
-                          <h2><%- lessons[j].lesson_title%></h2>
-                      <% for (let k = 0; k < content.length; k++) {%>
-                            
-                            <%-content[k].content%>
-                    <%}%>
-                    <div id="newBlock">
-                      <p>Add a new block of content</p>
-                      <button type="button btn-secondary" class="lessonContentButton" onclick="openSection(event, 'newVideoLesson<%=j%>', 'lessonBlock', 'lessonContentButton')">Video</button>
-                      <button type="button btn-secondary" class="lessonContentButton" onclick="openSection(event, 'newRichTextLesson<%=j%>', 'lessonBlock', 'lessonContentButton')">Rich Text</button>
-                      <div id="newVideoLesson<%=j%>" style="display:none;" class="lessonBlock">
-                        <h2>Upload a video</h2>
-                        <input type="file" accept="video/*" id="videoLesson<%=j%>Input" onchange="readVideo(event,'<%=j%>')" style="display:block">
-                        <video controls id="video-tagLesson<%=j%>" width="100%" height="50%">
+                        <h2><%- lessons[j].lesson_title%></h2>
 
-                        </video>
+                        <% if (lessons[j].content.data === '') {%>
+                            <div id="newBlock">
+                              <p>Add a new block of content</p>
+                              <button type="button btn-secondary" class="lessonContentButton" onclick="openSection(event, 'newVideoLesson<%=j%>', 'lessonBlock', 'lessonContentButton')">Video</button>
+                              <button type="button btn-secondary" class="lessonContentButton" onclick="openSection(event, 'newRichTextLesson<%=j%>', 'lessonBlock', 'lessonContentButton')">Rich Text</button>
+                              
+                                <div id="newVideoLesson<%=j%>" style="display:none;" class="lessonBlock">
+                                  <h2>Upload a video</h2>
+                                  <input type="file" accept="video/*" id="videoLesson<%=j%>Input" onchange="readVideo('<%=j%>','<%=i%>')" style="display:block">
+                                  <video controls id="video-tagLesson<%=j%>" width="100%" height="50%"></video>
 
-                      </div>
+                                </div>
+                              
 
-                      <div id="newRichTextLesson<%=j%>" style="display:none;" class="lessonBlock">
-                        <h2>Here is the rich text content</h2>
-                      </div>
-                    </div>
-                    </div>
+                              <div id="newRichTextLesson<%=j%>" style="display:none;" class="lessonBlock">
+                                <h2>Here is the rich text content</h2>
+                              </div>
+                            </div>
+                            </div>
+                            <%}else{%>
+
+                              <% if (lessons[j].content.type === 'serverVideo') {%>
+                                <video controls id="video-tagLesson<%=j%>" width="100%" height="50%" src='<%=lessons[j].content.data%>'></video>
+                              
+                              <%}%>
+  
+                            <%}%>
+                          </div>
                 
                     <%}%>
                     <%}%>
@@ -130,26 +137,23 @@
  
 <script>
 
-  async function uploadVideo(id){
+  async function readVideo(lessonId, moduleId){
+    const video = document.getElementById('videoLesson' + lessonId + 'Input')
 
-  }
+    const formData = new FormData();
+    formData.append("video",video.files[0]);
+    formData.append("lessonId", lessonId);
+    formData.append("moduleId", moduleId);
+    formData.append("courseId",'<%=courseId%>')
 
-  async function readVideo(event,id){
-    console.log(event.target.files[0]);
-    let file = event.target.files[0];
-    let blobURL = URL.createObjectURL(file);
-    document.getElementById("video-tagLesson" + id).src = blobURL;
-
-    console.log(await file.arrayBuffer());
-    
-    const fd = new FormData();
-    fd.append('video',file);
-
-    fetch('<%= url %>:<%= port %>/api/uploadVideo', {
+    const res = await fetch('<%= url %>:<%= port %>/api/uploadVideo', {
       method:'POST',
-      credentials: 'include',
-      body:fd
+      body:formData,
+      credentials:'include'
     });
+
+    const resJson = await res.json();
+    document.getElementById('video-tagLesson' + lessonId).src = resJson.video;
   }
 
   function promptLessonTitle(modId){
