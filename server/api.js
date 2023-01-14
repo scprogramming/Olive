@@ -1,38 +1,53 @@
 const express = require("express");
 const cors = require('cors');
 const auth = require('../utils/auth.js');
-const sqlHandle = require('../handlers/DbHandler.js');
 const posts = require("../utils/posts");
 const categories = require("../utils/categories");
 const pages = require('../utils/pages');
+const courses = require('../utils/courses');
+const mongoHandle = require('../handlers/MongoDbHandler.js');
+
+const multer = require('multer');
+const storage = multer.diskStorage(
+    {
+        destination:'server/public/uploads/',
+        filename: function(req, file, cb){
+            const orgName = file.originalname
+            const indexOfExtension = orgName.indexOf('.')
+            cb(null, orgName.substring(0,indexOfExtension) + '-' + Date.now() + orgName.substring(indexOfExtension));
+        }
+    }
+)
+const upload = multer({storage:storage, 
+                        limits:{fileSize: '500MB'},
+                        });
 
 module.exports.apiServer = class ApiServer{
 
     constructor(conf){
         this.conf = conf;
-
+        
         this.app = express()
         this.app.use(express.json({limit: conf.postLimit}));
 
         this.app.use(cors({
-            origin: [conf.serverAdress + ':' + conf.apiPort, conf.serverAddress],
+            origin: [conf.serverAddress + ':' + conf.apiPort, conf.serverAddress],
             credentials:true
         }));
         
         this.app.set('view engine','ejs');
         this.app.use('/public',express.static(__dirname + '\\public'));
+        
+       
 
-        this.app.post("/api/addCategory", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
+        this.app.post("/api/addModule", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
-                
-                
-                const {category_name} = req.body;
-                let result = await categories.addCategory(sqlConn,category_name);
+                const {courseId,moduleTitle} = req.body;
+                let result = await courses.addModule(mongoConn,courseId,moduleTitle);
                 
                 if (result[0]){
                     res.json({code:1, status:"Saved!",id:result[1]});
@@ -49,90 +64,132 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
-        this.app.post("/api/addPost", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
+
+        this.app.post("/api/addPaymentOption", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin", conf);
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
-                console.log(req.body);
-                
-                const {title,data,categoryId} = req.body;
+                let courseId = req.body.courseId;
+                let planName = req.body.planName;
+                let planType = req.body.planType;
+                let currency = '';
+                let payAmount = '';
+                let frequency = '';
 
-                if (title === ''){
-                    res.json({code:-1,status:"Failed to save, title cannot be empty"});
-                }else{
-                    
-                    let result = await posts.addPost(sqlConn,title,data,categoryId);
-                
-                    if (result){
-                        res.json({code:1, status:"Saved!"});
-                    }else{
-                        res.json({code:-1, status:"Failed to save"});
-                    }
-                    }
-                
-            }else{
-                res.status(401);
-                res.json({code:-1, status:"Requires authorization"});
-            }
-        });
+                switch (req.body.planType){
+                    case 'One-time':
+                        currency = req.body.currency;
+                        payAmount = req.body.payAmount;
+                        break;
+                    case 'Subscription':
+                        currency = req.body.currency;
+                        payAmount = req.body.payAmount;
+                        frequency = req.body.frequency;
+                        break;
+                }
 
-        this.app.post("/api/addBlock", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
-            const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+                let result = await courses.savePaymentPlan(mongoConn,courseId, planName, planType, currency, payAmount, frequency);
 
-            if (authRes[0]){
-                const {block_id, page_id,content,order} = req.body;
-                console.log(page_id);
-                let result = await pages.addBlock(sqlConn,block_id, page_id, content,order);
-                
-                if (result){
+                if (result[0]){
                     res.json({code:1, status:"Saved!"});
                 }else{
                     res.json({code: -1, status:"Failed to save"});
                 }
+
+                res.end();
+
+            }else{
+                res.status(401);
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
+            }
+
+        });
+
+        this.app.post("/api/uploadLessonRichText", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+
+            if (authRes[0]){
+                let {data,courseId,moduleId,lessonId} = req.body;
+                let result = await courses.saveRichText(mongoConn,data, courseId, moduleId, lessonId);
+
+                if (result[0]){
+                    res.json({code:1, status:"Saved!"});
+                }else{
+                    res.json({code: -1, status:"Failed to save"});
+                }
+
+                res.end();
+
+            }else{
+                res.status(401);
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
+            }
+
+        });
+
+        this.app.post("/api/uploadVideo", upload.array('video'), async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+
+            if (authRes[0]){
+                let result = await courses.saveVideo(mongoConn,req.files, req.body.lessonId, req.body.moduleId, req.body.courseId);
+                
+                if (result[0]){
+                    res.json({code:1, status:"Saved!",video:result[1]});
+                }else{
+                    res.json({code: -1, status:"Failed to save"});
+                }
+
+                res.end();
                 
             }else{
                 res.status(401);
-                res.json({code: -1, status:"Requires authorization"});
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
             }
         });
 
-        this.app.post("/api/nextBlockId", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
+        this.app.post("/api/addLesson", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
-                const {page_id} = req.body;
-                let result = await pages.nextBlockId(sqlConn,page_id);
+                const {courseId,lessonTitle,moduleId} = req.body;
+                let result = await courses.addLesson(mongoConn,courseId,lessonTitle,moduleId);
                 
                 if (result[0]){
-                    res.json({code:1, status:"Success!",block_id:result[1], order:result[2]});
+                    res.json({code:1, status:"Saved!",id:result[1]});
                 }else{
-                    res.json({code:1, status:"Failed to save"});
+                    res.json({code: -1, status:"Failed to save"});
                 }
+
+                res.end();
                 
             }else{
                 res.status(401);
-                res.json({code:1, status:"Requires authorization"});
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
             }
         });
 
         this.app.post("/api/editBlock", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 const {blockId,pageId,content} = req.body;
-                let result = await pages.editBlock(sqlConn,blockId, content,pageId);
+                let result = await pages.editBlock(mongoConn,blockId, content,pageId);
                 
                 if (result[0]){
                     res.json({code:1, status:"Saved!",block_id:result[1]});
@@ -146,26 +203,26 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
-        this.app.post("/api/addPage", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
+        this.app.post("/api/addCourse", async(req,res) => {
+
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
-                const {title,page_path} = req.body;
+                const {title,course_path} = req.body;
 
                 if (title === ''){
                     res.json({code:-1,status:"Failed to save, title cannot be empty"});
-                }else if (page_path == ''){
+                }else if (course_path == ''){
                     res.json({code:-1,status:"Path cannot be blank"});
-                }else if (await pages.checkPath(sqlConn, page_path) == -1){
+                }else if (await courses.checkPath(mongoConn, course_path) == -1){
                     res.json({code:-1, status:"Page path already exists, select a unique path"});
                 }else{
-                    let result = await pages.addPage(sqlConn,title,page_path);
+                    let result = await courses.addCourse(mongoConn,title,course_path);
                 
                     if (result[0]){
-                        res.json({code:1, status:"Saved!",page_id:result[1]});
+                        res.json({code:1, status:"Saved!",course_id:result[1]});
                     }else{
                         res.json({code: -1, status:"Failed to save"});
                     }
@@ -176,15 +233,16 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
+        
+
         this.app.post("/api/deleteBlock/", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 const {block_id,page_id} = req.body;
-                let result = await pages.deleteBlock(sqlConn,block_id, page_id);
+                let result = await pages.deleteBlock(mongoConn,block_id, page_id);
                 
                 if (result){
                     res.json({code:1,status:"Deleted!"});
@@ -199,15 +257,14 @@ module.exports.apiServer = class ApiServer{
         });
 
         this.app.post("/api/deletePost/:id", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 
                 
-                let result = await posts.deletePost(sqlConn,req.params.id);
+                let result = await posts.deletePost(mongoConn,req.params.id);
                 
                 if (result){
                     res.json({code:1,status:"Deleted!"});
@@ -222,15 +279,14 @@ module.exports.apiServer = class ApiServer{
         });
 
         this.app.post("/api/deletePage/:id", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 
                 
-                let result = await pages.deletePage(sqlConn,req.params.id);
+                let result = await pages.deletePage(mongoConn,req.params.id);
                 
                 if (result){
                     res.json({code:1, status:"Deleted!"});
@@ -244,17 +300,143 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
-        this.app.post("/api/deleteCategory/:id", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
+        
 
+        this.app.post("/api/updatePageOrder", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 
+                const {block_id1, block_id2, page_id} = req.body;
+                let result = await pages.updateOrder(mongoConn,block_id1, block_id2, page_id);
                 
-                let result = await categories.deleteCategory(sqlConn,req.params.id);
+                if (result){
+                    res.json({code:1, status:"Saved!"});
+                }else{
+                    res.json({code: -1, status:"Failed to save"});
+                }
+
+                res.end();
+                
+            }else{
+                res.status(401);
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
+            }
+        });
+
+        this.app.post("/api/nextBlockId", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                const {page_id} = req.body;
+                let result = await pages.nextBlockId(mongoConn,page_id);
+                
+                if (result[0]){
+                    res.json({code:1, status:"Success!",block_id:result[1], order:result[2]});
+                }else{
+                    res.json({code:1, status:"Failed to save"});
+                }
+                
+            }else{
+                res.status(401);
+                res.json({code:1, status:"Requires authorization"});
+            }
+        });
+
+        this.app.post("/api/addBlock", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                const {page_id,content,order} = req.body;
+
+                let result = await pages.addBlock(mongoConn,page_id, content,order);
+                
+                if (result){
+                    res.json({code:1, status:"Saved!"});
+                }else{
+                    res.json({code: -1, status:"Failed to save"});
+                }
+                
+            }else{
+                res.status(401);
+                res.json({code: -1, status:"Requires authorization"});
+            }
+        });
+
+        this.app.post("/api/addPage", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                const {title,page_path} = req.body;
+
+                if (title === ''){
+                    res.json({code:-1,status:"Failed to save, title cannot be empty"});
+                }else if (page_path == ''){
+                    res.json({code:-1,status:"Path cannot be blank"});
+                }else if (await pages.checkPath(mongoConn, page_path) == -1){
+                    res.json({code:-1, status:"Page path already exists, select a unique path"});
+                }else{
+                    let result = await pages.addPage(mongoConn,title,page_path);
+                
+                    if (result[0]){
+                        res.json({code:1, status:"Saved!",page_id:result[1]});
+                    }else{
+                        res.json({code: -1, status:"Failed to save"});
+                    }
+                }  
+            }else{
+                res.status(401);
+                res.json({code: -1, status:"Requires authorization"});
+            }
+        });
+
+        this.app.post("/api/editPageTitle", async(req,res) => {
+            var mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                
+                const {page_id,title} = req.body;
+
+                if (title === ''){
+                    res.json({code:-1,status:"Failed to save, title cannot be empty"});
+                }else{
+                    let result = await pages.editPageTitle(mongoConn,page_id,title);
+                
+                    if (result){
+                        res.json({code: 1, status:"Saved!"});
+                    }else{
+                        res.json({code: -1, status:"Failed to save"});
+                    }
+                }
+                
+            }else{
+                res.status(401);
+                res.json({code: -1, status:"Requires authorization"});
+            }
+        });
+
+        this.app.post("/api/deleteCategory/:id", async(req,res) => {
+            var mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                
+                let result = await categories.deleteCategory(mongoConn,req.params.id);
                 
                 if (result){
                     res.json({code:1,status:"Deleted!"});
@@ -270,19 +452,44 @@ module.exports.apiServer = class ApiServer{
                 res.end();
             }
         });
+        
+        this.app.post("/api/addCategory", async(req,res) => {
+            var mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                
+                
+                const {category_name} = req.body;
+                let result = await categories.addCategory(mongoConn,category_name);
+                
+                if (result[0]){
+                    res.json({code:1, status:"Saved!",id:result[1]});
+                }else{
+                    res.json({code: -1, status:"Failed to save"});
+                }
+
+                res.end();
+                
+            }else{
+                res.status(401);
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
+            }
+        });
 
         this.app.post("/api/editCategory", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
 
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 
                 
                 const {category_id, category_name} = req.body;
-                let result = await categories.editCategory(sqlConn,category_id,category_name);
+                let result = await categories.editCategory(mongoConn,category_id,category_name);
                 
                 if (result){
                     res.json({code:1,status:"Saved!", id:category_id});
@@ -299,74 +506,45 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
-        this.app.post("/api/updatePageOrder", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
 
+        this.app.post("/api/addPost", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+            const authRes = await auth.verify(mongoConn, cookie, "admin", conf);
 
             if (authRes[0]){
-                
-                const {block_id1, block_id2, page_id} = req.body;
-                let result = await pages.updateOrder(sqlConn,block_id1, block_id2, page_id);
-                
-                if (result){
-                    res.json({code:1, status:"Saved!"});
-                }else{
-                    res.json({code: -1, status:"Failed to save"});
-                }
-
-                res.end();
-                
-            }else{
-                res.status(401);
-                res.json({code:-1, status:"Requires authorization"});
-                res.end();
-            }
-        });
-
-        this.app.post("/api/editPageTitle", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
-
-            const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
-
-            if (authRes[0]){
-                
-                const {page_id,title} = req.body;
+                const {title,data,category} = req.body;
 
                 if (title === ''){
                     res.json({code:-1,status:"Failed to save, title cannot be empty"});
                 }else{
-                    let result = await pages.editPageTitle(sqlConn,page_id,title);
+                    
+                    let result = await posts.addPost(mongoConn,title,data,category);
                 
                     if (result){
-                        res.json({code: 1, status:"Saved!"});
+                        res.json({code:1, status:"Saved!"});
                     }else{
-                        res.json({code: -1, status:"Failed to save"});
+                        res.json({code:-1, status:"Failed to save"});
                     }
-                }
+                    }
                 
             }else{
                 res.status(401);
-                res.json({code: -1, status:"Requires authorization"});
+                res.json({code:-1, status:"Requires authorization"});
             }
         });
 
         this.app.post("/api/editPost", async(req,res) => {
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
 
             const cookie = req.headers.cookie;
-            const authRes = await auth.verify(sqlConn, cookie, "admin",conf);
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
                 
                 
                 const {title,data,id,categoryId} = req.body;
-                let result = await posts.editPost(sqlConn,title,data,id,categoryId);
+                let result = await posts.editPost(mongoConn,title,data,id,categoryId);
                 
                 if (result){
                     res.json({code:1, status:"Saved!"});
@@ -383,12 +561,10 @@ module.exports.apiServer = class ApiServer{
         this.app.post("/api/registration", async(req,res) => {
 
             if (conf.registrationEnabled){
-                var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                    conf.user,conf.pass,conf.database);
-
+                let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
                 try{
                     const {email, user_password, confirm_password, first_name, last_name} = req.body;
-                    var result = await auth.registerUser(email, user_password, confirm_password, first_name, last_name, sqlConn,conf);
+                    var result = await auth.registerUser(email, user_password, confirm_password, first_name, last_name, mongoConn,conf);
                 
                     if (result == 1){
                         res.status(200);
@@ -418,12 +594,11 @@ module.exports.apiServer = class ApiServer{
 
         this.app.post("/api/login", async(req,res) => {
 
-            var sqlConn = new sqlHandle.SqlHandler(conf.host,conf.port,
-                conf.user,conf.pass,conf.database);
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
 
             try{
                 const {email, user_password} = req.body;
-                var result = await auth.login(email, user_password, sqlConn,this.conf);
+                var result = await auth.login(email, user_password, mongoConn,this.conf.tokenExpires);
 
                 if (result[0]){
                     res.status(200);

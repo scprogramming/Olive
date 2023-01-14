@@ -1,48 +1,72 @@
 const posts = require("../utils/posts");
 const categories = require("../utils/categories");
 const pages = require('../utils/pages');
-const jsdom = require('jsdom');
+const courses = require('../utils/courses');
 
-module.exports.determineRedirectLogin =  async function determineRedirectLogin(page,status,sqlConn,req){
+module.exports.determineRedirectLogin =  async function determineRedirectLogin(page,status,mongoConn,req){
     if (status[0]){
         let result = "";
         switch(page){
-            
+            case "editCourse":
+                let courseContent = await courses.getAllContent(mongoConn,req.params.id);
+                if (courseContent === null){
+                    return ["../views/pages/pageNotFound"]
+                }else{
+                    return ["../views/pages/dashboard/course/editCourse",{
+                        url:conf.serverAddress,
+                        port:conf.apiPort,
+                        courseId:req.params.id,
+                        content:courseContent,
+                    }];
+                }
+            case "addCourse":
+                return ["../views/pages/dashboard/course/addCourse",{
+                    url:conf.serverAddress,
+                    port:conf.apiPort
+                }];
+            case "courses":
+                result = await courses.getAllCourses(mongoConn);
+
+                return ["../views/pages/dashboard/course/courses",{
+                    url:conf.serverAddress,
+                    port:conf.apiPort,
+                    courses:result
+                }];
             case "categories":                        
-                result = await categories.getAllCategories(sqlConn);
+                result = await categories.getAllCategories(mongoConn);
 
                 return ["../views/pages/dashboard/categories", {
                     url:conf.serverAddress,
                     port:conf.apiPort,
-                    cats:result[0]
+                    cats:result
                 }];
             case "editPost":
-                result = await posts.getPostWithId(sqlConn,req.params.id);
-                let cats = await categories.getAllCategories(sqlConn);
+                result = await posts.getPostWithId(mongoConn,req.params.id);
+                let cats = await categories.getAllCategories(mongoConn);
                 return ["../views/pages/dashboard/post/editPost",{
                     url:conf.serverAddress,
                     port:conf.apiPort,
-                    posts:result[0],
-                    categories: cats[0]
+                    posts:result,
+                    categories: cats
                 }];
             case "posts":
-                result = await posts.getAllPosts(sqlConn);
+                result = await posts.getAllPosts(mongoConn);
                 return ["../views/pages/dashboard/post/posts",{
                     url:conf.serverAddress,
                     port:conf.apiPort,
-                    posts:result[0]
+                    posts:result
                 }];
             case "addPost":
-                result = await categories.getAllCategories(sqlConn);
+                result = await categories.getAllCategories(mongoConn);
                 return["../views/pages/dashboard/post/addPost",{
-                    categories:result[0],
+                    categories:result,
                     url:conf.serverAddress,
                     port:conf.apiPort}
                 ];
             case "pages":
-                result = await pages.getAllPages(sqlConn);
+                result = await pages.getAllPages(mongoConn);
                 return ["../views/pages/dashboard/page/pages", {
-                    pages:result[0],
+                    pages:result,
                     url:conf.serverAddress,
                     port:conf.apiPort
                 }];
@@ -52,7 +76,7 @@ module.exports.determineRedirectLogin =  async function determineRedirectLogin(p
                     port:conf.apiPort
                 }];
             case "addBlock":
-                result = await pages.getBlock(sqlConn, req.params.type,'add');
+                result = await pages.getBlock(mongoConn, req.params.type,'add');
 
                 return ["../views/pages/dashboard/page/addBlock",{
                     url:conf.serverAddress,
@@ -62,8 +86,8 @@ module.exports.determineRedirectLogin =  async function determineRedirectLogin(p
                     pageId:req.params.id
                 }];
             case "editBlock":
-                result = await pages.getBlock(sqlConn, req.params.type,'edit');
-                const existingContent = await pages.getBlockContent(sqlConn, req.params.id, req.params.blockId);
+                result = await pages.getBlock(mongoConn, req.params.type,'edit');
+                const existingContent = await pages.getBlockContent(mongoConn, req.params.id, req.params.blockId);
 
                 return ["../views/pages/dashboard/page/editBlock",{
                     url:conf.serverAddress,
@@ -72,20 +96,20 @@ module.exports.determineRedirectLogin =  async function determineRedirectLogin(p
                     scripts:result[1],
                     pageId:req.params.id,
                     blockId: req.params.blockId,
-                    editContent: existingContent
+                    editContent: existingContent.content
                 }];
             case "editPage":
-                let dataContent = await pages.getAllContent(sqlConn,req.params.id);
+                let dataContent = await pages.getAllContent(mongoConn,req.params.id);
                 
-                if (dataContent[1][0].length == 0){
+                if (dataContent === undefined){
                     return ["../views/pages/pageNotFound"]
                 }else{
                     return ["../views/pages/dashboard/page/editPage",{
                         url:conf.serverAddress,
                         port:conf.apiPort,
                         pageId:req.params.id,
-                        title:dataContent[1][0],
-                        content:dataContent[0][0]
+                        title:dataContent[1],
+                        content:dataContent[0]
                     }];
                 }
                 
