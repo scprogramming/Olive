@@ -123,7 +123,65 @@
                   </div>
 
                   <div id="pricing" class="tabcontent" style="display:none;">
-                    <h3>Pricing</h3>
+                    <div id="paymentTable" style="display:block;">
+                        <h3>Pricing</h3>
+                        <button class="btn btn-primary" onclick="enableAddPayment()">Add Plan</button>
+                        <table class = "table" id="payTable">
+                          <thead>
+                              <tr>
+                                  <th scope="col">Plan Name</th>
+                                  <th scope="col">Plan Type</th>
+                                  <th scope="col">Price</th>
+                                  <th scope="col">Status</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <% let paymentOptions = content.payment_options %>
+                              <% for (var i = 0; i < paymentOptions.length; i++){ %>
+                              <tr>
+                                  <th scope="row"><%= paymentOptions[i].plan_name %></th>
+                                  <td><%= paymentOptions[i].plan_type %></td>
+                                  <td><%= paymentOptions[i].pay_amount %></td>
+                                  <td><%= paymentOptions[i].status %></td>
+                              </tr>
+                              <% } %>
+                          </tbody>
+                      </table>
+                    </div>
+
+                    <div id="addPaymentForm" style="display:none;">
+                      <h3>Add a payment plan</h3>
+                      <button class="btn btn-primary" onclick="addPayment()">Save</button>
+                      <button class="btn btn-danger" onclick="displayPaymentTable()">Cancel</button>
+                      <br>
+                      <label for="planTypes">Choose a payment plan type</label>
+                      <select name="planTypes" id="planTypes" onchange="checkPayForm()">
+                        <option value="Free">Free</option>
+                        <option value="One-time">One time payment</option>
+                        <option value="Subscription">Subscription</option>
+                      </select>
+
+                      <label for="planNameInput">Enter a plan name</label>
+                      <input id="planNameInput" type="text" required placeholder="plan name">
+
+                      <label for="currencySelect" class="paidOption subscriptionOption" style="display:none">Select a currency</label>
+                      <select name="currencySelect" id="currencySelect" class="paidOption subscriptionOption" style="display:none">
+                        <option value="USD">USD</option>
+                        <option value="CAD">CAD</option>
+                      </select>
+
+                      <label for="payAmount" class="paidOption subscriptionOption" style="display:none">Enter the amount to pay</label>
+                      <input type="text" id="payAmount" class="paidOption subscriptionOption" style="display:none" placeholder="Payment amount">
+
+                      <label for="frequencyPay" class="subscriptionOption" style="display:none">Enter the payment frequency</label>
+                      <select name="frequencyPay" id="frequencyPay" class="subscriptionOption" style="display:none">
+                        <option value="Monthly">Monthly</option>
+                        <option value="Yearly">Yearly</option>
+                      </select>
+
+
+                    </div>
+
                   </div>
 
                   <div id="landing" class="tabcontent" style="display:none">
@@ -152,6 +210,95 @@ var quill = new Quill('#editor', {
       },  
       theme: 'snow'
     });
+
+
+  async function addPayment(){
+    const plan = document.getElementById('planTypes').value
+    const planName = document.getElementById('planNameInput').value;
+    let body = {};
+    let currency = "";
+    let payAmount = "";
+    let frequency = "";
+
+    switch(plan){
+      case 'Free':
+        body = {courseId:'<%=courseId%>', planName:planName, planType:'Free'}
+        break;
+      case 'One-time':
+        currency = document.getElementById('currencySelect').value;
+        payAmount = document.getElementById('payAmount').value;
+        body  = {courseId:'<%=courseId%>', planName:planName, planType:'One-time',currency:currency, payAmount: payAmount};
+        break;
+      case 'Subscription':
+        currency = document.getElementById('currencySelect').value;
+        payAmount = document.getElementById('payAmount').value;
+        frequency = document.getElementById('frequencyPay').value;
+        body  = {courseId:'<%=courseId%>', planName:planName, planType:'Subscription', currency:currency, payAmount: payAmount, frequency:frequency};
+        break;
+    }
+
+    await fetch('<%= url %>:<%= port %>/api/addPaymentOption', {
+        method:'POST',
+        body:JSON.stringify(body), 
+        headers: {
+        'Content-Type': 'application/json'
+      },
+        credentials:'include'
+      });
+
+      let table = document.getElementById('payTable');
+      let row = table.insertRow(1);
+      let cell1 = row.insertCell(0);
+      let cell2 = row.insertCell(1);
+      let cell3 = row.insertCell(2);
+
+      cell1.outerHTML = `<th scope="row">${planName}</th>`;
+      cell2.innerHTML = plan;
+      cell3.innerHTML = payAmount;
+      displayPaymentTable();
+  }
+
+  function checkPayForm(){
+    const plan = document.getElementById('planTypes').value
+
+    if (plan === 'One-time'){
+      const hideForm = document.getElementsByClassName("subscriptionOption");
+
+      for (i = 0; i < hideForm.length; i++){
+        hideForm[i].style.display = "none";
+      }
+
+      const planForm = document.getElementsByClassName("paidOption");
+
+      for (i = 0; i < planForm.length; i++){
+        planForm[i].style.display = "block";
+      }
+
+    }else if (plan === 'Free'){
+      const planForm = document.getElementsByClassName("subscriptionOption");
+
+      for (i = 0; i < planForm.length; i++){
+        planForm[i].style.display = "none";
+      }
+
+    }else if (plan === 'Subscription'){
+      const planForm = document.getElementsByClassName("subscriptionOption");
+
+      for (i = 0; i < planForm.length; i++){
+        planForm[i].style.display = "block";
+      }
+    }
+  }
+
+  function enableAddPayment(){
+    document.getElementById('addPaymentForm').style.display = 'block';
+    document.getElementById('paymentTable').style.display = 'none';
+  }
+
+  function displayPaymentTable(){
+    document.getElementById('addPaymentForm').style.display = 'none';
+    document.getElementById('paymentTable').style.display = 'block';
+  }
 
   async function submitRichText(lessonId,moduleId){
       const richTextData = JSON.stringify({data:quill.root.innerHTML,courseId:'<%=courseId%>',lessonId:lessonId,moduleId:moduleId});

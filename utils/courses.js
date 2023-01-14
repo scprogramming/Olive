@@ -1,5 +1,18 @@
 const mongodb = require('mongodb');
 
+module.exports.savePaymentPlan = async function savePaymentPlan(mongoConn,courseId, planName, planType, currency, payAmount, frequency){
+    try{
+        let course = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
+        course.payment_options.push({plan_name:planName, plan_type:planType, currency:currency, pay_amount:payAmount, frequency:frequency, status:'enabled'});
+        await mongoConn.singleUpdateWithId("Courses",courseId, {$set: {payment_options:course.payment_options}});
+
+        return [true,1];
+    }catch(err){
+        console.log(err);
+        return [false, -1];
+    }
+}
+
 module.exports.addModule = async function addModule(mongoConn,courseId,moduleTitle){
     try{
 
@@ -105,7 +118,7 @@ module.exports.addCourse = async function addCourse(mongoConn,title,coursePath){
         var mm = String(today.getMonth() + 1).padStart(2,'0');
         var yyyy = today.getFullYear();
 
-        let res = await mongoConn.singleInsert("Courses",{course_title:title, date_created: yyyy + '-' + mm + '-' + dd, course_path:coursePath, 
+        let res = await mongoConn.singleInsert("Courses",{course_title:title, payment_options:[], date_created: yyyy + '-' + mm + '-' + dd, course_path:coursePath, 
         modules: [{module_title:"Module1", lessons: [{lesson_title:"Lesson1", content: {data:"",type:""} } ] } ]}
         );
         
