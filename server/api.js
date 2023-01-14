@@ -64,6 +64,50 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
+
+        this.app.post("/api/addPaymentOption", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                let courseId = req.body.courseId;
+                let planName = req.body.planName;
+                let planType = req.body.planType;
+                let currency = '';
+                let payAmount = '';
+                let frequency = '';
+
+                switch (req.body.planType){
+                    case 'One-time':
+                        currency = req.body.currency;
+                        payAmount = req.body.payAmount;
+                        break;
+                    case 'Subscription':
+                        currency = req.body.currency;
+                        payAmount = req.body.payAmount;
+                        frequency = req.body.frequency;
+                        break;
+                }
+
+                let result = await courses.savePaymentPlan(mongoConn,courseId, planName, planType, currency, payAmount, frequency);
+
+                if (result[0]){
+                    res.json({code:1, status:"Saved!"});
+                }else{
+                    res.json({code: -1, status:"Failed to save"});
+                }
+
+                res.end();
+
+            }else{
+                res.status(401);
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
+            }
+
+        });
+
         this.app.post("/api/uploadLessonRichText", async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
