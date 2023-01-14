@@ -1,30 +1,10 @@
-const sqlHandle = require('../handlers/DbHandler.js');
-
-module.exports.addCategory = async function addCategory(sqlConn,cat){
+module.exports.addCategory = async function addCategory(mongoConn,cat){
 
     try{
 
-        let nameExists = await sqlConn.queryReturnWithParams(`
-        SELECT COUNT(*) AS cat_count FROM categories WHERE category_name = ?`, [cat])
+        const res = await mongoConn.singleInsert("Categories", {category_name:cat})
 
-        if (nameExists[0][0].cat_count == 0){
-            let getNextId = await sqlConn.queryReturnNoParam(`
-            SELECT MAX(category_id) AS max_id FROM categories`);
-    
-            let targetId = 0;
-    
-            if (getNextId[0][0].max_id !== null){
-                targetId = parseInt(getNextId[0][0].max_id) + 1
-            }
-             
-    
-            await sqlConn.queryReturnWithParams(`INSERT INTO categories(category_id, category_name)
-            VALUES (?,?)`,[targetId,cat]);
-            
-            return [true,targetId];
-        }else{
-            return [false];
-        }
+        return [true,res.insertedId.toString()];
         
     }catch (err){
         console.log(err);
@@ -33,11 +13,22 @@ module.exports.addCategory = async function addCategory(sqlConn,cat){
     
 } 
 
-module.exports.editCategory = async function editCategory(sqlConn,id,cat){
+module.exports.editCategory = async function editCategory(mongoConn,id,cat){
 
     try{
-        await sqlConn.queryReturnWithParams(`
-        UPDATE categories SET category_name = ? WHERE category_id = ?`,[cat,id]);
+        await mongoConn.singleUpdateWithId("Categories",id,{$set: {category_name:cat}})
+        return true;
+    }catch (err){
+        console.log(err);
+        return false;
+    }
+    
+} 
+
+module.exports.deleteCategory = async function deleteCategory(mongoConn,id){
+
+    try{
+        await mongoConn.singleDeleteWithId('Categories',id);
 
         return true;
     }catch (err){
@@ -47,27 +38,12 @@ module.exports.editCategory = async function editCategory(sqlConn,id,cat){
     
 } 
 
-module.exports.deleteCategory = async function deleteCategory(sqlConn,id){
+module.exports.getAllCategories = async function getAllCategories(mongoConn){
 
     try{
-        await sqlConn.queryReturnWithParams(`
-        DELETE FROM categories WHERE category_id = ?`, [id]);
-
-        return true;
-    }catch (err){
-        console.log(err);
-        return false;
-    }
-    
-} 
-
-module.exports.getAllCategories = async function getAllCategories(sqlConn){
-
-    try{
-        let posts = await sqlConn.queryReturnNoParam(`
-        SELECT * FROM categories`);
+        let categories = await mongoConn.getAll("Categories");
         
-        return posts;
+        return categories;
     }catch (err){
         console.error(err);
     }

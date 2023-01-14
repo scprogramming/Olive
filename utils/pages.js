@@ -1,6 +1,6 @@
-const sqlHandle = require('../handlers/DbHandler.js');
+const mongodb = require('mongodb');
 
-module.exports.addPage = async function addPage(sqlConn,title,pagePath){
+module.exports.addPage = async function addPage(mongoConn,title,pagePath){
 
     try{
 
@@ -9,20 +9,10 @@ module.exports.addPage = async function addPage(sqlConn,title,pagePath){
         var mm = String(today.getMonth() + 1).padStart(2,'0');
         var yyyy = today.getFullYear();
 
-        let getNextId = await sqlConn.queryReturnNoParam(`
-        SELECT MAX(page_id) AS max_id FROM pages`);
+        const res = await mongoConn.singleInsert("Pages",{page_title:title, date_created:yyyy + '-' + mm + '-' + dd, page_path: pagePath,
+            page_content:[]});
 
-        let targetId = 0;
-
-        if (getNextId[0][0].max_id !== null){
-            targetId = parseInt(getNextId[0][0].max_id) + 1
-        }
-         
-
-        await sqlConn.queryReturnWithParams(`INSERT INTO pages(page_id, page_title, date_created,page_path)
-        VALUES (?,?,?,?)`,[targetId,title, yyyy + '-' + mm + '-' + dd,pagePath]);
-        
-        return [true,targetId];
+        return [true,res.insertedId.toString()];
     }catch (err){
         console.log(err);
         return [false];
@@ -30,12 +20,16 @@ module.exports.addPage = async function addPage(sqlConn,title,pagePath){
     
 } 
 
-module.exports.addBlock = async function addBlock(sqlConn,block_id, pageId,content,order){
+module.exports.addBlock = async function addBlock(mongoConn,pageId,content,order){
 
     try{
          
-        await sqlConn.queryReturnWithParams(`INSERT INTO page_content
-        VALUES (?,?,?,?)`,[block_id,pageId,content,order]);
+        const res = await mongoConn.singleFind('Pages',{_id:new mongodb.ObjectId(pageId)});
+        res.page_content.push({content:content})
+
+        await mongoConn.singleUpdateWithId('Pages',pageId,{$set: {page_content:res.page_content}});
+
+        console.log(res.page_content);
         
         return true;
     }catch (err){
@@ -46,11 +40,10 @@ module.exports.addBlock = async function addBlock(sqlConn,block_id, pageId,conte
 } 
 
 
-module.exports.editPageTitle = async function editPageTitle(sqlConn,id,title){
+module.exports.editPageTitle = async function editPageTitle(mongoConn,id,title){
 
     try{
-        await sqlConn.queryReturnWithParams(`
-        UPDATE pages SET page_title = ? WHERE page_id = ?`, [title,id]);
+        await mongoConn.singleUpdateWithId("Pages", id, {$set: {page_title:title}});
 
         return true;
     }catch (err){
@@ -60,36 +53,24 @@ module.exports.editPageTitle = async function editPageTitle(sqlConn,id,title){
     
 } 
 
-module.exports.nextBlockId = async function nextBlockId(sqlConn, page_id){
+module.exports.nextBlockId = async function nextBlockId(mongoConn, page_id){
     try{
-        let getNextId = await sqlConn.queryReturnNoParam(`
-        SELECT MAX(block_id) AS max_id FROM page_content`);
 
-        let targetId = 0;
-
-        if (getNextId[0][0].max_id !== null){
-            targetId = parseInt(getNextId[0][0].max_id) + 1
-        }
-
-        let getOrder = await sqlConn.queryReturnWithParams(`
-        SELECT MAX(content_order) AS maxOrder FROM page_content WHERE page_id = ?`,[page_id]);
-
-        let targetOrder = 0;
-
-        if (getOrder[0][0].maxOrder !== null){
-            targetOrder = parseInt(getOrder[0][0].maxOrder) + 1
-        }
+        let res = await mongoConn.singleFind("Pages",{_id:new mongodb.ObjectId(page_id)})
+        let len = res.page_content.length;
          
-        return [true,targetId,targetOrder];
+        return [true,len,len];
     }catch (err){
         console.log(err);
         return [false,-1,-1];
     }
 }
 
-module.exports.deleteBlock = async function deleteBlock(sqlConn, blockId, pageId){
+module.exports.deleteBlock = async function deleteBlock(mongoConn, blockId, pageId){
     try{
-        await sqlConn.queryReturnWithParams(`DELETE FROM page_content WHERE block_id = ? AND page_id = ?`, [blockId, pageId]);
+        let res = await mongoConn.singleFind("Pages",{_id:new mongodb.ObjectId(pageId)});
+        res.page_content.splice(blockId,1);
+        await mongoConn.singleUpdateWithId("Pages",pageId,{$set: {page_content:res.page_content}});
 
         return true;
     }catch (err){
@@ -98,33 +79,37 @@ module.exports.deleteBlock = async function deleteBlock(sqlConn, blockId, pageId
     }
 }
 
-module.exports.getBlockContent = async function getBlockContent(sqlConn, pageId, blockId){
+module.exports.getBlockContent = async function getBlockContent(mongoConn, pageId, blockId){
     try{
-        let res = await sqlConn.queryReturnWithParams('SELECT content FROM page_content WHERE page_id = ? AND block_id = ?', [pageId, blockId]);
+        let res = await mongoConn.singleFind('Pages',{_id: mongodb.ObjectId(pageId)});
 
-        return res[0][0].content;
+        return res.page_content[blockId];
     }catch(err){
         console.log(err);
         return "";
     }
 }
 
-module.exports.getBlock = async function getBlock(sqlConn, blockType,blockMode){
+module.exports.getBlock = async function getBlock(mongoConn, blockType,blockMode){
     try{
-        let res = await sqlConn.queryReturnWithParams(`SELECT content,scripts FROM blocks WHERE block_type=? AND mode = ?`,[blockType,blockMode]);
 
-        return [res[0][0].content, res[0][0].scripts];
+        let res = await mongoConn.singleFind("Blocks", {block_type:blockType,mode:blockMode});
+
+        return [res.content, res.scripts];
     }catch(err){
         console.log(err);
         return "";
     }
 }
 
-module.exports.editBlock = async function editBlock(sqlConn,blockId,content,pageId){
+module.exports.editBlock = async function editBlock(mongoConn,blockId,content,pageId){
 
     try{
-        await sqlConn.queryReturnWithParams(`
-        UPDATE page_content SET content = ? WHERE block_id = ? AND page_id = ?`,[content,blockId,pageId]);
+        let res = await mongoConn.singleFind("Pages",{_id:mongodb.ObjectId(pageId)});
+        const resContent = res.page_content;
+        resContent[blockId] = {content:content};
+
+        await mongoConn.singleUpdateWithId("Pages",pageId,{$set: {page_content:resContent}});
 
         return [true, blockId];
     }catch (err){
@@ -134,14 +119,10 @@ module.exports.editBlock = async function editBlock(sqlConn,blockId,content,page
     
 } 
 
-module.exports.deletePage = async function deletePage(sqlConn,id){
+module.exports.deletePage = async function deletePage(mongoConn,id){
 
     try{
-        await sqlConn.queryReturnWithParams(`
-        DELETE FROM pages WHERE page_id = ?`, [id]);
-
-        await sqlConn.queryReturnWithParams(`
-        DELETE FROM page_content WHERE page_id = ?`,[id]);
+        await mongoConn.singleDeleteWithId("Pages",id);
 
         return true;
     }catch (err){
@@ -151,11 +132,10 @@ module.exports.deletePage = async function deletePage(sqlConn,id){
     
 } 
 
-module.exports.getAllPages = async function getAllPages(sqlConn){
+module.exports.getAllPages = async function getAllPages(mongoConn){
 
     try{
-        let pages = await sqlConn.queryReturnNoParam(`
-        SELECT * FROM pages;`);
+        let pages = await mongoConn.getAll("Pages");
         
         return pages;
     }catch (err){
@@ -164,39 +144,31 @@ module.exports.getAllPages = async function getAllPages(sqlConn){
     
 } 
 
-module.exports.getAllContent = async function getAllContent(sqlConn,pageId){
+module.exports.getAllContent = async function getAllContent(mongoConn,pageId){
 
     try{
-        let pages = await sqlConn.queryReturnWithParams(`
-        SELECT * FROM page_content WHERE page_id=? ORDER BY content_order ASC;`,[pageId]);
-        let title = await sqlConn.queryReturnWithParams(`
-        SELECT page_title FROM pages WHERE page_id=?`, [pageId]);
+        let pages = await mongoConn.singleFind("Pages",{_id:mongodb.ObjectId(pageId)})
         
-        return [pages,title];
+        return [pages.page_content,pages.page_title];
     }catch (err){
         console.error(err);
     }
     
 } 
 
-module.exports.updateOrder = async function updateOrder(sqlConn,blockId1, blockId2, pageId){
+module.exports.updateOrder = async function updateOrder(mongoConn,blockId1, blockId2, pageId){
 
     try{
-        let currentOrderRes1 = await sqlConn.queryReturnWithParams(`
-        SELECT content_order FROM page_content WHERE page_id=? AND block_id = ? ORDER BY content_order ASC;`,[pageId, blockId1]);
 
-        let currentOrderRes2 = await sqlConn.queryReturnWithParams(`
-        SELECT content_order FROM page_content WHERE page_id=? AND block_id = ? ORDER BY content_order ASC;`,[pageId, blockId2]);
+        let res = await mongoConn.singleFind("Pages",{_id:new mongodb.ObjectId(pageId)})
+        let currentList = res.page_content;
 
-        const currentOrder1 = currentOrderRes1[0][0].content_order;
-        const currentOrder2 = currentOrderRes2[0][0].content_order;
+        let tmp = currentList[blockId2];
+        currentList[blockId2] = currentList[blockId1];
+        currentList[blockId1] = tmp;
 
-        await sqlConn.queryReturnWithParams(`
-        UPDATE page_content SET content_order = ? WHERE page_id = ? AND block_id = ?`, [currentOrder2, pageId, blockId1]);
+        await mongoConn.singleUpdateWithId("Pages",pageId,{$set: {page_content:currentList}});
 
-        await sqlConn.queryReturnWithParams(`
-        UPDATE page_content SET content_order = ? WHERE page_id = ? AND block_id = ?`, [currentOrder1, pageId, blockId2]);
-        
         return true;
     }catch (err){
         console.error(err);
@@ -205,12 +177,12 @@ module.exports.updateOrder = async function updateOrder(sqlConn,blockId1, blockI
     
 } 
 
-module.exports.checkPath = async function checkPath(sqlConn, page_path){
+module.exports.checkPath = async function checkPath(mongoConn, page_path){
     try{
-        let pathCount = await sqlConn.queryReturnWithParams(`
-        SELECT COUNT(page_path) AS page_count FROM pages WHERE page_path = ?`, [page_path]);
 
-        if (pathCount[0][0].page_count != 0){
+        let res = await mongoConn.singleFind("Pages", {page_path:page_path});
+
+        if (res !== null){
             return -1
         }else{
             return 1;
@@ -233,16 +205,13 @@ module.exports.getPageWithId = async function getPageWithId(sqlConn,id){
     
 } 
 
-module.exports.getPageWithPath = async function getPageWithPath(sqlConn,pagePath){
+module.exports.getPageWithPath = async function getPageWithPath(mongoConn,pagePath){
 
     try{
-        let pages = await sqlConn.queryReturnWithParams(`
-        SELECT * FROM pages WHERE page_path = ?`,[pagePath]);
 
-        let content = await sqlConn.queryReturnWithParams(`
-        SELECT * FROM page_content WHERE page_id = ? ORDER BY content_order ASC`, [pages[0][0].page_id])
+        let res = await mongoConn.singleFind("Pages",{page_path:pagePath});
         
-        return content;
+        return res.page_content;
     }catch (err){
         console.error(err);
     }

@@ -14,25 +14,26 @@
     <div class="page-container">
       <div class="content-wrap">
           <div class="row">
-              <%- include('navbar.ejs'); %>
+              <%- include('../navbar.ejs'); %>
           </div>
           <div class="row">
               <div class="col-2">
-                  <%- include('sidebar.ejs'); %>
+                  <%- include('../sidebar.ejs'); %>
               </div>
               <div class="col-8">
-                <input type="text" class="form-control" id="pageTitle" value=<%= title[0].page_title %>>     
+                <input type="text" class="form-control" id="pageTitle" value=<%= title %>>     
                 <button class="btn btn-primary" onclick="saveTitle()">Save Title</button>
                 <p id="status"></p>
                 <div id="pageContent">
-                  <a href="/dashboard/addBlock/<%=pageId %>/hero">Primary Button</button>      
+                  <a href="/dashboard/addBlock/<%=pageId %>/hero">Primary Button</a>     
+                  <% console.log(content)%> 
                     <% for (var i = 0; i < content.length; i++){ %>
 
-                      <div class="buttonOverlay" id = 'block<%- content[i].block_id %>buttons'>
-                        <a onclick="editBlock(<%=pageId%>,'hero','<%- content[i].block_id%>');"><i class="fa fa-edit"></i></button></a>  
-                        <a onclick="deleteBlock('block<%- content[i].block_id %>');"><i class="fa fa-trash"></i></button></a>  
+                      <div class="buttonOverlay" id = '<%- i %>buttons'>
+                        <a onclick="editBlock('<%=pageId%>','hero','<%- i %>');"><i class="fa fa-edit"></i></button></a>  
+                        <a onclick="deleteBlock('<%- i %>');"><i class="fa fa-trash"></i></button></a>  
                       </div>
-                      <div id=block<%- content[i].block_id %> draggable="true" class="draggable"> <%- content[i].content %> </div>
+                      <div id='<%- i %>' draggable="true" class="draggable"> <%- content[i].content %> </div>
                   <%}%>
                 </div>
                 
@@ -57,15 +58,13 @@
       const dragSrcId = dragSrcEl.id;
       const currentId = this.id;
 
-      console.log(dragSrcId.substring(5));
-
       fetch('<%- url %>:<%- port %>/api/updatePageOrder/', {
         method:'POST',
         headers: {
                     "Content-Type": "application/json"
                 },
         credentials:'include',
-        body:JSON.stringify({block_id1:dragSrcId.substring(5), block_id2: currentId.substring(5), page_id: <%= pageId %>})
+        body:JSON.stringify({block_id1:dragSrcId, block_id2: currentId, page_id: '<%= pageId %>'})
       });
 
     }
@@ -92,14 +91,13 @@
 
 
     function deleteBlock(blockId){
-      const deleteId = blockId.substring(5);
       fetch('<%- url %>:<%- port %>/api/deleteBlock/', {
         method:'POST',
         headers: {
                     "Content-Type": "application/json"
                 },
         credentials:'include',
-        body:JSON.stringify({block_id:deleteId, page_id: <%= pageId %>})
+        body:JSON.stringify({block_id:blockId, page_id: '<%= pageId %>'})
       })
       .then(res => res.json());
 
@@ -121,7 +119,7 @@
                     "Content-Type": "application/json"
                 },
                 credentials: 'include',
-                body:JSON.stringify({page_id:<%= pageId %>, title:title})
+                body:JSON.stringify({page_id:'<%= pageId %>', title:title})
                 
             }).then(res => setResult(res));
     }

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css" integrity="sha384-Xi8rHCmBmhbuyyhbI88391ZKP2dmfnOl4rT9ZfRI7mLTdk1wblIUnrIq35nqwEvC" crossorigin="anonymous">
+    <link rel="stylesheet" href="/public/sidebar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/public/editCourse.css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js" integrity="sha384-X/XCfMm41VSsqRNQgDerQczD69XqmjOOOwYQvr/uuC+j4OPoNhVgjdGFwhvN02Ja" crossorigin="anonymous"></script>
+    
+  </head>
+
+  <body>
+
+    <div class="page-container">
+      <div class="content-wrap">
+          <div class="row">
+              <%- include('../navbar.ejs'); %>
+          </div>
+          <div class="row">
+              <div class="col-2">
+                  <%- include('../sidebar.ejs'); %>
+              </div>
+              <div class="col-10">
+                <input type="text" class="form-control" id="courseTitle" value="">     
+                <button class="btn btn-primary" onclick="saveTitle()">Save Title</button>
+                <p id="status"></p>
+                <div id="pageContent">
+                  <div class="tab">
+                    <button class="tablinks" onclick="openSection(event,'curriculum','tabcontent','tablinks')">Curriculum</button>
+                    <button class="tablinks" onclick="openSection(event,'pricing','tabcontent','tablinks')">Pricing</button>
+                    <button class="tablinks" onclick="openSection(event,'landing', 'tabcontent','tablinks')">Landing Page</button>
+                  </div>
+
+                  
+
+                  <div id="curriculum" class="tabcontent">
+                    <div class="row">
+                      <div class="col-6">
+                      <nav id="courseSidebar">
+                          <ul id="moduleList" class="list-unstyled modComponents"> 
+                            <% let modules = content.modules%>
+                            <% for (let i = 0; i < modules.length; i++) {%>
+                              <% let module_title = modules[i].module_title%>
+                              <li>
+                                <a id = "module-<%=i%>" href="#module<%=i%>Lessons" data-toggle="collapse" aria-expanded="false" class="moddropdown-toggle"><%=module_title%></a>
+                                <ul class = "collapse list-unstyled" id="module<%=i%>Lessons">
+                                  <%let lessons = modules[i].lessons; %>
+                                  
+                                  <div id = "lessonListContentModule<%=i%>">
+                                    <% for (let j = 0; j < lessons.length; j++) {%>
+                                      <li onclick="showLesson(event, 'module<%=i%>-lesson-<%=j%>')">
+                                        <a class="modsidebarlink modindentitem"><%=lessons[j].lesson_title%></a>
+                                      </li>
+                                    <%}%>
+                                  </div>
+                                  
+
+                                  <div id="newLesson-<%=i%>">
+
+                                  </div>
+                                  <li><button class="button btn-secondary" onclick="promptLessonTitle('<%=i%>')">Add Lesson</button></li>
+                                </ul>
+                              </li>
+                              <%}%>
+                          </ul>
+                      </nav>
+
+                      <div id="newModule">
+
+                      </div>
+                      
+
+                      <button class="button btn-primary" onclick="promptModuleTitle()">Add Module</button>
+                    </div>
+
+                    <div class="col-6" id="lessonContainer">
+                    <% for (i = 0; i < modules.length; i++) {%>
+                      <%let lessons = modules[i].lessons; %>
+                    <% for (j = 0; j < lessons.length; j++) {%>
+                      <%let content = lessons[j].content %>
+
+                      
+                        <div id="module<%=i%>-lesson-<%=j%>" style="display:none;" class="lessons">
+                        <h2><%- lessons[j].lesson_title%></h2>
+
+                        <% if (lessons[j].content.data === '') {%>
+                            <div id="newBlock">
+                              <p>Add a new block of content</p>
+                              <button type="button btn-secondary" class="lessonContentButton" onclick="openSection(event, 'newVideoLesson<%=j%>', 'lessonBlock', 'lessonContentButton')">Video</button>
+                              <button type="button btn-secondary" class="lessonContentButton" onclick="openSection(event, 'newRichTextLesson<%=j%>', 'lessonBlock', 'lessonContentButton')">Rich Text</button>
+                              
+                                <div id="newVideoLesson<%=j%>" style="display:none;" class="lessonBlock">
+                                  <h2>Upload a video</h2>
+                                  <input type="file" accept="video/*" id="videoLesson<%=j%>Input" onchange="readVideo('<%=j%>','<%=i%>')" style="display:block">
+                                  <video controls id="video-tagLesson<%=j%>" width="100%" height="50%"></video>
+
+                                </div>
+                              
+
+                              <div id="newRichTextLesson<%=j%>" style="display:none;" class="lessonBlock">
+                                <%- include('./richText.ejs'); %>
+                                <button class="btn btn-primary" type="submit" onclick="submitRichText('<%=j%>','<%=i%>')">Save</button>
+                              </div>
+                            </div>
+                            </div>
+                            <%}else{%>
+
+                              <% if (lessons[j].content.type === 'serverVideo') {%>
+                                <video controls id="video-tagLesson<%=j%>" width="100%" height="50%" src='<%=lessons[j].content.data%>'></video>
+                              
+                              <%} else if (lessons[j].content.type === 'richText') {%>
+                                  <%- lessons[j].content.data %>
+                            <%}%>
+                          </div>
+                          <%}%>
+                
+                    <%}%>
+                    <%}%>
+                  </div>
+                  </div>
+                  </div>
+
+                  <div id="pricing" class="tabcontent" style="display:none;">
+                    <div id="paymentTable" style="display:block;">
+                        <h3>Pricing</h3>
+                        <button class="btn btn-primary" onclick="enableAddPayment()">Add Plan</button>
+                        <table class = "table" id="payTable">
+                          <thead>
+                              <tr>
+                                  <th scope="col">Plan Name</th>
+                                  <th scope="col">Plan Type</th>
+                                  <th scope="col">Price</th>
+                                  <th scope="col">Status</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <% let paymentOptions = content.payment_options %>
+                              <% for (var i = 0; i < paymentOptions.length; i++){ %>
+                              <tr>
+                                  <th scope="row"><%= paymentOptions[i].plan_name %></th>
+                                  <td><%= paymentOptions[i].plan_type %></td>
+                                  <td><%= paymentOptions[i].pay_amount %></td>
+                                  <td><%= paymentOptions[i].status %></td>
+                              </tr>
+                              <% } %>
+                          </tbody>
+                      </table>
+                    </div>
+
+                    <div id="addPaymentForm" style="display:none;">
+                      <h3>Add a payment plan</h3>
+                      <button class="btn btn-primary" onclick="addPayment()">Save</button>
+                      <button class="btn btn-danger" onclick="displayPaymentTable()">Cancel</button>
+                      <br>
+                      <label for="planTypes">Choose a payment plan type</label>
+                      <select name="planTypes" id="planTypes" onchange="checkPayForm()">
+                        <option value="Free">Free</option>
+                        <option value="One-time">One time payment</option>
+                        <option value="Subscription">Subscription</option>
+                      </select>
+
+                      <label for="planNameInput">Enter a plan name</label>
+                      <input id="planNameInput" type="text" required placeholder="plan name">
+
+                      <label for="currencySelect" class="paidOption subscriptionOption" style="display:none">Select a currency</label>
+                      <select name="currencySelect" id="currencySelect" class="paidOption subscriptionOption" style="display:none">
+                        <option value="USD">USD</option>
+                        <option value="CAD">CAD</option>
+                      </select>
+
+                      <label for="payAmount" class="paidOption subscriptionOption" style="display:none">Enter the amount to pay</label>
+                      <input type="text" id="payAmount" class="paidOption subscriptionOption" style="display:none" placeholder="Payment amount">
+
+                      <label for="frequencyPay" class="subscriptionOption" style="display:none">Enter the payment frequency</label>
+                      <select name="frequencyPay" id="frequencyPay" class="subscriptionOption" style="display:none">
+                        <option value="Monthly">Monthly</option>
+                        <option value="Yearly">Yearly</option>
+                      </select>
+
+
+                    </div>
+
+                  </div>
+
+                  <div id="landing" class="tabcontent" style="display:none">
+                    <h3>Landing</h3>
+                  </div>
+                </div>
+                
+              </div>
+            </div>
+      </div>
+  </div>
+
+  
+</body>
+
+<!-- Include the Quill library -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script src="/public/resize.js"></script>
+
+<script>
+
+var quill = new Quill('#editor', {
+      modules: {
+        toolbar: '#toolbar-container',
+        resize: {}
+      },  
+      theme: 'snow'
+    });
+
+
+  async function addPayment(){
+    const plan = document.getElementById('planTypes').value
+    const planName = document.getElementById('planNameInput').value;
+    let body = {};
+    let currency = "";
+    let payAmount = "";
+    let frequency = "";
+
+    switch(plan){
+      case 'Free':
+        body = {courseId:'<%=courseId%>', planName:planName, planType:'Free'}
+        break;
+      case 'One-time':
+        currency = document.getElementById('currencySelect').value;
+        payAmount = document.getElementById('payAmount').value;
+        body  = {courseId:'<%=courseId%>', planName:planName, planType:'One-time',currency:currency, payAmount: payAmount};
+        break;
+      case 'Subscription':
+        currency = document.getElementById('currencySelect').value;
+        payAmount = document.getElementById('payAmount').value;
+        frequency = document.getElementById('frequencyPay').value;
+        body  = {courseId:'<%=courseId%>', planName:planName, planType:'Subscription', currency:currency, payAmount: payAmount, frequency:frequency};
+        break;
+    }
+
+    await fetch('<%= url %>:<%= port %>/api/addPaymentOption', {
+        method:'POST',
+        body:JSON.stringify(body), 
+        headers: {
+        'Content-Type': 'application/json'
+      },
+        credentials:'include'
+      });
+
+      let table = document.getElementById('payTable');
+      let row = table.insertRow(1);
+      let cell1 = row.insertCell(0);
+      let cell2 = row.insertCell(1);
+      let cell3 = row.insertCell(2);
+
+      cell1.outerHTML = `<th scope="row">${planName}</th>`;
+      cell2.innerHTML = plan;
+      cell3.innerHTML = payAmount;
+      displayPaymentTable();
+  }
+
+  function checkPayForm(){
+    const plan = document.getElementById('planTypes').value
+
+    if (plan === 'One-time'){
+      const hideForm = document.getElementsByClassName("subscriptionOption");
+
+      for (i = 0; i < hideForm.length; i++){
+        hideForm[i].style.display = "none";
+      }
+
+      const planForm = document.getElementsByClassName("paidOption");
+
+      for (i = 0; i < planForm.length; i++){
+        planForm[i].style.display = "block";
+      }
+
+    }else if (plan === 'Free'){
+      const planForm = document.getElementsByClassName("subscriptionOption");
+
+      for (i = 0; i < planForm.length; i++){
+        planForm[i].style.display = "none";
+      }
+
+    }else if (plan === 'Subscription'){
+      const planForm = document.getElementsByClassName("subscriptionOption");
+
+      for (i = 0; i < planForm.length; i++){
+        planForm[i].style.display = "block";
+      }
+    }
+  }
+
+  function enableAddPayment(){
+    document.getElementById('addPaymentForm').style.display = 'block';
+    document.getElementById('paymentTable').style.display = 'none';
+  }
+
+  function displayPaymentTable(){
+    document.getElementById('addPaymentForm').style.display = 'none';
+    document.getElementById('paymentTable').style.display = 'block';
+  }
+
+  async function submitRichText(lessonId,moduleId){
+      const richTextData = JSON.stringify({data:quill.root.innerHTML,courseId:'<%=courseId%>',lessonId:lessonId,moduleId:moduleId});
+      console.log(richTextData);
+
+      await fetch('<%= url %>:<%= port %>/api/uploadLessonRichText', {
+        method:'POST',
+        body:richTextData, 
+        headers: {
+        'Content-Type': 'application/json'
+      },
+        credentials:'include'
+      });
+  }
+
+  async function readVideo(lessonId, moduleId){
+    const video = document.getElementById('videoLesson' + lessonId + 'Input')
+
+    const formData = new FormData();
+    formData.append("video",video.files[0]);
+    formData.append("lessonId", lessonId);
+    formData.append("moduleId", moduleId);
+    formData.append("courseId",'<%=courseId%>')
+
+    const res = await fetch('<%= url %>:<%= port %>/api/uploadVideo', {
+      method:'POST',
+      body:formData,
+      credentials:'include'
+    });
+
+    const resJson = await res.json();
+    document.getElementById('video-tagLesson' + lessonId).src = resJson.video;
+  }
+
+  function promptLessonTitle(modId){
+    document.getElementById('newLesson-' + modId).innerHTML += `<input id="newLessonName" type="text" placeholder="Input lesson name"></input>
+    <button class="button btn-secondary" onclick="addLesson('${modId}')">Save</button>`
+    
+  }
+
+  async function addLesson(modId){
+    let lessonTitle = document.getElementById('newLessonName').value
+    let res = await fetch('<%= url %>:<%= port %>/api/addLesson', {
+      method:'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body:JSON.stringify({courseId: '<%=courseId%>',lessonTitle:lessonTitle, moduleId:modId})
+    });
+
+    let lessonId = await res.json();
+    document.getElementById('newLesson-' + modId).innerHTML = "";
+    document.getElementById("lessonListContentModule" + modId).innerHTML += `
+      <li onclick="showLesson(event, 'module${modId}-lesson-${lessonId.id}')">
+        <a class="modsidebarlink modindentitem">${lessonTitle}</a>
+      </li>
+    `
+
+    document.getElementById('lessonContainer').innerHTML += `
+              <div id="module${modId}-lesson-${lessonId.id}" style="display:none;" class="lessons">
+                <h2>Test</h2>
+              </div>
+            `
+    console.log(lessonId.id);
+  }
+
+  function promptModuleTitle(){
+    document.getElementById('newModule').innerHTML += `<input id = "newModuleName" type="text" placeholder="Input module name"></input> 
+    <button class="button btn-secondary" onclick="addModule()">Save</button>`
+  }
+  
+  async function addModule(){
+    let moduleTitle = document.getElementById('newModuleName').value
+    let res = await fetch('<%= url %>:<%= port %>/api/addModule', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: 'include',
+                body:JSON.stringify({courseId:'<%=courseId%>', moduleTitle:moduleTitle})
+            });
+            
+            let modId = await res.json().id;
+            
+            document.getElementById('newModule').innerHTML = "";
+            document.getElementById("moduleList").innerHTML += `
+             <li>
+                <a id="module${modId}" class="moddropdown-toggle collapsed" href="#module${modId}Lessons" data-toggle="collapse" aria-expanded="false">${moduleTitle}</a>
+                <ul id="module${modId}Lessons" class="list-unstyled collapse">
+                  <li onclick="showLesson(event,'module-${modId}-lesson-0')">
+                    <a class="modsidebarlink modindentitem">Lesson1</a>  
+                  </li>
+                  <li><button class="button btn-secondary">Add Lessson</button> </li>  
+                </ul>
+              </li>
+            `
+
+            document.getElementById('lessonContainer').innerHTML += `
+              <div id="module-${modId}-lesson-0" style="display:none;" class="lessons">
+                <h2>Test</h2>
+              </div>
+            `
+  }
+
+  function showLesson(event,lesson){
+    let i, tabContent, tabLinks;
+    lessonContent = document.getElementsByClassName("lessons");
+
+    for (i = 0; i < lessonContent.length; i++){
+      lessonContent[i].style.display = "none";
+    }
+    
+    document.getElementById(lesson).style.display = "block";
+  }
+
+
+  function openSection(event, page, contentClass, tabClass){
+    let i, tabContent, tabLinks;
+    tabContent = document.getElementsByClassName(contentClass);
+
+    for (i = 0; i < tabContent.length; i++){
+      tabContent[i].style.display = "none";
+    }
+
+    tabLinks = document.getElementsByClassName(tabClass);
+    for (i = 0; i < tabLinks.length; i++){
+      tabLinks[i].className = tabLinks[i].className.replace(" active", "");
+    }
+
+    document.getElementById(page).style.display = "block";
+    event.currentTarget.className += " active";
+  }
+
+</script>
+
+
+</html>

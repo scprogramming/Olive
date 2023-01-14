@@ -5,30 +5,21 @@ const dateUtil = require("../utils/dateUtil");
 
 dotenv.config();
 
-module.exports.registerUser =  async function registerUser(email, userPassword, confirmPassword, firstName, lastName, sqlConn,conf){
+module.exports.registerUser =  async function registerUser(email, userPassword, confirmPassword, firstName, lastName, mongoConn,conf){
     try{
 
         if (userPassword != confirmPassword){
             return -3
         }
+
+        let checkEmail = await mongoConn.singleFind("Users", {email:email});
+        console.log(checkEmail);
         
-        var sql = `SELECT COUNT(*) AS userCount FROM user_login WHERE email = ?`;
-        var result = await sqlConn.queryReturnWithParams(sql,[email]);
-        
-        if (result[0][0].userCount == 0){
+        if (checkEmail === null){
             var salt = await bcrypt.genSalt(parseInt(conf.saltRounds));
             var passwordHash = await bcrypt.hash(userPassword,salt);
     
-            var sql = `INSERT INTO user_login(email,user_password,active,role)
-            VALUES (?,?,1,'user')`;
-    
-            result = await sqlConn.queryReturnWithParams(sql,[email,passwordHash]);
-            var userId = result[0].insertId;
-    
-            var sql = `INSERT INTO user_details
-            VALUES (?,?,?)`;
-    
-            sqlConn.queryReturnWithParams(sql,[userId,firstName,lastName]);
+            await mongoConn.singleInsert("Users", {email:email,user_password:passwordHash,active:1,role:"user",first_name:firstName, last_name:lastName});
     
             return 1;
         }else{
@@ -52,16 +43,19 @@ function generateExpiry(expiry){
     }
 }
 
-module.exports.login = async function login(email,password, sqlConn,conf){
+module.exports.login = async function login(email,password, mongoConn,tokenExpires){
     
     try {
         var characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        var sql = "SELECT * FROM user_login WHERE email = ?";
+
+        const user = await mongoConn.singleFind("Users", {email:email});
         var charLength = characters.length;
+        let comp = false;
 
-        var result = await sqlConn.queryReturnWithParams(sql,[email]);
-        var comp = await bcrypt.compare(password,result[0][0].user_password);
-
+        if (user !== null){
+            comp = await bcrypt.compare(password,user.user_password);
+        }
+        
         if (comp){
             var token = "";
 
@@ -69,13 +63,13 @@ module.exports.login = async function login(email,password, sqlConn,conf){
                 token += characters.charAt(Math.floor(Math.random() * charLength))
             }
 
-            if (conf.tokenExpires === 'none'){
-                sqlConn.queryReturnWithParams("INSERT INTO sessions VALUES (?,?,null)",[token,result[0][0].user_id]);
+            if (tokenExpires === 'none'){
+                await mongoConn.singleInsert("Sessions", {session_id:token, user_email:email, expiry:null})
             }else{
-                let expiryDate = generateExpiry(conf.tokenExpires);
+                let expiryDate = generateExpiry(tokenExpires);
                 let dateList = dateUtil.parseDate(expiryDate);
 
-                sqlConn.queryReturnWithParams("INSERT INTO sessions VALUES (?,?,?)",[token,result[0][0].user_id,dateList[0] + '-' + dateList[1] + '-' + dateList[2]]);
+                await mongoConn.singleInsert("Sessions", {session_id:token, user_email:email, expiry: dateList[0] + '-' + dateList[1] + '-' + dateList[2]});
             }
 
             return [comp,token];
@@ -90,55 +84,43 @@ module.exports.login = async function login(email,password, sqlConn,conf){
     }
 }
 
-module.exports.verify = async function verify(sqlConn, token,requiredRole,conf){
+module.exports.verify = async function verify(mongoConn, token,requiredRole,conf){
     if (!token){
-        return [false,1];
+        return [false,-1];
     }else{
         try{
 
             const parseTok = token.substring(token.indexOf("=")+1);
-            
-            let result = await sqlConn.queryReturnWithParams(`SELECT expiry,active,role FROM sessions 
-            INNER JOIN user_login ON user_login.user_id = sessions.user_id
-            WHERE session_id=?;
-            `,[parseTok]);
 
-            if (result[0].length != 0){
+            let checkSession = await mongoConn.singleFind("Sessions", {session_id:parseTok});
 
-                if (conf.tokenExpires === 'none'){
-                    if (result[0][0].active == "1"){
-                        if (result[0][0].role == requiredRole){
+            if (checkSession !== null){
+                let checkActive = await mongoConn.singleFind("Users", {email:checkSession.user_email});
+
+                if (checkActive === null || checkActive.active === 0){
+                    [false,-1]
+                }else{
+                    if (conf.tokenExpires === 'none'){
+                        if (checkActive.role == requiredRole){
                             return [true,0];
                         }else{
-                            return [false,2];
+                            return [false,-1];
                         }
                     }else{
-                        return [false,3];
-                    }
-                }else if (conf.tokenExpires !== 'none'){
-                    let expiry = dateUtil.parseDate(result[0][0].expiry);
-                    let today = dateUtil.parseDate(new Date());
-    
-                    if (parseInt(expiry[0]) >= parseInt(today[0]) && parseInt(expiry[1]) >= parseInt(today[1]) && parseInt(expiry[2]) >= parseInt(today[2])){
-                        if (result[0][0].active == "1"){
-                            if (result[0][0].role == requiredRole){
+                        let expiry = dateUtil.parseDate(checkSession.expiry);
+                        let today = dateUtil.parseDate(new Date());
+
+                        if (parseInt(expiry[0]) >= parseInt(today[0]) && parseInt(expiry[1]) >= parseInt(today[1]) && parseInt(expiry[2]) >= parseInt(today[2])){
+                            if (checkActive.role == requiredRole){
                                 return [true,0];
                             }else{
-                                return [false,2];
+                                return [false,-1];
                             }
-                        }else{
-                            return [false,3];
                         }
-                        
-                    }else{
-                        return [false,4];
                     }
-    
-                }else{
-                    return [false,5];
                 }
-                }
-                
+            }
+
             
         }catch(err){
             console.log(err);
