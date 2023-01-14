@@ -64,6 +64,32 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
+        this.app.post("/api/uploadLessonRichText", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+
+            if (authRes[0]){
+                let {data,courseId,moduleId,lessonId} = req.body;
+                let result = await courses.saveRichText(mongoConn,data, courseId, moduleId, lessonId);
+
+                if (result[0]){
+                    res.json({code:1, status:"Saved!"});
+                }else{
+                    res.json({code: -1, status:"Failed to save"});
+                }
+
+                res.end();
+
+            }else{
+                res.status(401);
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
+            }
+
+        });
+
         this.app.post("/api/uploadVideo", upload.array('video'), async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;

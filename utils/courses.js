@@ -14,6 +14,21 @@ module.exports.addModule = async function addModule(mongoConn,courseId,moduleTit
     }
 }
 
+module.exports.saveRichText = async function saveRichText(mongoConn,data, courseId, moduleId, lessonId){
+    try {
+        let course = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
+        course.modules[moduleId].lessons[lessonId].content.data = data;
+        course.modules[moduleId].lessons[lessonId].content.type = "richText";
+
+        await mongoConn.singleUpdateWithId("Courses", courseId,{$set: {modules:course.modules}});
+        return [true];
+    }catch(err){
+        console.error(err);
+        return[false,-1];
+    }
+    
+}
+
 module.exports.saveVideo = async function saveVideo(mongoConn,video,lessonId, moduleId, courseId){
     try{
         const videoPath = '/public/uploads/' + video[0].filename;
