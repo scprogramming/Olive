@@ -14,6 +14,7 @@ module.exports.Configuration = class Configuration{
         this.saltRounds = env.saltRounds;
         this.postLimit = env.postLimit;
         this.apiPort = env.apiPort;
+        this.videoSizeLimit = env.videoSizeLimit;
         
         if (env.registrationEnabled === 'Yes'){
             this.registrationEnabled = true;
