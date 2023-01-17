@@ -1,4 +1,3 @@
-const e = require('cors');
 const mongo = require('mongodb');
 
 module.exports.MongoDbHandler = class MongoDbHandler{

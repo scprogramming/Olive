@@ -1,40 +1,54 @@
 ## DbHandler.js
 
-The DbHandler file contains all of the code used to interact with the MySQL database.
+The DbHandler file contains all of the code used to interact with the MongoDB database.
 
 ### Constructor
 
 **Parameters**
 
-* host: The address of the MySQL database server
-* port: The port of the MySQL database server
-* user: The username of the user connecting to the MySQL database server
-* password: The password of the user connecting to the MySQL database server
+* host: The address of the MongoDB database server
+* port: The port of the MongoDB database server
+* user: The username of the user connecting to the MongoDB database server
+* password: The password of the user connecting to the MongoDB database server
 * database: The database name you are connecting to
 
-The constructor uses `mysql.createConnection` to construct a connection using the provided parameters. If a connection fails, an error is thrown by the constructor. 
+The constructor constructs a URI to connect to the target host and port provided. The constructor will then create a client using the constructed URI
 
-### queryReturnNoParam
+### singleInsert
 
 **Parameters**
 
-* query: A valid SQL formatted query
+* collection: The name of a collection in the MongoDB database
+* fields: The fields for the record you are inserting to the database
 
-This method uses `promise().query()` to run the provided query against the current MySQL connection. The function uses `await` to wait for the database results before returning them to the caller.
+This method first creates a connection to the MongoDB server. It then loads the target collection and sends an `insertOne` query to MongoDB with the provided fields. The result is a new record inserted into the target collection. 
 
-This method does not allow any parameters to be provided and should be used for cases where a query does not require any user inputs. 
-
-### queryReturnWithParams
+### singleFind
 
 **Parameters** 
 
-* query: A valid SQL formatted query
-* params: The parameters required for the SQL query
+* collection: The name of a collection in the MongoDB database
+* fields: The fields you are filtering for in the target collection
 
-This method uses `promise().query()` to run a provided query with parameters, using the parameterized query method to prevent risk of SQL injection. The function uses `await` to wait for the database results before returning to the caller.
+This method first creates a connection to the MongoDB server. It then loads the target collection, and sends a `findOne` query to MongoDB with the provided fields. The result is a single record from the collection matching the provided fields. 
 
-This method allows for parameters, and should be used to handle any SQL query that requires user inputs.
+### singleUpdateWithId
 
-### close
+* collection: The name of a collection in the MongoDB database
+* id: The ObjectId of the record you are updating
+* updates: The updates you want to apply to the record, using the {$set: {fields}} structure
 
-The close method calls `close()` on the current mySQL connection.
+This method first creates a connection to the MongoDB server. It then loads the target collection, and sends a `updateOne` query to MongoDB with the provided fields, and the id parameter formatted as an ObjectId. The result is a single record from the collection being updated with the provided update data.
+
+### singleDeleteWithId
+
+* collection: The name of a collection in the MongoDB database
+* id: The ObjectId of the record you are updating
+
+This method first creates a connection to the MongoDB server. It then loads the target collection, and sends a `deleteOne` query to MongoDB, using the id parameter formatted as an ObjectId. The result is a single record from the collection being deleted.
+
+### getAll
+
+* collection: The name of a collection in the MongoDB database
+
+This method first creates a connection to the MongoDB server. It then retrieves all data from the provided collection using the `find` method. The data is returned as an array.
