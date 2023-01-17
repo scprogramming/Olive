@@ -176,7 +176,7 @@ Yes
 * {code: -1, status: "Requires authorization"} if authentication fails
 
 **Used By**
-`views/pages/dashboard/course/editCourse.ejs`
+`views/pages/dashboard/post/addPost.ejs`
 
 ## /api/deleteBlock
 
@@ -195,9 +195,12 @@ Yes
 
 **Returns**
 
-* {code: 1, status: "Saved!"} if the request is successful.
-* {code: -1, status: "Failed to save"} if the request failed
+* {code: 1, status: "Deleted!"} if the request is successful.
+* {code: -1, status: "Failed to delete"} if the request failed
 * {code: -1, status: "Requires authorization"} if authentication fails
+
+**Used By**
+`views/pages/dashboard/page/editPage.ejs`
 
 ## /api/deletePost/:id
 
@@ -219,6 +222,9 @@ Yes
 * {code: -1, status: "Failed to delete"} if the request failed
 * {code: -1, status: "Requires authorization"} if authentication fails
 
+**Used By**
+`views/pages/dashboard/post/posts.ejs`
+
 ## /api/deleteCategory/:id
 
 **Valid methods**
@@ -239,6 +245,9 @@ Yes
 * {code: -1, status: "Failed to delete"} if the request failed
 * {code: -1, status: "Requires authorization"} if authentication fails
 
+**Used By**
+`views/pages/dashboard/categories.ejs`
+
 ## /api/deletePage/:id
 
 **Valid methods**
@@ -258,6 +267,9 @@ Yes
 * {code: 1, status: "Deleted!"} if the request is successful.
 * {code: -1, status: "Failed to delete"} if the request failed
 * {code: -1, status: "Requires authorization"} if authentication fails
+
+**Used By**
+`views/pages/dashboard/page/pages.ejs`
 
 ## /api/updatePageOrder
 
@@ -283,7 +295,7 @@ Yes
 
 **Used By**
 
-`views/pages/dashboard/categories.ejs`
+`views/pages/dashboard/page/editPage.ejs`
 
 ## /api/addCategory
 
@@ -358,7 +370,7 @@ Yes
 
 **Used By**
 
-`views/pages/dashboard/addPost.ejs`
+`views/pages/dashboard/post/addPost.ejs`
 
 ## /api/editPost
 
@@ -385,7 +397,7 @@ Yes
 
 **Used By**
 
-`views/pages/dashboard/addPost.ejs`
+`views/pages/dashboard/post/editPost.ejs`
 
 ## /api/addBlock
 
@@ -440,31 +452,7 @@ Yes
 
 **Used By**
 
-`views/pages/dashboard/addBlock.ejs`. Note that the script that uses this API call is dynamically built from the database rather than hardcoded in the file.
-
-## /api/nextBlockId
-
-**Valid methods**
-
-* POST
-
-**Requires authentication** 
-
-Yes
-
-**Expected data**
-
-* page_id: The page ID that is getting the new block
-
-**Returns**
-
-* {code: 1, status: "Saved!", block_id: result[1], order:result[2]} if the request is successful. The block_id value is the ID for the new block, and the order value is the order location of the new block
-* {code: -1, status: "Failed to save"} if the request failed
-* {code: -1, status: "Requires authorization"} if authentication fails
-
-**Used By**
-
-`views/pages/dashboard/addBlock.ejs`. Note that the script that uses this API call is dynamically built from the database rather than hardcoded in the file.
+`views/pages/dashboard/page/addPage.ejs`
 
 ## /api/editPageTitle
 
@@ -489,7 +477,7 @@ Yes
 
 **Used By**
 
-`views/pages/dashboard/editBlock.ejs`. Note that the script that uses this API call is dynamically built from the database rather than hardcoded in the file.
+`views/pages/dashboard/page/editPage.ejs`
 
 ## /api/editBlock
 
@@ -546,7 +534,7 @@ Yes
 
 **Used By**
 
-`views/pages/dashboard/editBlock.ejs`. Note that the script that uses this API call is dynamically built from the database rather than hardcoded in the file.
+`views/pages/register.ejs`
 
 ## /api/login
 
@@ -570,4 +558,4 @@ Yes
 
 **Used By**
 
-`views/pages/dashboard/editBlock.ejs`. Note that the script that uses this API call is dynamically built from the database rather than hardcoded in the file.
+`views/pages/login.ejs`
