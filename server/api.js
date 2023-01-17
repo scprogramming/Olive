@@ -8,19 +8,7 @@ const courses = require('../utils/courses');
 const mongoHandle = require('../handlers/MongoDbHandler.js');
 
 const multer = require('multer');
-const storage = multer.diskStorage(
-    {
-        destination:'server/public/uploads/',
-        filename: function(req, file, cb){
-            const orgName = file.originalname
-            const indexOfExtension = orgName.indexOf('.')
-            cb(null, orgName.substring(0,indexOfExtension) + '-' + Date.now() + orgName.substring(indexOfExtension));
-        }
-    }
-)
-const upload = multer({storage:storage, 
-                        limits:{fileSize: '500MB'},
-                        });
+
 
 module.exports.apiServer = class ApiServer{
 
@@ -37,7 +25,20 @@ module.exports.apiServer = class ApiServer{
         
         this.app.set('view engine','ejs');
         this.app.use('/public',express.static(__dirname + '\\public'));
-        
+
+        const storage = multer.diskStorage(
+            {
+                destination:'server/public/uploads/',
+                filename: function(req, file, cb){
+                    const orgName = file.originalname
+                    const indexOfExtension = orgName.indexOf('.')
+                    cb(null, orgName.substring(0,indexOfExtension) + '-' + Date.now() + orgName.substring(indexOfExtension));
+                }
+            }
+        )
+        const upload = multer({storage:storage, 
+            limits:{fileSize: conf.videoSizeLimit},
+        });
        
 
         this.app.post("/api/addModule", async(req,res) => {
@@ -327,27 +328,6 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
-        this.app.post("/api/nextBlockId", async(req,res) => {
-            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
-            const cookie = req.headers.cookie;
-            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
-
-            if (authRes[0]){
-                const {page_id} = req.body;
-                let result = await pages.nextBlockId(mongoConn,page_id);
-                
-                if (result[0]){
-                    res.json({code:1, status:"Success!",block_id:result[1], order:result[2]});
-                }else{
-                    res.json({code:1, status:"Failed to save"});
-                }
-                
-            }else{
-                res.status(401);
-                res.json({code:1, status:"Requires authorization"});
-            }
-        });
-
         this.app.post("/api/addBlock", async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
@@ -382,9 +362,9 @@ module.exports.apiServer = class ApiServer{
                 if (title === ''){
                     res.json({code:-1,status:"Failed to save, title cannot be empty"});
                 }else if (page_path == ''){
-                    res.json({code:-1,status:"Path cannot be blank"});
+                    res.json({code:-1,status:"Failed to save, path cannot be blank"});
                 }else if (await pages.checkPath(mongoConn, page_path) == -1){
-                    res.json({code:-1, status:"Page path already exists, select a unique path"});
+                    res.json({code:-1, status:"Failed to save, page path already exists, select a unique path"});
                 }else{
                     let result = await pages.addPage(mongoConn,title,page_path);
                 
@@ -571,7 +551,7 @@ module.exports.apiServer = class ApiServer{
                         res.json({code:1, status:"User created successfully!"});
                     }else if (result == -2){
                         res.status(400);
-                        res.json({code:-2, status:"User already exists, pick another username!"});
+                        res.json({code:-2, status:"User already exists, pick another email!"});
                     }else if (result == -3){
                         res.status(400);
                         res.json({code:-3,status:"Passwords provided do not match!"});
