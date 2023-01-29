@@ -7,7 +7,7 @@ module.exports.addCategory = async function addCategory(mongoConn,cat){
         return [true,res.insertedId.toString()];
         
     }catch (err){
-        console.log(err);
+        console.error(err);
         return [false,-1];
     }
     
@@ -19,7 +19,7 @@ module.exports.editCategory = async function editCategory(mongoConn,id,cat){
         await mongoConn.singleUpdateWithId("Categories",id,{$set: {category_name:cat}})
         return true;
     }catch (err){
-        console.log(err);
+        console.error(err);
         return false;
     }
     
@@ -32,7 +32,7 @@ module.exports.deleteCategory = async function deleteCategory(mongoConn,id){
 
         return true;
     }catch (err){
-        console.log(err);
+        console.error(err);
         return false;
     }
     

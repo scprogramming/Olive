@@ -31,9 +31,14 @@
                     <button class="tablinks" onclick="openSection(event,'curriculum','tabcontent','tablinks')">Curriculum</button>
                     <button class="tablinks" onclick="openSection(event,'pricing','tabcontent','tablinks')">Pricing</button>
                     <button class="tablinks" onclick="openSection(event,'landing', 'tabcontent','tablinks')">Landing Page</button>
+                    <button class="tablinks" onclick="openSection(event, 'courseDetails', 'tabcontent', 'tablinks')">Course Details</button>
                   </div>
 
-                  
+                  <div id="courseDetails" class="tabcontent" style="display:none;">
+                    <h3>What you'll learn</h3>
+                    <h3>Requirements</h3>
+                    <h3>Description</h3>
+                  </div>                  
 
                   <div id="curriculum" class="tabcontent">
                     <div class="row">
@@ -302,7 +307,6 @@ var quill = new Quill('#editor', {
 
   async function submitRichText(lessonId,moduleId){
       const richTextData = JSON.stringify({data:quill.root.innerHTML,courseId:'<%=courseId%>',lessonId:lessonId,moduleId:moduleId});
-      console.log(richTextData);
 
       await fetch('<%= url %>:<%= port %>/api/uploadLessonRichText', {
         method:'POST',
@@ -363,7 +367,6 @@ var quill = new Quill('#editor', {
                 <h2>Test</h2>
               </div>
             `
-    console.log(lessonId.id);
   }
 
   function promptModuleTitle(){
