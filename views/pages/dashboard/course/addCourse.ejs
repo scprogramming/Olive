@@ -22,10 +22,17 @@
               </div>
               <div class="col-8">
                 <label for="courseTitle" class="col-form-label">Course Title: </label>
-                <input type="text" class="form-control" id="courseTitle">         
+                <input type="text" class="form-control" id="courseTitle">       
+                <label for="courseDesc" class="col-form-label">Course Description: </label>
+                <input type="text" class="form-control" id="courseDesc">        
                 <label for="coursePath" class="col-form-label">URL Path: </label>
                 <p>/courses/</p> 
                 <input type="text" class="form-control" id="coursePath"> 
+
+                <label for="imageUpload" class="col-form-label">Course Image: </label>
+                <input type="file" id="imageUpload" accept="image/jpeg, image/png, image/jpg">
+                <img id="courseImage" src="" style="width:240px; height:135px">
+
                 <button class="btn btn-primary" onclick="setupCourse()">Save</button>
                 <p id = "status"></p>
               </div>
@@ -38,6 +45,15 @@
  
 <script>
 
+document.querySelector("#imageUpload").addEventListener("change",function(){
+      const reader = new FileReader();
+      reader.addEventListener("load", () => {
+          const uploadedImage = reader.result;
+          document.getElementById('courseImage').src = `${uploadedImage}`;
+      });
+      reader.readAsDataURL(this.files[0]);
+});
+
     async function setupCourse(){
             fetch('<%= url %>:<%= port %>/api/addCourse', {
                 method:'POST',
@@ -45,7 +61,11 @@
                     "Content-Type": "application/json"
                 },
                 credentials: 'include',
-                body:JSON.stringify({title:document.getElementById("courseTitle").value,data:"",course_path:document.getElementById("coursePath").value})
+                body:JSON.stringify({title:document.getElementById("courseTitle").value,
+                data:"",
+                course_path:document.getElementById("coursePath").value, 
+                thumbnail:document.getElementById('courseImage').src,
+                courseDesc:document.getElementById('courseDesc').value})
                 
             })
             .then(res => redirectId(res));

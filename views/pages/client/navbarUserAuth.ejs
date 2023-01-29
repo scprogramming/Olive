@@ -1,0 +1,29 @@
+<div class="sidebar-container">
+  <div class="grid-item ">Logo</div>
+  <div class="grid-item">All Courses</div>
+  <div class="grid-item">Categories</div>
+  <div class="grid-item">Learning Paths</div>
+  <div class="grid-item" id="searchContainer">
+    <input id="search" value="Search">
+    <button id="searchButton">
+      <i class="fa fa-search"></i>
+    </button>
+  </div>
+  <div class="grid-item">Profile</div>
+  <div class="grid-item">Your Courses</div>
+  <div class="grid-item" style="cursor: pointer;" onclick="logout()">Logout</div>
+
+  <script>
+    async function logout(){
+      await fetch('<%= url %>:<%= port %>/api/logout', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: 'include'
+            });
+
+      window.location = "/";
+    }
+  </script>
+</div>

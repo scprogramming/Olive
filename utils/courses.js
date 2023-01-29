@@ -8,7 +8,7 @@ module.exports.savePaymentPlan = async function savePaymentPlan(mongoConn,course
 
         return [true,1];
     }catch(err){
-        console.log(err);
+        console.error(err);
         return [false, -1];
     }
 }
@@ -96,6 +96,19 @@ module.exports.getAllContent = async function getAllContent(mongoConn,id){
     
 }
 
+module.exports.getContentWithPath = async function getContentWithPath(mongoConn,path){
+
+    try{
+        let courses = await mongoConn.singleFind('Courses', {course_path:path});
+        
+        return courses;
+    }catch (err){
+        console.error(err);
+        return ["",""]
+    }
+    
+}
+
 
 module.exports.checkPath = async function checkPath(mongoConn, course_path){
     try{
@@ -111,20 +124,20 @@ module.exports.checkPath = async function checkPath(mongoConn, course_path){
     }
 }
 
-module.exports.addCourse = async function addCourse(mongoConn,title,coursePath){
+module.exports.addCourse = async function addCourse(mongoConn,title,coursePath,thumbnail,courseDesc){
     try{
         var today = new Date();
         var dd = String(today.getDate()).padStart(2,'0');
         var mm = String(today.getMonth() + 1).padStart(2,'0');
         var yyyy = today.getFullYear();
 
-        let res = await mongoConn.singleInsert("Courses",{course_title:title, payment_options:[], date_created: yyyy + '-' + mm + '-' + dd, course_path:coursePath, 
+        let res = await mongoConn.singleInsert("Courses",{course_title:title, courseDesc:courseDesc, thumbnail:thumbnail, payment_options:[], date_created: yyyy + '-' + mm + '-' + dd, course_path:coursePath, 
         modules: [{module_title:"Module1", lessons: [{lesson_title:"Lesson1", content: {data:"",type:""} } ] } ]}
         );
         
         return [true,res.insertedId.toString()];
     }catch (err){
-        console.log(err);
+        console.error(err);
         return [false];
     }
     

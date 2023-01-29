@@ -133,7 +133,6 @@
 
     async function updateStatus(res){
       let result = await res.json();
-      console.log(result);
       document.getElementById("status").innerHTML = result.status;
     }
 

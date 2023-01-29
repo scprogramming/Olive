@@ -211,7 +211,7 @@ module.exports.apiServer = class ApiServer{
             const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
-                const {title,course_path} = req.body;
+                const {title,course_path,thumbnail, courseDesc} = req.body;
 
                 if (title === ''){
                     res.json({code:-1,status:"Failed to save, title cannot be empty"});
@@ -220,7 +220,7 @@ module.exports.apiServer = class ApiServer{
                 }else if (await courses.checkPath(mongoConn, course_path) == -1){
                     res.json({code:-1, status:"Page path already exists, select a unique path"});
                 }else{
-                    let result = await courses.addCourse(mongoConn,title,course_path);
+                    let result = await courses.addCourse(mongoConn,title,course_path,thumbnail,courseDesc);
                 
                     if (result[0]){
                         res.json({code:1, status:"Saved!",course_id:result[1]});
@@ -571,9 +571,16 @@ module.exports.apiServer = class ApiServer{
 
             });
         
+        this.app.post("/api/logout", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            let token = req.headers.cookie;
+            auth.logout(mongoConn,token.substring(token.indexOf("=")+1));
+            res.clearCookie("auth");
+            res.end();
+        });
 
         this.app.post("/api/login", async(req,res) => {
-
+            
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
 
             try{
@@ -585,7 +592,7 @@ module.exports.apiServer = class ApiServer{
                     res.cookie('auth',result[1],{path:'/',httpOnly:true})
                     res.json({code:1, status:"Login successful!"});
                 }else{
-                    res.status(400);
+                    res.status(200);
                     res.json({code:-1, status:"Invalid username or password!"});
                 }
             }catch(err){
