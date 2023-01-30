@@ -147,9 +147,15 @@ module.exports.appServer = class AppServer{
         this.app.get("/viewPost/:id", async function(req,res){
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
 
+            const cookie = req.headers.cookie;
+            const authStatus = await auth.checkAuthStatus(mongoConn, "user", cookie);
+
             let result = await posts.getPostWithId(mongoConn,req.params.id);
             res.render("../views/pages/client/viewPost",{
-                posts:result[0]
+                posts:result,
+                isAuth:authStatus,
+                url:conf.serverAddress,
+                port:conf.apiPort
             });
         });
 
@@ -183,6 +189,22 @@ module.exports.appServer = class AppServer{
 
             let redirect = await authRouter.determineRedirectLogin("addPage",authRes, mongoConn);
             res.render(redirect[0],redirect[1]);
+        });
+
+        this.app.get("/blog", async function(req,res){
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+
+            let allPosts = await posts.getAllPosts(mongoConn);
+
+            const cookie = req.headers.cookie;
+            const authStatus = await auth.checkAuthStatus(mongoConn, "user", cookie);
+
+            res.render("../views/pages/client/posts",{
+                postData:allPosts,
+                isAuth:authStatus,
+                url:conf.serverAddress,
+                port:conf.apiPort
+            });
         });
 
         this.app.get("/", async function(req,res){

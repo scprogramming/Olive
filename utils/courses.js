@@ -124,6 +124,42 @@ module.exports.checkPath = async function checkPath(mongoConn, course_path){
     }
 }
 
+module.exports.addLearningObjective = async function addLearningObjective(mongoConn,courseId,learningObj){
+    try{
+        let course = await mongoConn.singleFind("Courses", {_id:mongodb.ObjectId(courseId)});
+        course.learning_objectives.push(learningObj);
+
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {learning_objectives:course.learning_objectives}})
+        return true;
+    }catch(err){
+        console.error(err);
+    }
+}
+
+module.exports.addRequirement = async function addRequirement(mongoConn,courseId,requirement){
+    try{
+        let course = await mongoConn.singleFind("Courses", {_id:mongodb.ObjectId(courseId)});
+        course.requirements.push(requirement);
+
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {requirements:course.requirements}})
+        return true;
+    }catch(err){
+        console.error(err);
+    }
+}
+
+module.exports.addAudience = async function addAudience(mongoConn,courseId,newAudience){
+    try{
+        let course = await mongoConn.singleFind("Courses", {_id:mongodb.ObjectId(courseId)});
+        course.audience.push(newAudience);
+
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {audience:course.audience}})
+        return true;
+    }catch(err){
+        console.error(err);
+    }
+}
+
 module.exports.addCourse = async function addCourse(mongoConn,title,coursePath,thumbnail,courseDesc){
     try{
         var today = new Date();
@@ -131,8 +167,17 @@ module.exports.addCourse = async function addCourse(mongoConn,title,coursePath,t
         var mm = String(today.getMonth() + 1).padStart(2,'0');
         var yyyy = today.getFullYear();
 
-        let res = await mongoConn.singleInsert("Courses",{course_title:title, courseDesc:courseDesc, thumbnail:thumbnail, payment_options:[], date_created: yyyy + '-' + mm + '-' + dd, course_path:coursePath, 
-        modules: [{module_title:"Module1", lessons: [{lesson_title:"Lesson1", content: {data:"",type:""} } ] } ]}
+        let res = await mongoConn.singleInsert("Courses",{course_title:title, 
+            courseDesc:courseDesc, 
+            thumbnail:thumbnail, 
+            payment_options:[], 
+            date_created: yyyy + '-' + mm + '-' + dd, 
+            learning_objectives:[],
+            audience:[],
+            requirements:[],
+            course_path:coursePath, 
+            modules: [{module_title:"Module1", 
+            lessons: [{lesson_title:"Lesson1", content: {data:"",type:""} } ] } ]}
         );
         
         return [true,res.insertedId.toString()];
