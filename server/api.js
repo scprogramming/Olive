@@ -618,22 +618,30 @@ module.exports.apiServer = class ApiServer{
                 let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
                 try{
                     const {email, user_password, confirm_password, first_name, last_name} = req.body;
-                    var result = await auth.registerUser(email, user_password, confirm_password, first_name, last_name, mongoConn,conf);
-                
-                    if (result == 1){
-                        res.status(200);
-                        res.json({code:1, status:"User created successfully!"});
-                    }else if (result == -2){
-                        res.status(400);
-                        res.json({code:-2, status:"User already exists, pick another email!"});
-                    }else if (result == -3){
-                        res.status(400);
-                        res.json({code:-3,status:"Passwords provided do not match!"});
-                    }else{
-                        res.status(500);
-                        res.json({code:-1, status:"Failed to register user!"});
-                    }
 
+                    if (email === '' || user_password === '' || confirm_password === '' || first_name === '' || last_name === ''
+                    || email === undefined || user_password === undefined || confirm_password === undefined || first_name === undefined || last_name === undefined){
+                        res.status(200);
+                        res.json({code:-1, status:"All fields must have a value to register"});
+                    }else{
+                        var result = await auth.registerUser(email, user_password, confirm_password, first_name, last_name, mongoConn,conf);
+                
+                        if (result == 1){
+                            res.status(200);
+                            res.json({code:1, status:"User created successfully!"});
+                        }else if (result == -2){
+                            res.status(400);
+                            res.json({code:-2, status:"User already exists, pick another email!"});
+                        }else if (result == -3){
+                            res.status(400);
+                            res.json({code:-3,status:"Passwords provided do not match!"});
+                        }else{
+                            res.status(500);
+                            res.json({code:-1, status:"Failed to register user!"});
+                        }
+    
+                    }
+                    
                 }catch(err){
                     res.status(500);
                     res.json({code:-1, status:"Failed to register user!"});
