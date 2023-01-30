@@ -27,22 +27,27 @@
     <script>
         const form = document.getElementById('loginForm');
 
-        form.addEventListener('submit',function(e){
+        form.addEventListener('submit',async function(e){
             e.preventDefault();
 
             const payload = new FormData(form);
             let formDataObject = Object.fromEntries(payload.entries());
             let jsonData = JSON.stringify(formDataObject);
             
-            fetch('<%- url %>:<%- port %>/api/login', {
+            let result = await fetch('<%- url %>:<%- port %>/api/login', {
                 method:'POST',
                 credentials: 'include',
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body:jsonData
-            })
-            
+            });
+            let jsonRes = await result.json();
+            if (jsonRes.code === 1){
+                location.href = "<%=ref%>";
+            }else{
+                document.getElementById("status").innerHTML = "Invalid Username or password";
+            }
 
         })
     </script>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="/public/home.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@500&display=swap" rel="stylesheet">
+    </head>
+
+    <body>
+        <% if (isAuth){%>
+            <%- include('navbarUserAuth.ejs'); %>
+        <%}else{%>
+            <%- include('navbarUserUnauth.ejs'); %>
+        <%}%>
+
+        <div id="hero-small">
+            <div id="hero-text">
+                <h1 id="hero-header"><%-courseData.course_title%></h1>
+                <p><%-courseData.courseDesc%></p>
+
+                <% for (let i = 0; i < courseData.payment_options.length; i++){%>
+                    <button class="mainButton">
+                        <% if (courseData.payment_options[i].plan_type === 'One-time') {%>
+                        <%- courseData.payment_options[i].pay_amount%> <%- courseData.payment_options[i].currency%>
+                        <%}else if (courseData.payment_options[i].plan_type === 'Subscription') {%>
+                            <%-courseData.payment_options[i].frequency%>: <%- courseData.payment_options[i].pay_amount%> <%-courseData.payment_options[i].currency%>
+                        <%}else{%>
+                            Enroll for free!
+                        <%}%>
+                    </button>
+
+                <%}%>
+            </div>
+        </div>
+
+        <div id="coursePageContainer">
+        <h2>What you'll learn</h2>
+        <div class="learningGoals">
+            <%for (let i = 0; i < courseData.learning_objectives.length; i++){%>
+                <div class="learningGoalItem">
+                <%-courseData.learning_objectives[i]%>
+                </div>
+            <%}%>
+        </div>
+        <h2>Course Content</h2>
+            <%for (let i = 0; i < courseData.modules.length; i++) {%>
+                <button class="collapsible" onclick="collapseToggle('content-module<%-i%>')"><strong><%-courseData.modules[i].module_title%></strong></button>
+                <div class="content" id="content-module<%-i%>">
+                    <% let lessons = courseData.modules[i].lessons%>
+                    <%for (let j = 0; j < lessons.length; j++) {%>
+                    <p><%-lessons[j].lesson_title%></p>
+                    <%}%>
+                </div>
+            <%}%>
+        
+        <h2>Requirements and Pre-requisites</h2>
+        <div class="learningGoals">
+            <%for (let i = 0; i < courseData.requirements.length; i++){%>
+                <div class="learningGoalItem">
+                <%-courseData.requirements[i]%>
+                </div>
+            <%}%>
+        </div>
+
+        <h2>Description</h2>
+        <p><%-courseData.courseDesc%></p>
+
+        <h2>Who is this course for?</h2>
+        <ul style="padding-bottom:100px;">
+            <%for (let i = 0; i < courseData.audience.length; i++){%>
+                <li><%-courseData.audience[i]%></li>
+                
+                </div>
+            <%}%>
+            
+        </ul>
+            
+    </div>
+    </body>
+
+    <script>
+        function collapseToggle(target){
+            let status = document.getElementById(target).style.maxHeight;
+
+            if (status){
+                document.getElementById(target).style.maxHeight = null;
+            }else{
+                document.getElementById(target).style.maxHeight = document.getElementById(target).scrollHeight + 'px';
+            }
+            
+        }
+    </script>
+</html>

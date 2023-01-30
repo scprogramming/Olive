@@ -14,7 +14,7 @@ module.exports.addPage = async function addPage(mongoConn,title,pagePath){
 
         return [true,res.insertedId.toString()];
     }catch (err){
-        console.log(err);
+        console.error(err);
         return [false];
     }
     
@@ -28,12 +28,10 @@ module.exports.addBlock = async function addBlock(mongoConn,pageId,content,order
         res.page_content.push({content:content})
 
         await mongoConn.singleUpdateWithId('Pages',pageId,{$set: {page_content:res.page_content}});
-
-        console.log(res.page_content);
         
         return true;
     }catch (err){
-        console.log(err);
+        console.error(err);
         return false;
     }
     
@@ -47,7 +45,7 @@ module.exports.editPageTitle = async function editPageTitle(mongoConn,id,title){
 
         return true;
     }catch (err){
-        console.log(err);
+        console.error(err);
         return false;
     }
     
@@ -61,7 +59,7 @@ module.exports.nextBlockId = async function nextBlockId(mongoConn, page_id){
          
         return [true,len,len];
     }catch (err){
-        console.log(err);
+        console.error(err);
         return [false,-1,-1];
     }
 }
@@ -74,7 +72,7 @@ module.exports.deleteBlock = async function deleteBlock(mongoConn, blockId, page
 
         return true;
     }catch (err){
-        console.log(err);
+        console.error(err);
         return false;
     }
 }
@@ -85,7 +83,7 @@ module.exports.getBlockContent = async function getBlockContent(mongoConn, pageI
 
         return res.page_content[blockId];
     }catch(err){
-        console.log(err);
+        console.error(err);
         return "";
     }
 }
@@ -97,7 +95,7 @@ module.exports.getBlock = async function getBlock(mongoConn, blockType,blockMode
 
         return [res.content, res.scripts];
     }catch(err){
-        console.log(err);
+        console.error(err);
         return "";
     }
 }
@@ -113,7 +111,7 @@ module.exports.editBlock = async function editBlock(mongoConn,blockId,content,pa
 
         return [true, blockId];
     }catch (err){
-        console.log(err);
+        console.error(err);
         return [false,-1];
     }
     
@@ -126,7 +124,7 @@ module.exports.deletePage = async function deletePage(mongoConn,id){
 
         return true;
     }catch (err){
-        console.log(err);
+        console.error(err);
         return false;
     }
     

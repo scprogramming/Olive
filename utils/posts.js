@@ -13,7 +13,7 @@ module.exports.addPost = async function addPost(mongoConn,title,data,category){
 
         return true;
     }catch (err){
-        console.log(err);
+        console.error(err);
         return false;
     }
     
@@ -25,7 +25,7 @@ module.exports.editPost = async function editPost(mongoConn,title,data,id, categ
         await mongoConn.singleUpdateWithId("Posts",id,{$set: {content:data,article_title:title, category_id:category}});
         return true;
     }catch (err){
-        console.log(err);
+        console.error(err);
         return false;
     }
     
@@ -38,7 +38,7 @@ module.exports.deletePost = async function deletePost(mongoConn,id){
 
         return true;
     }catch (err){
-        console.log(err);
+        console.error(err);
         return false;
     }
     
