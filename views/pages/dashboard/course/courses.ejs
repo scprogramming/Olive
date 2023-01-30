@@ -36,8 +36,8 @@
                                     <th scope="row"><%= courses[i].course_title %></th>
                                     <td><%= courses[i].date_created %></td>
                                     <td><%= courses[i].course_path %></td>
-                                    <td><a href="/dashboard/editCourse/<%= courses[i].course_id %>"><i class="fa fa-edit"></i></button></a></td>
-                                    <td><a href="#" onclick="deleteCourse(<%= courses[i].course_id %>,this)"><i class="fa fa-trash"></i></button></a></td>
+                                    <td><a href="/dashboard/editCourse/<%= courses[i]._id %>"><i class="fa fa-edit"></i></button></a></td>
+                                    <td><a href="#" onclick="deleteCourse(<%= courses[i]._id %>,this)"><i class="fa fa-trash"></i></button></a></td>
                                 </tr>
                                 <% } %>
                             </tbody>

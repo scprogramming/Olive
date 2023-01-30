@@ -13,7 +13,6 @@ module.exports.registerUser =  async function registerUser(email, userPassword, 
         }
 
         let checkEmail = await mongoConn.singleFind("Users", {email:email});
-        console.log(checkEmail);
         
         if (checkEmail === null){
             var salt = await bcrypt.genSalt(parseInt(conf.saltRounds));
@@ -27,7 +26,7 @@ module.exports.registerUser =  async function registerUser(email, userPassword, 
         }
 
     } catch (err){
-        console.log(err);
+        console.error(err);
         return -1;
     }
 }
@@ -40,6 +39,15 @@ function generateExpiry(expiry){
         days = parseInt(days);
         today.setDate(today.getDate() + days);
         return today;
+    }
+}
+
+module.exports.logout = async function logout(mongoConn,sessionId){
+    try{
+        const session = await mongoConn.singleFind("Sessions", {session_id:sessionId});
+        mongoConn.singleDeleteWithId("Sessions",session._id);
+    }catch(err){
+        console.error(err);
     }
 }
 
@@ -79,9 +87,22 @@ module.exports.login = async function login(email,password, mongoConn,tokenExpir
         
         
     }catch(err){
-        console.log(err);
+        console.error(err);
         return [false,""];
     }
+}
+
+module.exports.checkAuthStatus = async function checkAuthStatus(mongoConn,role,cookie){
+    let authStatus = false;
+
+    if (cookie !== undefined){
+        const authRes = await this.verify(mongoConn, cookie, "user",conf);
+        if (authRes[0]){
+            authStatus = true;
+        }
+    }
+
+    return authStatus;
 }
 
 module.exports.verify = async function verify(mongoConn, token,requiredRole,conf){
@@ -101,7 +122,7 @@ module.exports.verify = async function verify(mongoConn, token,requiredRole,conf
                     [false,-1]
                 }else{
                     if (conf.tokenExpires === 'none'){
-                        if (checkActive.role == requiredRole){
+                        if (checkActive.role === requiredRole || checkActive.role === 'admin'){
                             return [true,0];
                         }else{
                             return [false,-1];
@@ -111,7 +132,7 @@ module.exports.verify = async function verify(mongoConn, token,requiredRole,conf
                         let today = dateUtil.parseDate(new Date());
 
                         if (parseInt(expiry[0]) >= parseInt(today[0]) && parseInt(expiry[1]) >= parseInt(today[1]) && parseInt(expiry[2]) >= parseInt(today[2])){
-                            if (checkActive.role == requiredRole){
+                            if (checkActive.role === requiredRole || checkActive.role === 'admin'){
                                 return [true,0];
                             }else{
                                 return [false,-1];
@@ -123,7 +144,7 @@ module.exports.verify = async function verify(mongoConn, token,requiredRole,conf
 
             
         }catch(err){
-            console.log(err);
+            console.error(err);
             return [false,6];
         }
     }

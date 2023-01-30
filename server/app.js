@@ -3,6 +3,7 @@ const cors = require('cors');
 const auth = require('../utils/auth.js');
 const posts = require("../utils/posts");
 const pages = require("../utils/pages");
+const courses = require('../utils/courses');
 const authRouter = require("./authRouter");
 const mongoHandle = require('../handlers/MongoDbHandler')
 
@@ -20,12 +21,31 @@ module.exports.appServer = class AppServer{
         this.app.set('view engine','ejs');
         this.app.use('/public',express.static(__dirname + '\\public'));
 
-        this.app.get("/login", function(req,res){
-            res.render("../views/pages/login", {
-                url:conf.serverAddress,
-                port:conf.apiPort,
-                regEnable:conf.registrationEnabled
-            });
+        this.app.get("/login", async function(req,res){
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            console.log(req.get("Referrer"));
+
+            let referrer = "/";
+
+            if (req.get("Referrer") !== undefined){
+                referrer = req.get("Referrer");
+            }
+
+            const cookie = req.headers.cookie;
+            const authStatus = await auth.checkAuthStatus(mongoConn, "user", cookie);
+
+            if (authStatus){
+                res.redirect("/");
+            }else{
+                res.render("../views/pages/login", {
+                    url:conf.serverAddress,
+                    port:conf.apiPort,
+                    regEnable:conf.registrationEnabled,
+                    ref:referrer
+                });
+            }
+
+            
         });
 
         
@@ -127,9 +147,15 @@ module.exports.appServer = class AppServer{
         this.app.get("/viewPost/:id", async function(req,res){
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
 
+            const cookie = req.headers.cookie;
+            const authStatus = await auth.checkAuthStatus(mongoConn, "user", cookie);
+
             let result = await posts.getPostWithId(mongoConn,req.params.id);
             res.render("../views/pages/client/viewPost",{
-                posts:result[0]
+                posts:result,
+                isAuth:authStatus,
+                url:conf.serverAddress,
+                port:conf.apiPort
             });
         });
 
@@ -165,15 +191,51 @@ module.exports.appServer = class AppServer{
             res.render(redirect[0],redirect[1]);
         });
 
+        this.app.get("/blog", async function(req,res){
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+
+            let allPosts = await posts.getAllPosts(mongoConn);
+
+            const cookie = req.headers.cookie;
+            const authStatus = await auth.checkAuthStatus(mongoConn, "user", cookie);
+
+            res.render("../views/pages/client/posts",{
+                postData:allPosts,
+                isAuth:authStatus,
+                url:conf.serverAddress,
+                port:conf.apiPort
+            });
+        });
+
         this.app.get("/", async function(req,res){
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
 
-            let result = await posts.getAllPosts(mongoConn);
-            let pageRes = await pages.getAllPages(mongoConn);
+            let allCourses = await courses.getAllCourses(mongoConn);
+
+            const cookie = req.headers.cookie;
+            const authStatus = await auth.checkAuthStatus(mongoConn, "user", cookie);
 
             res.render("../views/pages/client/home",{
-                posts:result,
-                pages:pageRes
+                courseData:allCourses,
+                isAuth:authStatus,
+                url:conf.serverAddress,
+                port:conf.apiPort
+            });
+        });
+
+        this.app.get("/courses/:path", async function(req,res){
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+
+            let courseContent = await courses.getContentWithPath(mongoConn,req.params.path);
+
+            const cookie = req.headers.cookie;
+            const authStatus = await auth.checkAuthStatus(mongoConn, "user", cookie);
+
+            res.render("../views/pages/client/coursePage",{
+                courseData:courseContent,
+                isAuth:authStatus,
+                url:conf.serverAddress,
+                port:conf.apiPort
             });
         });
 
