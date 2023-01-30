@@ -30,7 +30,6 @@
                   <div class="tab">
                     <button class="tablinks" onclick="openSection(event,'curriculum','tabcontent','tablinks')">Curriculum</button>
                     <button class="tablinks" onclick="openSection(event,'pricing','tabcontent','tablinks')">Pricing</button>
-                    <button class="tablinks" onclick="openSection(event,'landing', 'tabcontent','tablinks')">Landing Page</button>
                     <button class="tablinks" onclick="openSection(event, 'courseDetails', 'tabcontent', 'tablinks')">Course Details</button>
                   </div>
 
@@ -121,18 +120,18 @@
                         <% if (lessons[j].content.data === '') {%>
                             <div id="newBlock">
                               <p>Add a new block of content</p>
-                              <button type="button btn-secondary" class="lessonContentButton" onclick="openSection(event, 'newVideoLesson<%=j%>', 'lessonBlock', 'lessonContentButton')">Video</button>
-                              <button type="button btn-secondary" class="lessonContentButton" onclick="openSection(event, 'newRichTextLesson<%=j%>', 'lessonBlock', 'lessonContentButton')">Rich Text</button>
+                              <button type="button btn-secondary" class="lessonContentButton" onclick="openSection(event, 'newVideoModule<%=i%>Lesson<%=j%>', 'lessonBlock', 'lessonContentButton')">Video</button>
+                              <button type="button btn-secondary" class="lessonContentButton" onclick="openSection(event, 'newRichTextModule<%=i%>Lesson<%=j%>', 'lessonBlock', 'lessonContentButton')">Rich Text</button>
                               
-                                <div id="newVideoLesson<%=j%>" style="display:none;" class="lessonBlock">
+                                <div id="newVideoModule<%=i%>Lesson<%=j%>" style="display:none;" class="lessonBlock">
                                   <h2>Upload a video</h2>
-                                  <input type="file" accept="video/*" id="videoLesson<%=j%>Input" onchange="readVideo('<%=j%>','<%=i%>')" style="display:block">
-                                  <video controls id="video-tagLesson<%=j%>" width="100%" height="50%"></video>
+                                  <input type="file" accept="video/*" id="videoModule<%=i%>Lesson<%=j%>Input" onchange="readVideo('<%=j%>','<%=i%>')" style="display:block">
+                                  <video controls id="video-tagModule<%=i%>Lesson<%=j%>" width="100%" height="50%"></video>
 
                                 </div>
                               
 
-                              <div id="newRichTextLesson<%=j%>" style="display:none;" class="lessonBlock">
+                              <div id="newRichTextModule<%=i%>Lesson<%=j%>" style="display:none;" class="lessonBlock">
                                 <%- include('./richText.ejs'); %>
                                 <button class="btn btn-primary" type="submit" onclick="submitRichText('<%=j%>','<%=i%>')">Save</button>
                               </div>
@@ -141,7 +140,7 @@
                             <%}else{%>
 
                               <% if (lessons[j].content.type === 'serverVideo') {%>
-                                <video controls id="video-tagLesson<%=j%>" width="100%" height="50%" src='<%=lessons[j].content.data%>'></video>
+                                <video controls id="video-tagModule<%=i%>Lesson<%=j%>" width="100%" height="50%" src='<%=lessons[j].content.data%>'></video>
                               
                               <%} else if (lessons[j].content.type === 'richText') {%>
                                   <%- lessons[j].content.data %>
@@ -215,10 +214,6 @@
 
                     </div>
 
-                  </div>
-
-                  <div id="landing" class="tabcontent" style="display:none">
-                    <h3>Landing</h3>
                   </div>
                 </div>
                 
@@ -347,7 +342,7 @@ var quill = new Quill('#editor', {
   }
 
   async function readVideo(lessonId, moduleId){
-    const video = document.getElementById('videoLesson' + lessonId + 'Input')
+    const video = document.getElementById('videoModule' + moduleId + 'Lesson' + lessonId + 'Input')
 
     const formData = new FormData();
     formData.append("video",video.files[0]);
@@ -362,7 +357,7 @@ var quill = new Quill('#editor', {
     });
 
     const resJson = await res.json();
-    document.getElementById('video-tagLesson' + lessonId).src = resJson.video;
+    document.getElementById('video-tagModule' + moduleId + 'Lesson' + lessonId).src = resJson.video;
   }
 
   function promptLessonTitle(modId){
@@ -470,17 +465,23 @@ var quill = new Quill('#editor', {
                 body:JSON.stringify({courseId:'<%=courseId%>', moduleTitle:moduleTitle})
             });
             
-            let modId = await res.json().id;
+            let json = await res.json();
+            let modId = json.id;
             
             document.getElementById('newModule').innerHTML = "";
             document.getElementById("moduleList").innerHTML += `
              <li>
                 <a id="module${modId}" class="moddropdown-toggle collapsed" href="#module${modId}Lessons" data-toggle="collapse" aria-expanded="false">${moduleTitle}</a>
                 <ul id="module${modId}Lessons" class="list-unstyled collapse">
+                  <div id="lessonListContentModule${modId}">
                   <li onclick="showLesson(event,'module-${modId}-lesson-0')">
                     <a class="modsidebarlink modindentitem">Lesson1</a>  
                   </li>
-                  <li><button class="button btn-secondary">Add Lessson</button> </li>  
+                  </div>
+                  <div id="newLesson-${modId}">
+
+                  </div>
+                  <li><button class="button btn-secondary" onclick="promptLessonTitle('${modId}')">Add Lessson</button> </li>  
                 </ul>
               </li>
             `
