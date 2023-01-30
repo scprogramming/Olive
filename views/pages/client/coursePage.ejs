@@ -20,24 +20,30 @@
             <div id="hero-text">
                 <h1 id="hero-header"><%-courseData.course_title%></h1>
                 <p><%-courseData.courseDesc%></p>
-                <button class="mainButton">Enroll for free!</button>
+
+                <% for (let i = 0; i < courseData.payment_options.length; i++){%>
+                    <button class="mainButton">
+                        <% if (courseData.payment_options[i].plan_type === 'One-time') {%>
+                        <%- courseData.payment_options[i].pay_amount%> <%- courseData.payment_options[i].currency%>
+                        <%}else if (courseData.payment_options[i].plan_type === 'Subscription') {%>
+                            <%-courseData.payment_options[i].frequency%>: <%- courseData.payment_options[i].pay_amount%> <%-courseData.payment_options[i].currency%>
+                        <%}else{%>
+                            Enroll for free!
+                        <%}%>
+                    </button>
+
+                <%}%>
             </div>
         </div>
 
         <div id="coursePageContainer">
         <h2>What you'll learn</h2>
         <div class="learningGoals">
-            <div class="learningGoalItem">Something cool</div>
-            <div class="learningGoalItem">Something neat</div>
-            <div class="learningGoalItem">Something fun</div>
-            <div class="learningGoalItem">Something sweet</div>
-        </div>
-        <h2>Course Features</h2>
-        <div class="learningGoals">
-            <div class="learningGoalItem">10 hours of video</div>
-            <div class="learningGoalItem">6 excercises</div>
-            <div class="learningGoalItem">10 downloadable articles</div>
-            <div class="learningGoalItem">Certificate of completion</div>
+            <%for (let i = 0; i < courseData.learning_objectives.length; i++){%>
+                <div class="learningGoalItem">
+                <%-courseData.learning_objectives[i]%>
+                </div>
+            <%}%>
         </div>
         <h2>Course Content</h2>
             <%for (let i = 0; i < courseData.modules.length; i++) {%>
@@ -51,14 +57,25 @@
             <%}%>
         
         <h2>Requirements and Pre-requisites</h2>
-        <p>This course requires you to have a functional laptop that can run basic code.</p>
+        <div class="learningGoals">
+            <%for (let i = 0; i < courseData.requirements.length; i++){%>
+                <div class="learningGoalItem">
+                <%-courseData.requirements[i]%>
+                </div>
+            <%}%>
+        </div>
 
         <h2>Description</h2>
-        <p > I created this course becuase Python is really cool and I want people to learn it!</p>
+        <p><%-courseData.courseDesc%></p>
 
         <h2>Who is this course for?</h2>
         <ul style="padding-bottom:100px;">
-            <li>People who want to learn to program</li>
+            <%for (let i = 0; i < courseData.audience.length; i++){%>
+                <li><%-courseData.audience[i]%></li>
+                
+                </div>
+            <%}%>
+            
         </ul>
             
     </div>

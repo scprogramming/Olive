@@ -36,8 +36,36 @@
 
                   <div id="courseDetails" class="tabcontent" style="display:none;">
                     <h3>What you'll learn</h3>
+                    <div id="learningObjectives">
+                      <% for (let i = 0; i < content.learning_objectives.length; i++){%>
+                        <p><%-content.learning_objectives[i]%></p>
+                      <%}%>
+                    </div>
+                    <div id="newLearnObj">
+
+                    </div>
+                    <button class="button btn-primary" onclick="promptNewLearn()">Add learning objective</button>
+
                     <h3>Requirements</h3>
-                    <h3>Description</h3>
+                    <div id="requirements">
+                      <% for (let i = 0; i < content.requirements.length; i++){%>
+                        <p><%-content.requirements[i]%></p>
+                      <%}%>
+                    </div>
+                    <div id="newRequirements">
+
+                    </div>
+                    
+                    <h3>Audience</h3>
+                    <div id="audience">
+                      <% for (let i = 0; i < content.audience.length; i++){%>
+                        <p><%-content.audience[i]%></p>
+                      <%}%>
+                    </div>
+                    <div id="newAudience">
+
+                    </div>
+                    <button class="button btn-primary" onclick="promptNewAudience()">Add Audience</button>
                   </div>                  
 
                   <div id="curriculum" class="tabcontent">
@@ -372,6 +400,63 @@ var quill = new Quill('#editor', {
   function promptModuleTitle(){
     document.getElementById('newModule').innerHTML += `<input id = "newModuleName" type="text" placeholder="Input module name"></input> 
     <button class="button btn-secondary" onclick="addModule()">Save</button>`
+  }
+
+  function promptNewLearn(){
+    document.getElementById('newLearnObj').innerHTML += `<input id = "newLearningObjective" type="text" placeholder="Input module name"></input> 
+    <button class="button btn-secondary" onclick="addLearningObjective()">Save</button>`
+  }
+
+  function promptNewRequirement(){
+    document.getElementById('newRequirements').innerHTML += `<input id = "newRequirementsValue" type="text" placeholder="Input requirement"></input> 
+    <button class="button btn-secondary" onclick="addNewRequirement()">Save</button>`
+  }
+
+  function promptNewAudience(){
+    document.getElementById('newAudience').innerHTML += `<input id = "newAudienceValue" type="text" placeholder="Input audience"></input> 
+    <button class="button btn-secondary" onclick="addNewAudience()">Save</button>`
+  }
+
+  async function addNewAudience(){
+    let audience = document.getElementById('newAudienceValue').value;
+    await fetch('<%= url %>:<%= port %>/api/newAudience', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: 'include',
+                body:JSON.stringify({courseId:'<%=courseId%>', audience:audience})
+            });
+            document.getElementById('newAudience').innerHTML = "";
+            document.getElementById('audience').innerHTML += `<p>${audience}</p>`;
+  }
+
+  async function addNewRequirement(){
+    let requirement = document.getElementById('newRequirementsValue').value;
+    await fetch('<%= url %>:<%= port %>/api/newRequirement', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: 'include',
+                body:JSON.stringify({courseId:'<%=courseId%>', requirement:requirement})
+            });
+            document.getElementById('newRequirements').innerHTML = "";
+            document.getElementById('requirements').innerHTML += `<p>${requirement}</p>`;
+  }
+
+  async function addLearningObjective(){
+    let learningObj = document.getElementById('newLearningObjective').value;
+    await fetch('<%= url %>:<%= port %>/api/addLearningObjective', {
+                method:'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: 'include',
+                body:JSON.stringify({courseId:'<%=courseId%>', learningObj:learningObj})
+            });
+            document.getElementById('newLearnObj').innerHTML = "";
+            document.getElementById('learningObjectives').innerHTML += `<p>${learningObj}</p>`;
   }
   
   async function addModule(){
