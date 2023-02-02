@@ -89,6 +89,105 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
+        this.app.post("/api/updateModuleTitle", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                const {courseId, moduleId,title} = req.body;
+                let result = await courses.updateModuleTitle(mongoConn,courseId,moduleId, title);
+                
+                if (result){
+                    res.json({code:1, status:"Saved!"});
+                }else{
+                    res.json({code: -1, status:"Failed to save"});
+                }
+
+                res.end();
+                
+            }else{
+                res.status(401);
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
+            }
+        });
+
+        this.app.post("/api/updateLessonTitle", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                const {courseId, moduleId,title, lessonId} = req.body;
+                let result = await courses.updateLessonTitle(mongoConn,courseId, moduleId,title, lessonId);
+                
+                if (result){
+                    res.json({code:1, status:"Saved!"});
+                }else{
+                    res.json({code: -1, status:"Failed to save"});
+                }
+
+                res.end();
+                
+            }else{
+                res.status(401);
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
+            }
+        });
+
+        
+
+        this.app.post("/api/deleteModule", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                const {courseId, moduleId} = req.body;
+                let result = await courses.deleteModule(mongoConn,courseId,moduleId);
+                
+                if (result){
+                    res.json({code:1, status:"Saved!"});
+                }else{
+                    res.json({code: -1, status:"Failed to save"});
+                }
+
+                res.end();
+                
+            }else{
+                res.status(401);
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
+            }
+        });
+
+        this.app.post("/api/deleteLesson", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                const {courseId, moduleId, lessonId} = req.body;
+                let result = await courses.deleteLesson(mongoConn,courseId,moduleId, lessonId);
+                
+                if (result){
+                    res.json({code:1, status:"Saved!"});
+                }else{
+                    res.json({code: -1, status:"Failed to save"});
+                }
+
+                res.end();
+                
+            }else{
+                res.status(401);
+                res.json({code:-1, status:"Requires authorization"});
+                res.end();
+            }
+        });
+
+
         this.app.post("/api/newRequirement", async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
@@ -479,6 +578,31 @@ module.exports.apiServer = class ApiServer{
             }else{
                 res.status(401);
                 res.json({code: -1, status:"Requires authorization"});
+            }
+        });
+
+        this.app.post("/api/deleteCourse/:id", async(req,res) => {
+            var mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+
+            const cookie = req.headers.cookie;
+            const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
+
+            if (authRes[0]){
+                
+                let result = await courses.deleteCourse(mongoConn,req.params.id);
+                
+                if (result){
+                    res.json({code:1,status:"Deleted!"});
+                    res.end();
+                }else{
+                    res.json({code:-1, status:"Failed to delete"});
+                    res.end();
+                }
+                
+            }else{
+                res.status(401);
+                res.json({code:-1,status:"Requires authorization"});
+                res.end();
             }
         });
 
