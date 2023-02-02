@@ -1,0 +1,5 @@
+<li id="mod-<%=modId%>-lesson-<%=lessonId%>-listRoot" onclick="showLesson(event, 'module<%=modId%>-lesson-<%=lessonId%>')">
+    <a id="mod-<%=modId%>-lesson-<%=lessonId%>" class="modsidebarlink modindentitem" style="display:inline"><%=lesson_title%></a>
+    <a style="display:inline" href="#" onclick="promptTitle('mod-<%=modId%>-lesson-<%=lessonId%>','newLessonTitleInput<%=modId%>','<%=lesson_title%>','updateLessonTitle(\'<%=modId%>\', \'<%=lessonId%>\' ,\'newLessonTitleInput<%=modId%>\')')"><i class="fa fa-edit"></i></a>
+    <a style="display:inline" href="#" onclick="deleteLesson('<%=modId%>','<%=lessonId%>')"><i class="fa fa-trash"></i></a>
+</li>
