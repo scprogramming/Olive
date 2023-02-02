@@ -37,7 +37,7 @@
                                     <td><%= courses[i].date_created %></td>
                                     <td><%= courses[i].course_path %></td>
                                     <td><a href="/dashboard/editCourse/<%= courses[i]._id %>"><i class="fa fa-edit"></i></button></a></td>
-                                    <td><a href="#" onclick="deleteCourse(<%= courses[i]._id %>,this)"><i class="fa fa-trash"></i></button></a></td>
+                                    <td><a href="#" onclick="deleteCourse('<%= courses[i]._id %>',this)"><i class="fa fa-trash"></i></button></a></td>
                                 </tr>
                                 <% } %>
                             </tbody>
@@ -55,7 +55,7 @@
 
     <script>
 
-        function deleteCourse(id,t){
+        async function deleteCourse(id,t){
             fetch('<%- url %>:<%- port %>/api/deleteCourse/' + id, {
                 method:'POST',
                 credentials: 'include'
