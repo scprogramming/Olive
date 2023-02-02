@@ -27,6 +27,56 @@ module.exports.addModule = async function addModule(mongoConn,courseId,moduleTit
     }
 }
 
+module.exports.updateLessonTitle = async function updateLessonTitle(mongoConn,courseId, moduleId,title, lessonId){
+    try{
+        let course = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
+        course.modules[moduleId].lessons[lessonId].lesson_title = title;
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {modules:course.modules}});
+
+        return true;
+    }catch(err){
+        console.error(err);
+        return false;
+    }
+}
+
+module.exports.deleteModule = async function deleteModule(mongoConn,courseId,moduleId){
+    try{
+        let courses = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
+        courses.modules.splice(moduleId,1);
+
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {modules:courses.modules}});
+
+        return true;
+    }catch(err){
+        console.error(err);
+        return false;
+    }
+}
+
+module.exports.deleteLesson = async function deleteLesson(mongoConn,courseId,moduleId, lessonId){
+    try{
+        let course  = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
+        course.modules[moduleId].lessons.splice(lessonId, 1);
+
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {modules:course.modules}});
+        return true;
+    }catch(err){
+        console.error(err);
+        return false;
+    }
+}
+
+module.exports.deleteCourse = async function deleteCourse(mongoConn,courseId){
+    try{
+        await mongoConn.singleDeleteWithId("Courses",courseId);
+        return true;
+    }catch(err){
+        console.error(err);
+        return false;
+    }
+}
+
 module.exports.saveRichText = async function saveRichText(mongoConn,data, courseId, moduleId, lessonId){
     try {
         let course = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
@@ -40,6 +90,19 @@ module.exports.saveRichText = async function saveRichText(mongoConn,data, course
         return[false,-1];
     }
     
+}
+
+module.exports.updateModuleTitle = async function updateModuleTitle(mongoConn,courseId,moduleId, title){
+    try{
+        let course = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
+        course.modules[moduleId].module_title = title;
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {modules:course.modules}});
+
+        return true;
+    }catch (err){
+        console.error(err);
+        return false;
+    }
 }
 
 module.exports.saveVideo = async function saveVideo(mongoConn,video,lessonId, moduleId, courseId){

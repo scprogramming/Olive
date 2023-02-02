@@ -97,9 +97,12 @@ module.exports.checkAuthStatus = async function checkAuthStatus(mongoConn,role,c
 
     if (cookie !== undefined){
         const authRes = await this.verify(mongoConn, cookie, "user",conf);
-        if (authRes[0]){
-            authStatus = true;
+        if (authRes !== undefined){
+            if (authRes[0]){
+                authStatus = true;
+            }
         }
+        
     }
 
     return authStatus;
