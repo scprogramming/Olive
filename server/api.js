@@ -19,7 +19,7 @@ module.exports.apiServer = class ApiServer{
         this.app.use(express.json({limit: conf.postLimit}));
 
         this.app.use(cors({
-            origin: [conf.serverAddress + ':' + conf.apiPort, conf.serverAddress],
+            origin: [conf.serverAddress + ':' + conf.apiPort, conf.serverAddress + ':4200'],
             credentials:true
         }));
         
@@ -41,6 +41,9 @@ module.exports.apiServer = class ApiServer{
         });
        
 
+        /***************************************************************************************************************************/
+                                                        /*Course API Endpoints*/
+        /***************************************************************************************************************************/
         this.app.post("/api/addModule", async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
@@ -407,7 +410,9 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
-        
+        /***************************************************************************************************************************/
+        /*                                                         Post API Endpoints
+        /***************************************************************************************************************************/
 
         this.app.post("/api/deleteBlock/", async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
@@ -451,6 +456,10 @@ module.exports.apiServer = class ApiServer{
                 res.json({code:-1, status:"Requires authorization"});
             }
         });
+
+        /***************************************************************************************************************************/
+        /*                                              Page API Endpoints
+        /***************************************************************************************************************************/
 
         this.app.post("/api/deletePage/:id", async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
@@ -631,6 +640,22 @@ module.exports.apiServer = class ApiServer{
             }
         });
         
+        this.app.get("/api/getDashboardCourses", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            let result = await courses.getAllCourses(mongoConn);
+
+            const resultSet = [];
+
+            for (let i = 0; i < result.length; i++){
+                resultSet.push({_id:result[i]._id.toString(), course_title:result[i].course_title, courseDesc:result[i].courseDesc, thumbnail:result[i].thumbnail,course_path:result[i].course_path})
+            }
+
+            res.json(resultSet);
+            res.end();
+
+        });
+        
+
         this.app.post("/api/addCategory", async(req,res) => {
             var mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             const cookie = req.headers.cookie;
@@ -790,13 +815,13 @@ module.exports.apiServer = class ApiServer{
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
 
             try{
-                const {email, user_password} = req.body;
-                var result = await auth.login(email, user_password, mongoConn,this.conf.tokenExpires);
+                const {email, password} = req.body;
+                var result = await auth.login(email, password, mongoConn,this.conf.tokenExpires);
 
                 if (result[0]){
                     res.status(200);
                     res.cookie('auth',result[1],{path:'/',httpOnly:true})
-                    res.json({code:1, status:"Login successful!"});
+                    res.json({code:1, auth:result[1], status:"Login successful!"});
                 }else{
                     res.status(200);
                     res.json({code:-1, status:"Invalid username or password!"});

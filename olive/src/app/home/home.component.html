@@ -1,0 +1,22 @@
+<div>
+  <app-unauthnav></app-unauthnav>
+    <div id="hero">
+      <div id="hero-text">
+        <h1 id="hero-header">Learn Computer Science the right way</h1>
+        <p>Check out our computer programming courses and start learning today!</p>
+        <button class="mainButton" id="viewCourseButton">View Courses</button>
+      </div>
+    </div>
+
+    <div  id="courseContainer">
+        <div *ngFor="let course of courses" class="courseCard">
+          <a href="courses/{{course._id}}">
+            <img class="courseThumbnail" src="{{course.thumbnail}}"/>
+            <h3>{{course.course_title}}</h3>
+            <p>{{course.courseDesc}}</p>
+            </a>
+        </div>
+
+    </div>
+
+  </div>
