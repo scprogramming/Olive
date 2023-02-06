@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import { AppSettings } from './AppSettings';
-import { AuthResponse } from './Response';
+import { AppSettings } from '../AppSettings';
+import { AuthResponse } from '../Response';
 
 @Injectable({
   providedIn: 'root'

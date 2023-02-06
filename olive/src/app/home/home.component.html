@@ -1,5 +1,13 @@
 <div>
-  <app-unauthnav></app-unauthnav>
+
+  <ng-template [ngIf]="authStatus" [ngIfElse]="loggedOut">
+    <app-authnav></app-authnav>
+  </ng-template>
+  
+  <ng-template #loggedOut>
+    <app-unauthnav></app-unauthnav>
+  </ng-template>
+
     <div id="hero">
       <div id="hero-text">
         <h1 id="hero-header">Learn Computer Science the right way</h1>

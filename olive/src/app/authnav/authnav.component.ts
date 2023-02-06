@@ -2,10 +2,10 @@ import { Component } from '@angular/core';
 import {faMagnifyingGlass} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
-  selector: 'app-unauthnav',
-  templateUrl: './unauthnav.component.html',
-  styleUrls: ['./unauthnav.component.css']
+  selector: 'app-authnav',
+  templateUrl: './authnav.component.html',
+  styleUrls: ['./authnav.component.css']
 })
-export class UnauthnavComponent {
+export class AuthnavComponent {
   faSearch = faMagnifyingGlass;
 }
