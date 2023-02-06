@@ -9,13 +9,15 @@ import { UnauthnavComponent } from './unauthnav/unauthnav.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import {HttpClientModule} from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { AuthnavComponent } from './authnav/authnav.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
     HomeComponent,
-    UnauthnavComponent
+    UnauthnavComponent,
+    AuthnavComponent
   ],
   imports: [
     BrowserModule,

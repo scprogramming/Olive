@@ -737,6 +737,19 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
+        this.app.post("/api/verifyAuthUser", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+
+            const {authToken} = req.body;
+            const authRes = await auth.verify(mongoConn, authToken, "user",conf);
+
+            if (authRes[0]){
+                    res.json({status:true});
+            }else{
+                res.json({status:false});
+            }
+        });
+
         this.app.post("/api/editPost", async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
 

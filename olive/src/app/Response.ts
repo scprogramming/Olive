@@ -3,3 +3,7 @@ export interface AuthResponse{
     auth:string,
     status:string
 }
+
+export interface StatusOnlyRes{
+    status:boolean
+}
