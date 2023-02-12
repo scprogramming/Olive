@@ -1,0 +1,50 @@
+<ng-template [ngIf]="authStatus" [ngIfElse]="loggedOut">
+    <app-authnav></app-authnav>
+  </ng-template>
+  
+  <ng-template #loggedOut>
+    <app-unauthnav></app-unauthnav>
+</ng-template>
+
+
+<div *ngIf="courses">
+  <div id="hero-small">
+    <div id="hero-text">
+        <h1 id="hero-header">{{courses.course_title}}</h1>
+        <p>{{courses.courseDesc}}</p>
+      </div>
+    </div>
+
+  <div id = "coursePageContainer">
+  <h2>What you'll learn</h2>
+  <div class="learningGoals">
+    <div *ngFor="let learn of courses.learning_objective" class="learningGoalItem">
+      {{learn}}
+    </div>
+  </div>
+
+    <h2>Course Content</h2>
+    <div *ngFor="let module of courses.content; let indexOfelement = index;">
+      <button (click)="toggle(ContentElement)" class="collapsible"><strong>{{module.module_title}}</strong></button>
+      <div #ContentElement class="content hidden" id="content-module{{indexOfelement}}">
+        <p *ngFor="let lesson of module.lessons">{{lesson.lesson_title}}</p>
+      </div>
+    </div>
+    
+    <h2>Requirements and Pre-requisites</h2>
+    <div class="learningGoals">
+      <div *ngFor="let goals of courses.requirements" class="learningGoalItem">
+        {{goals}}
+      </div>
+    </div>
+
+    <h2>Description</h2>
+    <p>{{courses.courseDesc}}</p>
+
+    <h2>Who is this course for?</h2>
+    <ul style="padding-bottom:100px">
+      <li *ngFor="let aud of courses.audience">{{aud}}</li>
+    </ul>
+
+</div>
+

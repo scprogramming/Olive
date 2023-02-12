@@ -16,3 +16,9 @@ html, body, div{
     background-color: transparent;
     color:#000;
   }
+
+  .dashboardBody {
+    margin-left: 200px;
+    margin-top:50px;
+    font-size: 18px;
+}

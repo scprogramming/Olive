@@ -1,0 +1,19 @@
+<div>
+      
+    <app-unauthnav></app-unauthnav>
+    
+    <div id="loginFormContainer">
+      <label for="email">Email</label>
+      <input id="loginEmailInput" class="formTextBox"  [(ngModel)]="email" placeholder="email"/>
+
+      <label for="password">Password</label>
+      <input id="loginPasswordInput" type="password" class="formTextBox" [(ngModel)]="password" placeholder="password"/>
+
+      <label for="confirmPassword">Confirm Password</label>
+      <input id="verifyPasswordInput" type="password" class="formTextBox" [(ngModel)]="verifyPassword" placeholder="confirm password"/>
+
+      <p>{{message}}</p>
+      <button id="loginFormSubmit" (click)="register()">Register</button>
+    </div>
+
+</div>

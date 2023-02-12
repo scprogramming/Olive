@@ -16,9 +16,9 @@
       </div>
     </div>
 
-    <div  id="courseContainer">
+    <div id="courseContainer">
         <div *ngFor="let course of courses" class="courseCard">
-          <a href="courses/{{course._id}}">
+          <a href="courses/{{course.course_path}}">
             <img class="courseThumbnail" src="{{course.thumbnail}}"/>
             <h3>{{course.course_title}}</h3>
             <p>{{course.courseDesc}}</p>

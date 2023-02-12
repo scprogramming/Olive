@@ -5,7 +5,7 @@ const dateUtil = require("../utils/dateUtil");
 
 dotenv.config();
 
-module.exports.registerUser =  async function registerUser(email, userPassword, confirmPassword, firstName, lastName, mongoConn,conf){
+module.exports.registerUser =  async function registerUser(email, userPassword, confirmPassword, mongoConn,conf){
     try{
 
         if (userPassword != confirmPassword){
@@ -18,7 +18,7 @@ module.exports.registerUser =  async function registerUser(email, userPassword, 
             var salt = await bcrypt.genSalt(parseInt(conf.saltRounds));
             var passwordHash = await bcrypt.hash(userPassword,salt);
     
-            await mongoConn.singleInsert("Users", {email:email,user_password:passwordHash,active:1,role:"user",first_name:firstName, last_name:lastName});
+            await mongoConn.singleInsert("Users", {email:email,user_password:passwordHash,active:1,role:"user",first_name:"", last_name:""});
     
             return 1;
         }else{

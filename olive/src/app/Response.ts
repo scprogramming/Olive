@@ -7,3 +7,9 @@ export interface AuthResponse{
 export interface StatusOnlyRes{
     status:boolean
 }
+
+export interface idRes{
+    code:number
+    status:string,
+    id:string
+}

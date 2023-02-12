@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { AuthServiceService } from '../services/auth-service.service';
+import { AuthServiceService } from '../../services/auth-service.service';
 import {Router} from '@angular/router';
-import { AuthResponse } from '../Response';
+import { AuthResponse } from '../../Response';
 
 @Component({
   selector: 'app-login',
@@ -10,16 +10,22 @@ import { AuthResponse } from '../Response';
 })
 export class LoginComponent {
   email="";
-  password=""
+  password="";
+  message="";
 
   constructor(private _authService:AuthServiceService, private router:Router){}
 
   login(): void{
-    //Todo: Handle error case + invalid login case
     this._authService.login(this.email,this.password).subscribe(res =>{
       const parse = <AuthResponse> res;
-      localStorage.setItem("auth",parse.auth);
-      this.router.navigate(['/home'])
+      if (parse.code === 1){
+        this.message="";
+        localStorage.setItem("auth",parse.auth);
+        this.router.navigate(['..'])
+      }else{
+        this.message = "Invalid username or password!";
+      }
+      
     })
   }
 }
