@@ -383,11 +383,12 @@ module.exports.apiServer = class ApiServer{
         this.app.post("/api/addCourse", async(req,res) => {
 
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
-            const cookie = req.headers.cookie;
+            const {title,course_path,thumbnail, courseDesc, cookie} = req.body;
+
             const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
-                const {title,course_path,thumbnail, courseDesc} = req.body;
+                
 
                 if (title === ''){
                     res.json({code:-1,status:"Failed to save, title cannot be empty"});
@@ -399,7 +400,7 @@ module.exports.apiServer = class ApiServer{
                     let result = await courses.addCourse(mongoConn,title,course_path,thumbnail,courseDesc);
                 
                     if (result[0]){
-                        res.json({code:1, status:"Saved!",course_id:result[1]});
+                        res.json({code:1, status:"Saved!",id:result[1]});
                     }else{
                         res.json({code: -1, status:"Failed to save"});
                     }
@@ -647,7 +648,8 @@ module.exports.apiServer = class ApiServer{
             const resultSet = [];
 
             for (let i = 0; i < result.length; i++){
-                resultSet.push({_id:result[i]._id.toString(), course_title:result[i].course_title, courseDesc:result[i].courseDesc, thumbnail:result[i].thumbnail,course_path:result[i].course_path})
+                resultSet.push({_id:result[i]._id.toString(), course_title:result[i].course_title, courseDesc:result[i].courseDesc, 
+                    thumbnail:result[i].thumbnail,course_path:result[i].course_path, date_created: result[i].date_created});
             }
 
             res.json(resultSet);
@@ -750,6 +752,19 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
+        this.app.post("/api/verifyAuthAdmin", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+
+            const {authToken} = req.body;
+            const authRes = await auth.verify(mongoConn, authToken, "admin",conf);
+
+            if (authRes[0]){
+                    res.json({status:true});
+            }else{
+                res.json({status:false});
+            }
+        });
+
         this.app.post("/api/editPost", async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
 
@@ -774,23 +789,23 @@ module.exports.apiServer = class ApiServer{
             }
         });
 
-        this.app.post("/api/registration", async(req,res) => {
+        this.app.post("/api/register", async(req,res) => {
 
             if (conf.registrationEnabled){
                 let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
                 try{
-                    const {email, user_password, confirm_password, first_name, last_name} = req.body;
+                    const {email, password, confirmPassword} = req.body;
 
-                    if (email === '' || user_password === '' || confirm_password === '' || first_name === '' || last_name === ''
-                    || email === undefined || user_password === undefined || confirm_password === undefined || first_name === undefined || last_name === undefined){
+                    if (email === '' || password === '' || confirmPassword === ''
+                    || email === undefined || password === undefined || confirmPassword === undefined){
                         res.status(200);
                         res.json({code:-1, status:"All fields must have a value to register"});
                     }else{
-                        var result = await auth.registerUser(email, user_password, confirm_password, first_name, last_name, mongoConn,conf);
-                
+                        let result = await auth.registerUser(email, password, confirmPassword, mongoConn,conf);
+                        let authRes = await auth.login(email, password, mongoConn,this.conf.tokenExpires);
                         if (result == 1){
                             res.status(200);
-                            res.json({code:1, status:"User created successfully!"});
+                            res.json({code:1, auth:authRes[1], status:"User created successfully!"});
                         }else if (result == -2){
                             res.status(400);
                             res.json({code:-2, status:"User already exists, pick another email!"});
@@ -806,6 +821,7 @@ module.exports.apiServer = class ApiServer{
                     
                 }catch(err){
                     res.status(500);
+                    console.error(err);
                     res.json({code:-1, status:"Failed to register user!"});
                 }
             }else{
@@ -814,12 +830,24 @@ module.exports.apiServer = class ApiServer{
             }
 
             });
+
+        this.app.get("/api/courseData/:id", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            let result = await courses.getContentWithPath(mongoConn,req.params.id);
+
+            const resultSet = {course_title:result.course_title,courseDesc:result.courseDesc,learning_objective:result.learning_objectives,
+            content:result.modules, audience:result.audience, requirements:result.requirements, payment_options:result.payment_options
+            };
+
+            
+
+            res.json(resultSet);
+            res.end();
+        });
         
         this.app.post("/api/logout", async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
-            let token = req.headers.cookie;
-            auth.logout(mongoConn,token.substring(token.indexOf("=")+1));
-            res.clearCookie("auth");
+            auth.logout(mongoConn,req.body.token);
             res.end();
         });
 
@@ -833,7 +861,6 @@ module.exports.apiServer = class ApiServer{
 
                 if (result[0]){
                     res.status(200);
-                    res.cookie('auth',result[1],{path:'/',httpOnly:true})
                     res.json({code:1, auth:result[1], status:"Login successful!"});
                 }else{
                     res.status(200);

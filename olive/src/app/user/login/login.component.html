@@ -3,12 +3,13 @@
     <app-unauthnav></app-unauthnav>
     
     <div id="loginFormContainer">
-      <label htmlFor="email">Email</label>
+      <label for="email">Email</label>
       <input id="loginEmailInput" class="formTextBox"  [(ngModel)]="email" placeholder="email"/>
 
-      <label htmlFor="password">Password</label>
-      <input id="loginPasswordInput" class="formTextBox" [(ngModel)]="password" placeholder="password"/>
+      <label for="password">Password</label>
+      <input id="loginPasswordInput" type="password" class="formTextBox" [(ngModel)]="password" placeholder="password"/>
 
+      <p>{{message}}</p>
       <button id="loginFormSubmit" (click)="login()">Login</button>
     </div>
 

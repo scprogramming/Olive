@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { ApiRequestsService } from '../services/api-requests.service';
-import { AuthServiceService } from '../services/auth-service.service';
-import { StatusOnlyRes } from '../Response';
+import { ApiRequestsService } from '../../services/api-requests.service';
+import { AuthServiceService } from '../../services/auth-service.service';
+import { StatusOnlyRes } from '../../Response';
 
 @Component({
   selector: 'app-home',
@@ -15,7 +15,6 @@ export class HomeComponent {
   constructor(private _authService:AuthServiceService, private _apiservice:ApiRequestsService){}
 
   ngOnInit(){
-
     if (localStorage.getItem("auth") !== null) {
       let token:string = localStorage.getItem('auth')!;
       this._authService.verifyAuthUser(token).subscribe(res => {
