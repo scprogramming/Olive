@@ -17,8 +17,8 @@ export class CourseViewComponent {
 
   constructor (private route: ActivatedRoute, private _authService:AuthServiceService, private _apiservice:ApiRequestsService){}
 
-  toggle(e: HTMLElement) {
-    e.classList.toggle('hidden');
+  toggle(toggleOn: HTMLElement) {
+    toggleOn.classList.toggle('hidden');
   }
 
   ngOnInit(){

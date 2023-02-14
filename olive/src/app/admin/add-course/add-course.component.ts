@@ -26,7 +26,7 @@ export class AddCourseComponent {
 
         if (parse.code === 1){
           this.message = "";
-          console.log(parse.id);
+          this.router.navigate(['dashboard/editCourse/' + parse.id])
         }else{
           this.message = parse.status;
         }

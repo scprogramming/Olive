@@ -845,6 +845,20 @@ module.exports.apiServer = class ApiServer{
             res.end();
         });
         
+        this.app.get("/api/courseDataWithId/:id", async(req,res) => {
+            let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
+            let result = await courses.getAllContent(mongoConn,req.params.id);
+
+            const resultSet = {course_title:result.course_title,courseDesc:result.courseDesc,learning_objective:result.learning_objectives,
+            content:result.modules, audience:result.audience, requirements:result.requirements, payment_options:result.payment_options
+            };
+
+            
+
+            res.json(resultSet);
+            res.end();
+        });
+
         this.app.post("/api/logout", async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
             auth.logout(mongoConn,req.body.token);

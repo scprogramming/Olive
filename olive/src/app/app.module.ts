@@ -16,6 +16,7 @@ import { DashboardHomeComponent } from './admin/dashboard-home/dashboard-home.co
 import { SidebarComponent } from './admin/sidebar/sidebar.component';
 import { DashboardCourseListComponent } from './admin/dashboard-course-list/dashboard-course-list.component';
 import { AddCourseComponent } from './admin/add-course/add-course.component';
+import { EditCourseComponent } from './admin/edit-course/edit-course.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { AddCourseComponent } from './admin/add-course/add-course.component';
     DashboardHomeComponent,
     SidebarComponent,
     DashboardCourseListComponent,
-    AddCourseComponent
+    AddCourseComponent,
+    EditCourseComponent
   ],
   imports: [
     BrowserModule,

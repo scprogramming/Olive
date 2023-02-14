@@ -17,7 +17,7 @@
                 <th>{{course.course_title}}</th>
                 <td>{{course.date_created}}</td>
                 <td>{{course.course_path}}</td>
-                <td><fa-icon [icon]="faEdit"></fa-icon></td>
+                <td><a href="/dashboard/editCourse/{{course._id}}"> <fa-icon [icon]="faEdit"></fa-icon> </a></td>
                 <td><fa-icon [icon]="faTrash"></fa-icon></td>
             </tr>
         </tbody>

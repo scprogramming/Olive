@@ -1,0 +1,88 @@
+<app-sidebar></app-sidebar>
+
+<div class="dashboardBody">
+  <div class="tab">
+    <div id="curriculum">
+      <button
+        class="tabButton"
+        #CurriculumButton
+        (click)="toggle(CurriculumElement, CurriculumButton)"
+      >
+        Curriculum
+      </button>
+    </div>
+
+    <div id="pricing">
+      <button
+        class="tabButton"
+        #PricingButton
+        (click)="toggle(PricingElement, PricingButton)"
+      >
+        Pricing
+      </button>
+    </div>
+
+    <div id="courseDetails">
+      <button
+        class="tabButton"
+        #CourseDetailButton
+        (click)="toggle(CourseDetailElement, CourseDetailButton)"
+      >
+        Course Details
+      </button>
+    </div>
+  </div>
+
+  <div #CurriculumElement class="content hidden">
+    <div id="curriculumContainer" *ngIf="courses">
+      <div id="curriculumModuleBar">
+        <div *ngFor="let module of courses.content; let indexOfelement = index">
+          <div (click)="basicToggle(moduleTop)" class="collapsible">
+            {{ module.module_title }}
+          </div>
+          <fa-icon [icon]="faEllipse"></fa-icon>
+
+          <div #moduleTop class="hidden">
+            <div
+              id="content-module{{ indexOfelement }}"
+              class="lessonSmall"
+              *ngFor="let lesson of module.lessons; let indexOfLesson = index"
+            >
+              <p
+                #CurrentLesson
+                id="module-{{indexOfelement}}-lesson-{{ indexOfLesson }}"
+                (click)="showLesson(CurrentLesson)"
+                class="lessonSmall"
+              >
+                {{ lesson.lesson_title }}
+                <fa-icon [icon]="faEllipse"></fa-icon>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--Module + lesson as ID-->
+      <div *ngFor="let module of courses.content; let indexOfelement = index">
+        <div
+          *ngFor="let lesson of module.lessons; let indexOfLesson = index"
+          id="curriculumContent"
+        >
+          <p
+            class="lessonContent hidden"
+            id="module-{{indexOfelement}}-lesson-{{ indexOfLesson }}-content"
+          >
+            {{ lesson.lesson_title }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div #CourseDetailElement class="content hidden">
+    <p>Here are the course details</p>
+  </div>
+
+  <div #PricingElement class="content hidden">
+    <p>Here is the pricing</p>
+  </div>
+</div>
