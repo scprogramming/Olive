@@ -9,6 +9,7 @@ import { AdminAuthGuard } from './Guards/auth.guard';
 import { LoginGuard } from './Guards/login.guard';
 import { DashboardCourseListComponent } from './admin/dashboard-course-list/dashboard-course-list.component';
 import { AddCourseComponent } from './admin/add-course/add-course.component';
+import { EditCourseComponent } from './admin/edit-course/edit-course.component';
 
 const routes: Routes = [
   {path: 'login', component:LoginComponent, canActivate:[LoginGuard]},
@@ -18,7 +19,8 @@ const routes: Routes = [
   {path: 'courses/:id', component:CourseViewComponent},
   {path: 'dashboard',component:DashboardHomeComponent, canActivate:[AdminAuthGuard]},
   {path: 'dashboard/courses',component:DashboardCourseListComponent, canActivate:[AdminAuthGuard]},
-  {path: 'dashboard/addCourse', component:AddCourseComponent, canActivate:[AdminAuthGuard]}
+  {path: 'dashboard/addCourse', component:AddCourseComponent, canActivate:[AdminAuthGuard]},
+  {path: 'dashboard/editCourse/:id', component:EditCourseComponent, canActivate:[AdminAuthGuard]}
 ];
 
 @NgModule({
