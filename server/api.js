@@ -19,7 +19,7 @@ module.exports.apiServer = class ApiServer{
         this.app.use(express.json({limit: conf.postLimit}));
 
         this.app.use(cors({
-            origin: [conf.serverAddress + ':' + conf.apiPort, conf.serverAddress + ':4200'],
+            origin: [conf.serverAddress + ':' + conf.apiPort, conf.serverAddress + ':4200', conf.serverAddress],
             credentials:true
         }));
         
@@ -28,7 +28,7 @@ module.exports.apiServer = class ApiServer{
 
         const storage = multer.diskStorage(
             {
-                destination:'server/public/uploads/',
+                destination:'olive/src/assets/videos',
                 filename: function(req, file, cb){
                     const orgName = file.originalname
                     const indexOfExtension = orgName.indexOf('.')
@@ -46,11 +46,12 @@ module.exports.apiServer = class ApiServer{
         /***************************************************************************************************************************/
         this.app.post("/api/addModule", async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
-            const cookie = req.headers.cookie;
+            const {courseId,moduleTitle,cookie} = req.body;
+
             const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
-                const {courseId,moduleTitle} = req.body;
+                
                 let result = await courses.addModule(mongoConn,courseId,moduleTitle);
                 
                 if (result[0]){
@@ -313,9 +314,8 @@ module.exports.apiServer = class ApiServer{
 
         this.app.post("/api/uploadVideo", upload.array('video'), async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
-            const cookie = req.headers.cookie;
+            const cookie = req.body.auth;
             const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
-
 
             if (authRes[0]){
                 let result = await courses.saveVideo(mongoConn,req.files, req.body.lessonId, req.body.moduleId, req.body.courseId);
@@ -337,11 +337,11 @@ module.exports.apiServer = class ApiServer{
 
         this.app.post("/api/addLesson", async(req,res) => {
             let mongoConn = new mongoHandle.MongoDbHandler(conf.host,conf.port, conf.user, conf.pass, conf.database);
-            const cookie = req.headers.cookie;
+            const {courseId,lessonTitle,moduleId, cookie} = req.body;
             const authRes = await auth.verify(mongoConn, cookie, "admin",conf);
 
             if (authRes[0]){
-                const {courseId,lessonTitle,moduleId} = req.body;
+                
                 let result = await courses.addLesson(mongoConn,courseId,lessonTitle,moduleId);
                 
                 if (result[0]){

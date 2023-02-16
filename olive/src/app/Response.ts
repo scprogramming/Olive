@@ -9,7 +9,13 @@ export interface StatusOnlyRes{
 }
 
 export interface idRes{
-    code:number
+    code:number,
     status:string,
     id:string
+}
+
+export interface videoRes{
+    code: number,
+    status:string,
+    video:string
 }

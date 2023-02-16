@@ -40,7 +40,8 @@
           <div (click)="basicToggle(moduleTop)" class="collapsible">
             {{ module.module_title }}
           </div>
-          <fa-icon [icon]="faEllipse"></fa-icon>
+          <fa-icon [icon]="faEdit"></fa-icon>
+          <fa-icon [icon]="faTrash"></fa-icon>
 
           <div #moduleTop class="hidden">
             <div
@@ -50,39 +51,201 @@
             >
               <p
                 #CurrentLesson
-                id="module-{{indexOfelement}}-lesson-{{ indexOfLesson }}"
-                (click)="showLesson(CurrentLesson)"
+                id="module-{{ indexOfelement }}-lesson-{{ indexOfLesson }}"
+                (click)="
+                  showContent(CurrentLesson, 'lessonContent', '-content')
+                "
                 class="lessonSmall"
               >
                 {{ lesson.lesson_title }}
-                <fa-icon [icon]="faEllipse"></fa-icon>
               </p>
             </div>
+            <div #LessonPrompt class="lessonPrompt hidden">
+              <input
+                id="input-m-{{ indexOfelement }}"
+                #LessonTitleInput
+                type="text"
+                placeholder="Enter a lesson title"
+              />
+              <button (click)="addLesson(LessonTitleInput)">Save</button>
+            </div>
+
+            <button (click)="promptLesson(LessonPrompt)">Add lesson</button>
           </div>
         </div>
+
+        <div *ngIf="addingModule">
+          <input
+            #ModuleTitleInput
+            type="text"
+            placeholder="Enter a module title"
+          />
+          <button (click)="addModule(ModuleTitleInput)">Save</button>
+        </div>
+
+        <button (click)="promptModule()">Add module</button>
       </div>
-      <!--Module + lesson as ID-->
       <div *ngFor="let module of courses.content; let indexOfelement = index">
         <div
           *ngFor="let lesson of module.lessons; let indexOfLesson = index"
           id="curriculumContent"
         >
-          <p
+          <div
             class="lessonContent hidden"
-            id="module-{{indexOfelement}}-lesson-{{ indexOfLesson }}-content"
+            id="module-{{ indexOfelement }}-lesson-{{ indexOfLesson }}-content"
           >
-            {{ lesson.lesson_title }}
-          </p>
+            <div *ngIf="lesson.content.type === ''">
+              <p>Add a new block of content</p>
+              <button
+                #VideoElement
+                (click)="showContent(VideoElement, 'lessonBlock', '-video')"
+                id="Module{{ indexOfelement }}Lesson{{ indexOfLesson }}-v"
+              >
+                Video
+              </button>
+              <button>Rich text</button>
+
+              <div
+                class="lessonBlock hidden"
+                id="Module{{ indexOfelement }}Lesson{{ indexOfLesson }}-v-video"
+              >
+                <h2>Upload a video</h2>
+                <input
+                  #VideoInput
+                  id="m-{{ indexOfelement }}-l-{{ indexOfLesson }}-vu"
+                  type="file"
+                  accept="video/*"
+                  (change)="readVideo(VideoInput, UploadPreview)"
+                />
+                <video #UploadPreview class="previewVideo" controls></video>
+              </div>
+            </div>
+            <div *ngIf="lesson.content.type === 'serverVideo'">
+              <p>{{ lesson.lesson_title }}</p>
+              <div class="videoContainer">
+                <video
+                  class="previewVideo"
+                  controls
+                  src="{{ lesson.content.data }}"
+                ></video>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div #CourseDetailElement class="content hidden">
-    <p>Here are the course details</p>
+  <div id="courseContainer" #CourseDetailElement class="content hidden">
+    <div *ngIf="courses">
+      <h3>What you'll learn</h3>
+      <p *ngFor="let learn of courses.learning_objective">{{learn}}</p>
+      <div *ngIf="addingLearnObj">
+        <input
+          #LearningObjectiveInput
+          type="text"
+          placeholder="Enter a learning objective"
+        />
+        <button (click)="addObjective(LearningObjectiveInput)">Save</button>
+      </div>
+
+      <button (click)="promptLearningObjective()">Add learning objective</button>
+
+      <h3>Audience</h3>
+      <p *ngFor="let audience of courses.audience">{{audience}}</p>
+
+      <div *ngIf="addingAudience">
+        <input
+          #AudienceInput
+          type="text"
+          placeholder="Enter an audience"
+        />
+        <button (click)="addAudience(AudienceInput)">Save</button>
+      </div>
+
+      <button (click)="promptAudience()">Add learning objective</button>
+
+      <h3>Requirements</h3>
+      <p *ngFor="let requirement of courses.requirements">{{requirement}}</p>
+
+      <div *ngIf="addingRequirement">
+        <input
+          #ReqInput
+          type="text"
+          placeholder="Enter an audience"
+        />
+        <button (click)="addRequirement(ReqInput)">Save</button>
+      </div>
+
+      <button (click)="promptRequirement()">Add learning objective</button>
+
+    </div>
   </div>
 
-  <div #PricingElement class="content hidden">
-    <p>Here is the pricing</p>
+  <div #PricingElement id="pricingContainer" class="content hidden">
+    <div *ngIf="showPriceTable">
+      <button class="mainButton" (click)="planPrompt()">Add Plan</button>
+      <div *ngIf="courses">
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Plan Name</th>
+              <th>Plan Type</th>
+              <th>Currency</th>
+              <th>Pay Amount</th>
+              <th>Frequency</th>
+              <th>Status</th>
+              <th>Edit</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let pay of courses.payment_options">
+              <th>{{ pay.plan_name }}</th>
+              <td>{{ pay.plan_type }}</td>
+              <td>{{ pay.currency }}</td>
+              <td>{{ pay.pay_amount }}</td>
+              <td>{{ pay.frequency }}</td>
+              <td>{{ pay.status }}</td>
+              <td (click)="editPayOption()"><fa-icon [icon]="faEdit"></fa-icon></td>
+              <td (click)="deletePayOption()"><fa-icon [icon]="faTrash"></fa-icon></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div *ngIf="addPayPlan">
+      <label for="planTypes">Choose a payment plan type</label>
+      <select #PlanSelect (change)="changePlanType(PlanSelect)" name="planTypes" id="planTypes">
+      <option value="Free">Free</option>
+      <option value="One-time">One time payment</option>
+      <option value="Subscription">Subscription</option>
+    </select>
+
+    <label for="planNameInput">Enter a plan name</label>
+    <input id="planNameInput" type="text" required placeholder="plan name">
+
+    <div *ngIf="showPaidFields">
+      <label for="currencySelect" class="paidOption subscriptionOption">Select a currency</label>
+      <select name="currencySelect" id="currencySelect" class="paidOption subscriptionOption">
+        <option value="USD">USD</option>
+        <option value="CAD">CAD</option>
+      </select>
+
+      <label for="payAmount" class="paidOption subscriptionOption">Enter the amount to pay</label>
+      <input type="text" id="payAmount" class="paidOption subscriptionOption" placeholder="Payment amount">
+    </div>
+
+    <div *ngIf="showSubFields">
+      <label for="frequencyPay" class="subscriptionOption">Enter the payment frequency</label>
+      <select name="frequencyPay" id="frequencyPay" class="subscriptionOption">
+        <option value="Monthly">Monthly</option>
+        <option value="Yearly">Yearly</option>
+      </select>
+    </div>
+
+    <button class="mainButton" (click)="savePaymentPlan()">Save</button>
+    <button class="mainButton" (click)="cancelAddPayment()">Cancel</button>
+  </div>
   </div>
 </div>
