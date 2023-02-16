@@ -107,7 +107,7 @@ module.exports.updateModuleTitle = async function updateModuleTitle(mongoConn,co
 
 module.exports.saveVideo = async function saveVideo(mongoConn,video,lessonId, moduleId, courseId){
     try{
-        const videoPath = '/public/uploads/' + video[0].filename;
+        const videoPath = 'assets/videos/' + video[0].filename;
         let course = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
         course.modules[moduleId].lessons[lessonId].content.data = videoPath;
         course.modules[moduleId].lessons[lessonId].content.type = "serverVideo";

@@ -20,4 +20,8 @@ export class ApiRequestsService {
 
     return this._http.post(AppSettings.API_URL + endpoint,body, {'headers':{'content-type':'application/json'}})
   }
+
+  postFormData(endpoint:string, formData:FormData){
+    return this._http.post(AppSettings.API_URL + endpoint, formData);
+  }
 }
