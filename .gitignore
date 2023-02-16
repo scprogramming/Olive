@@ -38,7 +38,7 @@ bower_components
 build/Release
 
 server/public/uploads/
-
+olive/src/assets
 # Dependency directories
 node_modules/
 jspm_packages/
