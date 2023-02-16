@@ -1,0 +1,30 @@
+<div>
+
+  <ng-template [ngIf]="authStatus" [ngIfElse]="loggedOut">
+    <app-authnav></app-authnav>
+  </ng-template>
+  
+  <ng-template #loggedOut>
+    <app-unauthnav></app-unauthnav>
+  </ng-template>
+
+    <div id="hero">
+      <div id="hero-text">
+        <h1 id="hero-header">Learn Computer Science the right way</h1>
+        <p>Check out our computer programming courses and start learning today!</p>
+        <button class="mainButton" id="viewCourseButton">View Courses</button>
+      </div>
+    </div>
+
+    <div id="courseContainer">
+        <div *ngFor="let course of courses" class="courseCard">
+          <a href="courses/{{course.course_path}}">
+            <img class="courseThumbnail" src="{{course.thumbnail}}"/>
+            <h3>{{course.course_title}}</h3>
+            <p>{{course.courseDesc}}</p>
+            </a>
+        </div>
+
+    </div>
+
+  </div>

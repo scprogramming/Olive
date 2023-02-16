@@ -1,0 +1,26 @@
+<app-sidebar></app-sidebar>
+<div class="dashboardBody">
+    <a href="/dashboard/addCourse">Add a new course</a>
+
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Date Created</th>
+                <th>URL Path</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let course of courses">
+                <th>{{course.course_title}}</th>
+                <td>{{course.date_created}}</td>
+                <td>{{course.course_path}}</td>
+                <td><a href="/dashboard/editCourse/{{course._id}}"> <fa-icon [icon]="faEdit"></fa-icon> </a></td>
+                <td><fa-icon [icon]="faTrash"></fa-icon></td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>

@@ -1,0 +1,42 @@
+#hero-small{
+    background-image: linear-gradient(to right, #83C1A3,#45B47E);
+    height: 40vh;
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .learningGoals{
+    display: grid;
+    font-family: 'Open Sans', sans-serif;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid #83C1A3;
+    border-radius: 5px;
+  }
+  
+  .learningGoalItem {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #coursePageContainer{
+    margin-left: 30%;
+    margin-right: 30%;
+  }
+  
+  .hidden{
+    display:none
+  }
+
+  .collapsible{
+    cursor: pointer;
+    border:none;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
+    outline:none;
+    width:100%;
+    text-align: left;
+  }
+  

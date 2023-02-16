@@ -1,0 +1,28 @@
+
+#loginFormContainer{
+    border: 3px solid #9DBFAF;
+    padding:16px;
+    margin-left:38%;
+    margin-right:30%;
+    margin-top:5%
+  }
+  
+  .formTextBox{
+    width:100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #9DBFAF;
+    box-sizing:border-box;
+  }
+  
+  #loginFormSubmit{
+    background-color: #6457B5;
+    color:white;
+    padding:14px 20px;
+    margin:8px 0;
+    border:none;
+    cursor: pointer;
+    width:100%;
+  }
+  

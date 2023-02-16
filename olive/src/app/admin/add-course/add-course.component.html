@@ -1,0 +1,22 @@
+<app-sidebar></app-sidebar>
+<div class="dashboardBody">
+
+    <div id="loginFormContainer">
+        <label for="courseTitleInput">Course Title:</label>
+        <input id="courseTitleInput" class="formTextBox"  [(ngModel)]="courseTitle" placeholder="Course title"/>
+  
+        <label for="courseDescInput">Course Description</label>
+        <input id="courseDescInput" type="text" class="formTextBox" [(ngModel)]="courseDesc" placeholder="Course Description"/>
+
+        <label for="urlPathInput">URL Path: </label>
+        <input id="urlPathInput" type="text" class="formTextBox" [(ngModel)]="urlPath" placeholder="Course URL"/>
+
+        <label for="courseImageInput">Course Image: </label>
+        <input id="courseImageInput" (change)="readURL($event);" type="file" accept="image/jpeg, image/png, image/jpg" />
+        <img id="courseImage" [src]="imageSrc" style="width:240px; height:135px;">
+  
+        <p>{{message}}</p>
+        <button id="addCourseSubmit" (click)="addCourse()">Save</button>
+      </div>
+
+</div>

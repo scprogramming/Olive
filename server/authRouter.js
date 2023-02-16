@@ -4,7 +4,7 @@ const pages = require('../utils/pages');
 const courses = require('../utils/courses');
 
 module.exports.determineRedirectLogin =  async function determineRedirectLogin(page,status,mongoConn,req){
-    if (status[0]){
+    if (true){
         let result = "";
         switch(page){
             case "editCourse":
