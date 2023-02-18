@@ -25,6 +25,14 @@ export class EditCourseComponent {
   addingLearnObj:boolean = false;
   addingAudience:boolean = false;
   addingRequirement:boolean = false;
+  showModuleTitle:boolean=true;
+  updatePaymentPlan:boolean = false;
+
+  planAddName:string = "";
+  planTypeSelect:string = "Free";
+  currencySelectValue:string = "USD";
+  planAmountValue:string = "0";
+  payFrequencyValue:string = "Monthly";
 
   constructor (private route: ActivatedRoute, private _apiservice:ApiRequestsService){}
 
@@ -106,6 +114,31 @@ export class EditCourseComponent {
     this.addingModule = !this.addingModule;
   }
 
+  editModuleTitle(EditModulePrompt:HTMLElement, ModuleTitle:HTMLElement, ModuleTitleInput:HTMLInputElement){
+
+    const split = ModuleTitleInput.id.split("-");
+
+    this._apiservice.postData('/api/updateModuleTitle',{courseId:this.id, moduleId:split[2], title:ModuleTitleInput.value, cookie:localStorage.getItem('auth')}).subscribe((res) => {
+      console.log(res);
+    });
+
+    this.courses.content[split[2]].module_title = ModuleTitleInput.value;
+
+    ModuleTitle.className = 'collapsible';
+    EditModulePrompt.classList.toggle('hidden');
+  }
+
+  promptEditModule(modulePrompt:HTMLElement, moduleTitle:HTMLElement){
+    const allModules = document.getElementsByClassName('editModulePrompt');
+    
+    [].forEach.call(allModules, function(el:HTMLElement){
+      el.className = 'editModulePrompt' + ' hidden';
+    });
+
+    modulePrompt.classList.toggle('hidden');
+    moduleTitle.className = 'hidden';
+  }
+
   promptLesson(lessonPrompt:HTMLElement){
     const allLessons = document.getElementsByClassName('lessonPrompt');
 
@@ -137,8 +170,74 @@ export class EditCourseComponent {
     this.addPayPlan = true;
   }
 
-  savePaymentPlan(){
+  deleteModule(deleteModule:HTMLElement){
+    const elementId = deleteModule.id.split("-");
+    const moduleId = elementId[1];
 
+    this._apiservice.postData('/api/deleteModule', {courseId:this.id,moduleId:moduleId, cookie:localStorage.getItem("auth")}).subscribe(res => {
+      console.log(res);
+    });
+
+    this.courses.content.splice(moduleId,1);
+  }
+
+
+  deleteLesson(deleteLesson:HTMLButtonElement){
+    const elementId = deleteLesson.id.split("-");
+    const moduleId = elementId[1];
+    const lessonId = elementId[3];
+    
+    this._apiservice.postData('/api/deleteLesson', {courseId:this.id, lessonId:lessonId, moduleId:moduleId, cookie:localStorage.getItem("auth")}).subscribe(res => {
+      console.log(res);
+    });
+
+    this.courses.content[moduleId].lessons.splice(lessonId,1);
+
+  }
+
+  updateLessonTitle(lessonTitle:HTMLInputElement){
+    const elementId = lessonTitle.id.split("-");
+    const moduleId = elementId[1];
+    const lessonId = elementId[3];
+
+    this._apiservice.postData('/api/updateLessonTitle', {courseId:this.id, title:lessonTitle.value, lessonId:lessonId, moduleId:moduleId, cookie:localStorage.getItem("auth")}).subscribe(res => {
+      console.log(res);
+    });
+
+    this.courses.content[moduleId].lessons[lessonId].lesson_title = lessonTitle.value
+  }
+
+  savePaymentPlan(planSelect:HTMLSelectElement, PlanName:HTMLInputElement){
+    
+    if (planSelect.value === 'One-time'){
+
+      this._apiservice.postData('/api/addPaymentOption', {courseId:this.id, planName:this.planAddName,planType:this.planTypeSelect,
+      currency:this.currencySelectValue, payAmount:this.planAmountValue,cookie:localStorage.getItem("auth")}).subscribe(res => {
+        console.log(res);
+      });
+
+      this.courses.payment_options.push({plan_name:this.planAddName, plan_type:this.planTypeSelect,status:"enabled",currency:this.currencySelectValue, frequency:"",
+      pay_amount:this.planAmountValue});
+
+    }else if (planSelect.value === 'Subscription'){
+      this._apiservice.postData('/api/addPaymentOption', {courseId:this.id, planName:this.planAddName,planType:this.planTypeSelect,
+      currency:this.currencySelectValue, payAmount:this.planAmountValue, frequency:this.payFrequencyValue, cookie:localStorage.getItem("auth")}).subscribe(res => {
+        console.log(res);
+      });
+
+      this.courses.payment_options.push({plan_name:this.planAddName, plan_type:this.planTypeSelect,status:"enabled",currency:this.currencySelectValue, frequency:this.payFrequencyValue,
+      pay_amount:this.planAmountValue});
+
+    }else{
+      console.log(this.planAddName);
+      this._apiservice.postData('/api/addPaymentOption', {courseId:this.id, planName:this.planAddName,planType:this.planTypeSelect,cookie:localStorage.getItem("auth")}).subscribe(res => {
+        console.log(res);
+      });
+      this.courses.payment_options.push({plan_name:this.planAddName, plan_type:this.planTypeSelect,status:"enabled",currency:"", frequency:"",
+      pay_amount:""});
+    }
+
+    this.clearPayFields();
   }
 
   addObjective(learningObjective:HTMLInputElement){
@@ -165,10 +264,22 @@ export class EditCourseComponent {
     this.addingRequirement = !this.addingRequirement
   }
 
-
-  cancelAddPayment(){
+  clearPayFields(){
     this.showPriceTable = true;
     this.addPayPlan = false;
+    this.updatePaymentPlan = false;
+    this.showPaidFields = false;
+    this.showSubFields = false;
+
+    this.planAddName = "";
+    this.planTypeSelect = "Free";
+    this.currencySelectValue = "USD";
+    this.planAmountValue = "0";
+    this.payFrequencyValue = "Monthly"
+  }
+
+  cancelAddPayment(){
+    this.clearPayFields();
   }
 
   changePlanType(planSelect:HTMLSelectElement){
@@ -182,13 +293,45 @@ export class EditCourseComponent {
       this.showPaidFields = false;
       this.showSubFields = false;
     }
-    console.log(planSelect.value);
   }
 
-  editPayOption(){
+  editPayOption(payEditItem:HTMLElement){
+    this.addPayPlan = true;
+    this.updatePaymentPlan = true;
+    this.showPriceTable = false;
+
+    const id = payEditItem.id.split('-');
+    console.log(id[1]);
+
+    const planName = this.courses.payment_options[id[1]].plan_name;
+    const planType = this.courses.payment_options[id[1]].plan_type;
+
+    if (planType === 'One-time' || planType === 'Subscription'){  
+      const planCurrency = this.courses.payment_options[id[1]].currency;
+      const planAmount = this.courses.payment_options[id[1]].pay_amount;
+
+      this.showPaidFields = true;
+      this.currencySelectValue = planCurrency;
+      this.planAmountValue = planAmount;
+    }
+
+    if (planType === 'Subscription'){
+      const PlanFrequency = this.courses.payment_options[id[1]].frequency;
+      this.showSubFields = true;
+      this.payFrequencyValue = PlanFrequency;
+    }
+
+    this.planAddName = planName;
+    this.planTypeSelect = planType;
+
   }
 
-  deletePayOption(){
-    
+  deletePayOption(payDelete:HTMLElement){
+    const payId = payDelete.id.split("-")[1];
+    this._apiservice.postData('/api/deletePaymentOption', {courseId:this.id,cookie:localStorage.getItem("auth"), paymentId:payId}).subscribe(res => {
+      console.log(res);
+    });
+
+    this.courses.payment_options.splice(payId,1);
   }
 }

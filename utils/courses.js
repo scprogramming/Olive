@@ -67,6 +67,19 @@ module.exports.deleteLesson = async function deleteLesson(mongoConn,courseId,mod
     }
 }
 
+module.exports.deletePaymentPlan = async function deletePaymentPlan(mongoConn,courseId, paymentId){
+    try{
+        let course  = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
+        course.payment_options.splice(paymentId, 1);
+
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {payment_options:course.payment_options}});
+        return true;
+    }catch(err){
+        console.error(err);
+        return false;
+    }
+}
+
 module.exports.deleteCourse = async function deleteCourse(mongoConn,courseId){
     try{
         await mongoConn.singleDeleteWithId("Courses",courseId);

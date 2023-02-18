@@ -37,11 +37,28 @@
     <div id="curriculumContainer" *ngIf="courses">
       <div id="curriculumModuleBar">
         <div *ngFor="let module of courses.content; let indexOfelement = index">
-          <div (click)="basicToggle(moduleTop)" class="collapsible">
-            {{ module.module_title }}
+          <div #ModuleTitle  class="collapsible">
+            <span (click)="basicToggle(moduleTop)">{{ module.module_title }}</span>
+            <span (click)="promptEditModule(EditModulePrompt, ModuleTitle)">
+              <fa-icon  [icon]="faEdit"></fa-icon>
+            </span>
+            <span #DeleteModule id="module-{{indexOfelement}}-delete" (click)="deleteModule(DeleteModule)">
+              <fa-icon [icon]="faTrash"></fa-icon>
+            </span>
           </div>
-          <fa-icon [icon]="faEdit"></fa-icon>
-          <fa-icon [icon]="faTrash"></fa-icon>
+          <div #EditModulePrompt class="editModulePrompt hidden">
+            <input
+              id="input-m-{{ indexOfelement }}"
+              #ModuleTitleInput
+              type="text"
+              value="{{module.module_title}}"
+            />
+            <button (click)="editModuleTitle(EditModulePrompt, ModuleTitle, ModuleTitleInput)">Save</button>
+
+          </div>
+          
+          
+
 
           <div #moduleTop class="hidden">
             <div
@@ -94,6 +111,8 @@
             class="lessonContent hidden"
             id="module-{{ indexOfelement }}-lesson-{{ indexOfLesson }}-content"
           >
+            <input #TitleInput id="module-{{indexOfelement}}-lesson-{{indexOfLesson}}-Title" type="text" value="{{lesson.lesson_title}}"/>
+            <button  (click)="updateLessonTitle(TitleInput)">Save Title</button>
             <div *ngIf="lesson.content.type === ''">
               <p>Add a new block of content</p>
               <button
@@ -120,6 +139,9 @@
                 <video #UploadPreview class="previewVideo" controls></video>
               </div>
             </div>
+
+
+
             <div *ngIf="lesson.content.type === 'serverVideo'">
               <p>{{ lesson.lesson_title }}</p>
               <div class="videoContainer">
@@ -130,6 +152,8 @@
                 ></video>
               </div>
             </div>
+
+            <button #DeleteButton id="module-{{indexOfelement}}-lesson-{{indexOfLesson}}-Delete" (click)="deleteLesson(DeleteButton)">Delete Lesson</button>
           </div>
         </div>
       </div>
@@ -200,15 +224,15 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let pay of courses.payment_options">
+            <tr *ngFor="let pay of courses.payment_options; let indexOfelement = index">
               <th>{{ pay.plan_name }}</th>
               <td>{{ pay.plan_type }}</td>
               <td>{{ pay.currency }}</td>
               <td>{{ pay.pay_amount }}</td>
               <td>{{ pay.frequency }}</td>
               <td>{{ pay.status }}</td>
-              <td (click)="editPayOption()"><fa-icon [icon]="faEdit"></fa-icon></td>
-              <td (click)="deletePayOption()"><fa-icon [icon]="faTrash"></fa-icon></td>
+              <td #PayEditItem id="PayItem-{{indexOfelement}}-edit" (click)="editPayOption(PayEditItem)"><fa-icon [icon]="faEdit"></fa-icon></td>
+              <td #PayDeleteItem id="PayItem-{{indexOfelement}}-delete" (click)="deletePayOption(PayDeleteItem)"><fa-icon [icon]="faTrash"></fa-icon></td>
             </tr>
           </tbody>
         </table>
@@ -216,36 +240,44 @@
     </div>
     <div *ngIf="addPayPlan">
       <label for="planTypes">Choose a payment plan type</label>
-      <select #PlanSelect (change)="changePlanType(PlanSelect)" name="planTypes" id="planTypes">
+      <select [(ngModel)] = "planTypeSelect" #PlanSelect (change)="changePlanType(PlanSelect)" name="planTypes" id="planTypes">
       <option value="Free">Free</option>
       <option value="One-time">One time payment</option>
       <option value="Subscription">Subscription</option>
     </select>
 
     <label for="planNameInput">Enter a plan name</label>
-    <input id="planNameInput" type="text" required placeholder="plan name">
+    <input #PlanName id="planNameInput" [(ngModel)]="planAddName" type="text" required placeholder="plan name">
 
     <div *ngIf="showPaidFields">
       <label for="currencySelect" class="paidOption subscriptionOption">Select a currency</label>
-      <select name="currencySelect" id="currencySelect" class="paidOption subscriptionOption">
+      <select [(ngModel)]="currencySelectValue" name="currencySelect" id="currencySelect" class="paidOption subscriptionOption">
         <option value="USD">USD</option>
         <option value="CAD">CAD</option>
       </select>
 
       <label for="payAmount" class="paidOption subscriptionOption">Enter the amount to pay</label>
-      <input type="text" id="payAmount" class="paidOption subscriptionOption" placeholder="Payment amount">
+      <input type="text" [(ngModel)]="planAmountValue" id="payAmount" class="paidOption subscriptionOption" placeholder="Payment amount">
     </div>
 
     <div *ngIf="showSubFields">
       <label for="frequencyPay" class="subscriptionOption">Enter the payment frequency</label>
-      <select name="frequencyPay" id="frequencyPay" class="subscriptionOption">
+      <select [(ngModel)]="payFrequencyValue" name="frequencyPay" id="frequencyPay" class="subscriptionOption">
         <option value="Monthly">Monthly</option>
         <option value="Yearly">Yearly</option>
       </select>
     </div>
 
-    <button class="mainButton" (click)="savePaymentPlan()">Save</button>
+    <div *ngIf="updatePaymentPlan">
+      <button class="mainButton" (click)="savePaymentPlan(PlanSelect, PlanName)">Edit Plan</button>
     <button class="mainButton" (click)="cancelAddPayment()">Cancel</button>
+    </div>
+
+    <div *ngIf="!updatePaymentPlan">
+      <button class="mainButton" (click)="savePaymentPlan(PlanSelect, PlanName)">Save</button>
+      <button class="mainButton" (click)="cancelAddPayment()">Cancel</button>
+    </div>
+
   </div>
   </div>
 </div>
