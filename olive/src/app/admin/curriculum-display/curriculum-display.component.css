@@ -1,0 +1,38 @@
+.hidden{
+    display:none
+  }
+  .collapsible{
+    display: inline;
+    font-family: 'Open Sans', sans-serif;
+  }
+  #curriculumContainer{
+    display: flex;
+  }
+  
+  #curriculumModuleBar{
+    flex:1;
+  }
+  
+  #curriculumContent{
+    flex:1;
+  }
+
+  #curriculumContainer {
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+  }
+
+  .lessonSmall{
+    font-size: 14px;
+  }
+  
+  .videoContainer{
+    display: flex;
+    justify-content: center;
+  }
+  
+  .previewVideo{
+    width: 50%;
+    height: 50%;
+  }

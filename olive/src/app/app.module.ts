@@ -17,6 +17,9 @@ import { SidebarComponent } from './admin/sidebar/sidebar.component';
 import { DashboardCourseListComponent } from './admin/dashboard-course-list/dashboard-course-list.component';
 import { AddCourseComponent } from './admin/add-course/add-course.component';
 import { EditCourseComponent } from './admin/edit-course/edit-course.component';
+import { CurriculumDisplayComponent } from './admin/curriculum-display/curriculum-display.component';
+import { CourseDetailsComponent } from './admin/course-details/course-details.component';
+import { CoursePayComponent } from './admin/course-pay/course-pay.component';
 
 @NgModule({
   declarations: [
@@ -31,7 +34,10 @@ import { EditCourseComponent } from './admin/edit-course/edit-course.component';
     SidebarComponent,
     DashboardCourseListComponent,
     AddCourseComponent,
-    EditCourseComponent
+    EditCourseComponent,
+    CurriculumDisplayComponent,
+    CourseDetailsComponent,
+    CoursePayComponent
   ],
   imports: [
     BrowserModule,
