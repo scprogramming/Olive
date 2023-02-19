@@ -1,0 +1,125 @@
+
+    <div id="curriculumContainer" *ngIf="courses">
+      <div id="curriculumModuleBar">
+        <div *ngFor="let module of courses.content; let indexOfelement = index">
+          <div #ModuleTitle  class="collapsible">
+            <span (click)="basicToggle(moduleTop)">{{ module.module_title }}</span>
+            <span (click)="promptDetailEdit(EditModulePrompt, ModuleTitle, 'editModulePrompt','collapsible')">
+              <fa-icon  [icon]="faEdit"></fa-icon>
+            </span>
+            <span #DeleteModule id="module-{{indexOfelement}}-delete" (click)="deleteModule(DeleteModule)">
+              <fa-icon [icon]="faTrash"></fa-icon>
+            </span>
+          </div>
+          <div #EditModulePrompt class="editModulePrompt hidden">
+            <input
+              id="input-m-{{ indexOfelement }}"
+              #ModuleTitleInput
+              type="text"
+              value="{{module.module_title}}"
+            />
+            <button (click)="editModuleTitle(EditModulePrompt, ModuleTitle, ModuleTitleInput)">Save</button>
+
+          </div>
+          
+          
+
+
+          <div #moduleTop class="hidden">
+            <div
+              id="content-module{{ indexOfelement }}"
+              class="lessonSmall"
+              *ngFor="let lesson of module.lessons; let indexOfLesson = index"
+            >
+              <p
+                #CurrentLesson
+                id="module-{{ indexOfelement }}-lesson-{{ indexOfLesson }}"
+                (click)="
+                  showContent(CurrentLesson, 'lessonContent', '-content')
+                "
+                class="lessonSmall"
+              >
+                {{ lesson.lesson_title }}
+              </p>
+            </div>
+            <div #LessonPrompt class="lessonPrompt hidden">
+              <input
+                id="input-m-{{ indexOfelement }}"
+                #LessonTitleInput
+                type="text"
+                placeholder="Enter a lesson title"
+              />
+              <button (click)="addLesson(LessonTitleInput)">Save</button>
+            </div>
+
+            <button (click)="promptLesson(LessonPrompt)">Add lesson</button>
+          </div>
+        </div>
+
+        <div *ngIf="addingModule">
+          <input
+            #ModuleTitleInput
+            type="text"
+            placeholder="Enter a module title"
+          />
+          <button (click)="addModule(ModuleTitleInput)">Save</button>
+        </div>
+
+        <button (click)="promptModule()">Add module</button>
+      </div>
+      <div *ngFor="let module of courses.content; let indexOfelement = index">
+        <div
+          *ngFor="let lesson of module.lessons; let indexOfLesson = index"
+          id="curriculumContent"
+        >
+          <div
+            class="lessonContent hidden"
+            id="module-{{ indexOfelement }}-lesson-{{ indexOfLesson }}-content"
+          >
+            <input #TitleInput id="module-{{indexOfelement}}-lesson-{{indexOfLesson}}-Title" type="text" value="{{lesson.lesson_title}}"/>
+            <button  (click)="updateLessonTitle(TitleInput)">Save Title</button>
+            <div *ngIf="lesson.content.type === ''">
+              <p>Add a new block of content</p>
+              <button
+                #VideoElement
+                (click)="showContent(VideoElement, 'lessonBlock', '-video')"
+                id="Module{{ indexOfelement }}Lesson{{ indexOfLesson }}-v"
+              >
+                Video
+              </button>
+              <button>Rich text</button>
+
+              <div
+                class="lessonBlock hidden"
+                id="Module{{ indexOfelement }}Lesson{{ indexOfLesson }}-v-video"
+              >
+                <h2>Upload a video</h2>
+                <input
+                  #VideoInput
+                  id="m-{{ indexOfelement }}-l-{{ indexOfLesson }}-vu"
+                  type="file"
+                  accept="video/*"
+                  (change)="readVideo(VideoInput, UploadPreview)"
+                />
+                <video #UploadPreview class="previewVideo" controls></video>
+              </div>
+            </div>
+
+
+
+            <div *ngIf="lesson.content.type === 'serverVideo'">
+              <p>{{ lesson.lesson_title }}</p>
+              <div class="videoContainer">
+                <video
+                  class="previewVideo"
+                  controls
+                  src="{{ lesson.content.data }}"
+                ></video>
+              </div>
+            </div>
+
+            <button #DeleteButton id="module-{{indexOfelement}}-lesson-{{indexOfLesson}}-Delete" (click)="deleteLesson(DeleteButton)">Delete Lesson</button>
+          </div>
+        </div>
+      </div>
+    </div>
