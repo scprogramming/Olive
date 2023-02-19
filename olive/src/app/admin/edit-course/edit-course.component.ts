@@ -25,6 +25,14 @@ export class EditCourseComponent {
   addingLearnObj:boolean = false;
   addingAudience:boolean = false;
   addingRequirement:boolean = false;
+  showModuleTitle:boolean=true;
+  updatePaymentPlan:boolean = false;
+
+  planAddName:string = "";
+  planTypeSelect:string = "Free";
+  currencySelectValue:string = "USD";
+  planAmountValue:string = "0";
+  payFrequencyValue:string = "Monthly";
 
   constructor (private route: ActivatedRoute, private _apiservice:ApiRequestsService){}
 
@@ -106,6 +114,31 @@ export class EditCourseComponent {
     this.addingModule = !this.addingModule;
   }
 
+  editModuleTitle(EditModulePrompt:HTMLElement, ModuleTitle:HTMLElement, ModuleTitleInput:HTMLInputElement){
+
+    const split = ModuleTitleInput.id.split("-");
+
+    this._apiservice.postData('/api/updateModuleTitle',{courseId:this.id, moduleId:split[2], title:ModuleTitleInput.value, cookie:localStorage.getItem('auth')}).subscribe((res) => {
+      console.log(res);
+    });
+
+    this.courses.content[split[2]].module_title = ModuleTitleInput.value;
+
+    ModuleTitle.className = 'collapsible';
+    EditModulePrompt.classList.toggle('hidden');
+  }
+
+  promptEditModule(modulePrompt:HTMLElement, moduleTitle:HTMLElement){
+    const allModules = document.getElementsByClassName('editModulePrompt');
+    
+    [].forEach.call(allModules, function(el:HTMLElement){
+      el.className = 'editModulePrompt' + ' hidden';
+    });
+
+    modulePrompt.classList.toggle('hidden');
+    moduleTitle.className = 'hidden';
+  }
+
   promptLesson(lessonPrompt:HTMLElement){
     const allLessons = document.getElementsByClassName('lessonPrompt');
 
@@ -137,12 +170,82 @@ export class EditCourseComponent {
     this.addPayPlan = true;
   }
 
-  savePaymentPlan(){
+  deleteModule(deleteModule:HTMLElement){
+    const elementId = deleteModule.id.split("-");
+    const moduleId = elementId[1];
+
+    this._apiservice.postData('/api/deleteModule', {courseId:this.id,moduleId:moduleId, cookie:localStorage.getItem("auth")}).subscribe(res => {
+      console.log(res);
+    });
+
+    this.courses.content.splice(moduleId,1);
+  }
+
+
+  deleteLesson(deleteLesson:HTMLButtonElement){
+    const elementId = deleteLesson.id.split("-");
+    const moduleId = elementId[1];
+    const lessonId = elementId[3];
+    
+    this._apiservice.postData('/api/deleteLesson', {courseId:this.id, lessonId:lessonId, moduleId:moduleId, cookie:localStorage.getItem("auth")}).subscribe(res => {
+      console.log(res);
+    });
+
+    this.courses.content[moduleId].lessons.splice(lessonId,1);
 
   }
 
-  addObjective(learningObjective:HTMLInputElement){
+  updateLessonTitle(lessonTitle:HTMLInputElement){
+    const elementId = lessonTitle.id.split("-");
+    const moduleId = elementId[1];
+    const lessonId = elementId[3];
 
+    this._apiservice.postData('/api/updateLessonTitle', {courseId:this.id, title:lessonTitle.value, lessonId:lessonId, moduleId:moduleId, cookie:localStorage.getItem("auth")}).subscribe(res => {
+      console.log(res);
+    });
+
+    this.courses.content[moduleId].lessons[lessonId].lesson_title = lessonTitle.value
+  }
+
+  savePaymentPlan(planSelect:HTMLSelectElement, PlanName:HTMLInputElement){
+    
+    if (planSelect.value === 'One-time'){
+
+      this._apiservice.postData('/api/addPaymentOption', {courseId:this.id, planName:this.planAddName,planType:this.planTypeSelect,
+      currency:this.currencySelectValue, payAmount:this.planAmountValue,cookie:localStorage.getItem("auth")}).subscribe(res => {
+        console.log(res);
+      });
+
+      this.courses.payment_options.push({plan_name:this.planAddName, plan_type:this.planTypeSelect,status:"enabled",currency:this.currencySelectValue, frequency:"",
+      pay_amount:this.planAmountValue});
+
+    }else if (planSelect.value === 'Subscription'){
+      this._apiservice.postData('/api/addPaymentOption', {courseId:this.id, planName:this.planAddName,planType:this.planTypeSelect,
+      currency:this.currencySelectValue, payAmount:this.planAmountValue, frequency:this.payFrequencyValue, cookie:localStorage.getItem("auth")}).subscribe(res => {
+        console.log(res);
+      });
+
+      this.courses.payment_options.push({plan_name:this.planAddName, plan_type:this.planTypeSelect,status:"enabled",currency:this.currencySelectValue, frequency:this.payFrequencyValue,
+      pay_amount:this.planAmountValue});
+
+    }else{
+      console.log(this.planAddName);
+      this._apiservice.postData('/api/addPaymentOption', {courseId:this.id, planName:this.planAddName,planType:this.planTypeSelect,cookie:localStorage.getItem("auth")}).subscribe(res => {
+        console.log(res);
+      });
+      this.courses.payment_options.push({plan_name:this.planAddName, plan_type:this.planTypeSelect,status:"enabled",currency:"", frequency:"",
+      pay_amount:""});
+    }
+
+    this.clearPayFields();
+  }
+
+  addObjective(objective:HTMLInputElement){
+    this._apiservice.postData('/api/addLearningObjective', {courseId:this.id, learningObj:objective.value,cookie:localStorage.getItem("auth")}).subscribe(res => {
+      console.log(res);
+    });
+
+    this.courses.learning_objective.push(objective.value)
   }
 
   promptLearningObjective(){
@@ -150,25 +253,45 @@ export class EditCourseComponent {
   }
 
   addAudience(audience:HTMLInputElement){
+    this._apiservice.postData('/api/newAudience', {courseId:this.id, audience:audience.value,cookie:localStorage.getItem("auth")}).subscribe(res => {
+      console.log(res);
+    });
 
+    this.courses.audience.push(audience.value)
   }
 
   promptAudience(){
     this.addingAudience = !this.addingAudience
   }
 
-  addRequirement(audience:HTMLInputElement){
+  addRequirement(requirement:HTMLInputElement){
+    this._apiservice.postData('/api/newRequirement', {courseId:this.id, requirement:requirement.value,cookie:localStorage.getItem("auth")}).subscribe(res => {
+      console.log(res);
+    });
 
+    this.courses.requirements.push(requirement.value)
   }
 
   promptRequirement(){
     this.addingRequirement = !this.addingRequirement
   }
 
-
-  cancelAddPayment(){
+  clearPayFields(){
     this.showPriceTable = true;
     this.addPayPlan = false;
+    this.updatePaymentPlan = false;
+    this.showPaidFields = false;
+    this.showSubFields = false;
+
+    this.planAddName = "";
+    this.planTypeSelect = "Free";
+    this.currencySelectValue = "USD";
+    this.planAmountValue = "0";
+    this.payFrequencyValue = "Monthly"
+  }
+
+  cancelAddPayment(){
+    this.clearPayFields();
   }
 
   changePlanType(planSelect:HTMLSelectElement){
@@ -182,13 +305,127 @@ export class EditCourseComponent {
       this.showPaidFields = false;
       this.showSubFields = false;
     }
-    console.log(planSelect.value);
   }
 
-  editPayOption(){
+  editPayOption(payEditItem:HTMLElement){
+    this.addPayPlan = true;
+    this.updatePaymentPlan = true;
+    this.showPriceTable = false;
+
+    const id = payEditItem.id.split('-');
+    console.log(id[1]);
+
+    const planName = this.courses.payment_options[id[1]].plan_name;
+    const planType = this.courses.payment_options[id[1]].plan_type;
+
+    if (planType === 'One-time' || planType === 'Subscription'){  
+      const planCurrency = this.courses.payment_options[id[1]].currency;
+      const planAmount = this.courses.payment_options[id[1]].pay_amount;
+
+      this.showPaidFields = true;
+      this.currencySelectValue = planCurrency;
+      this.planAmountValue = planAmount;
+    }
+
+    if (planType === 'Subscription'){
+      const PlanFrequency = this.courses.payment_options[id[1]].frequency;
+      this.showSubFields = true;
+      this.payFrequencyValue = PlanFrequency;
+    }
+
+    this.planAddName = planName;
+    this.planTypeSelect = planType;
+
   }
 
-  deletePayOption(){
+  deletePayOption(payDelete:HTMLElement){
+    const payId = payDelete.id.split("-")[1];
+    this._apiservice.postData('/api/deletePaymentOption', {courseId:this.id,cookie:localStorage.getItem("auth"), paymentId:payId}).subscribe(res => {
+      console.log(res);
+    });
+
+    this.courses.payment_options.splice(payId,1);
+  }
+
+  deleteAudience(deleteAudience:HTMLElement){
+    const elementId = deleteAudience.id.split("-");
+    const audienceId = elementId[1];
+
+    this._apiservice.postData('/api/deleteAudience', {courseId:this.id,audienceId:audienceId, cookie:localStorage.getItem("auth")}).subscribe(res => {
+      console.log(res);
+    });
+
+    this.courses.audience.splice(audienceId,1);
+  }
+
+  deleteLearningObj(deleteLearn:HTMLElement){
+    const elementId = deleteLearn.id.split("-");
+    const learnId = elementId[1];
+
+    this._apiservice.postData('/api/deleteLearningObjective', {courseId:this.id,learningObj:learnId, cookie:localStorage.getItem("auth")}).subscribe(res => {
+      console.log(res);
+    });
+
+    this.courses.learning_objective.splice(learnId,1);
+  }
+
+  deleteRequirement(deleteReq:HTMLElement){
+    const elementId = deleteReq.id.split("-");
+    const reqId = elementId[1];
+
+    this._apiservice.postData('/api/deleteRequirements', {courseId:this.id,requirementId:reqId, cookie:localStorage.getItem("auth")}).subscribe(res => {
+      console.log(res);
+    });
+
+    this.courses.requirements.splice(reqId,1);
+  }
+
+  editDetail(EditModulePrompt:HTMLElement, ModuleTitle:HTMLElement, ModuleTitleInput:HTMLInputElement, titleClass:string){
+
+    const split = ModuleTitleInput.id.split("-");
+
+    if (titleClass === 'learningObj'){
+      this._apiservice.postData('/api/updateLearningObj',{courseId:this.id, title:ModuleTitleInput.value, id:split[2], cookie:localStorage.getItem('auth')}).subscribe((res) => {
+        console.log(res);
+      });
+  
+      this.courses.learning_objective[split[2]] = ModuleTitleInput.value;
+    }
+
+    if (titleClass === 'audienceTitle'){
+      this._apiservice.postData('/api/updateAudience',{courseId:this.id, title:ModuleTitleInput.value, id:split[2], cookie:localStorage.getItem('auth')}).subscribe((res) => {
+        console.log(res);
+      });
+  
+      this.courses.audience[split[2]] = ModuleTitleInput.value;
+    }
+
+    if (titleClass === 'requirementTitle'){
+      this._apiservice.postData('/api/updateRequirements',{courseId:this.id, title:ModuleTitleInput.value, id:split[2], cookie:localStorage.getItem('auth')}).subscribe((res) => {
+        console.log(res);
+      });
+  
+      this.courses.requirements[split[2]] = ModuleTitleInput.value;
+    }
     
+    ModuleTitle.className = titleClass;
+    EditModulePrompt.classList.toggle('hidden');
+  }
+
+  promptDetailEdit(modulePrompt:HTMLElement, moduleTitle:HTMLElement, classTarget:string, titleClass:string){
+    const allTitles = document.getElementsByClassName(titleClass);
+
+    [].forEach.call(allTitles, function(el:HTMLElement){
+      el.className = titleClass;
+    });
+
+    const allModules = document.getElementsByClassName(classTarget);
+
+    [].forEach.call(allModules, function(el:HTMLElement){
+      el.className = classTarget + ' hidden';
+    });
+
+    modulePrompt.classList.toggle('hidden');
+    moduleTitle.className = titleClass + ' hidden';
   }
 }

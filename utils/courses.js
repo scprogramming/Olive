@@ -67,6 +67,98 @@ module.exports.deleteLesson = async function deleteLesson(mongoConn,courseId,mod
     }
 }
 
+module.exports.deletePaymentPlan = async function deletePaymentPlan(mongoConn,courseId, paymentId){
+    try{
+        let course  = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
+        course.payment_options.splice(paymentId, 1);
+
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {payment_options:course.payment_options}});
+        return true;
+    }catch(err){
+        console.error(err);
+        return false;
+    }
+}
+
+module.exports.updateLearningObj = async function updateLearningObj(mongoConn,courseId,title,id){
+    try{
+        let course = await mongoConn.singleFind("Courses", {_id:mongodb.ObjectId(courseId)});
+        course.learning_objectives[id] = title;
+
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {learning_objectives:course.learning_objectives}})
+        return true;
+    }catch(err){
+        console.error(err);
+        return false;
+    }
+}
+
+module.exports.updateAudience = async function updateAudience(mongoConn,courseId,title,id){
+    try{
+        let course = await mongoConn.singleFind("Courses", {_id:mongodb.ObjectId(courseId)});
+        course.audience[id] = title;
+
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {audience:course.audience}})
+        return true;
+    }catch(err){
+        console.error(err);
+        return false;
+    }
+}
+
+module.exports.updateRequirements = async function updateRequirements(mongoConn,courseId,title,id){
+    try{
+        let course = await mongoConn.singleFind("Courses", {_id:mongodb.ObjectId(courseId)});
+        course.requirements[id] = title;
+
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {requirements:course.requirements}})
+        return true;
+    }catch(err){
+        console.error(err);
+        return false;
+    }
+}
+
+
+module.exports.deleteAudience = async function deleteAudience(mongoConn,courseId, audienceId){
+    try{
+        let course  = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
+        course.audience.splice(audienceId, 1);
+
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {audience:course.audience}});
+        return true;
+    }catch(err){
+        console.error(err);
+        return false;
+    }
+}
+
+module.exports.deleteLearningObjecive = async function deleteLearningObjecive(mongoConn,courseId, learningObj){
+    try{
+        let course  = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
+        course.learning_objectives.splice(learningObj, 1);
+
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {learning_objectives:course.learning_objectives}});
+        return true;
+    }catch(err){
+        console.error(err);
+        return false;
+    }
+}
+
+module.exports.deleteRequirements = async function deleteRequirements(mongoConn,courseId, reqId){
+    try{
+        let course  = await mongoConn.singleFind("Courses", {_id: mongodb.ObjectId(courseId)});
+        course.requirements.splice(reqId, 1);
+
+        await mongoConn.singleUpdateWithId("Courses", courseId, {$set: {requirements:course.requirements}});
+        return true;
+    }catch(err){
+        console.error(err);
+        return false;
+    }
+}
+
 module.exports.deleteCourse = async function deleteCourse(mongoConn,courseId){
     try{
         await mongoConn.singleDeleteWithId("Courses",courseId);
