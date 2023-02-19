@@ -39,7 +39,7 @@
         <div *ngFor="let module of courses.content; let indexOfelement = index">
           <div #ModuleTitle  class="collapsible">
             <span (click)="basicToggle(moduleTop)">{{ module.module_title }}</span>
-            <span (click)="promptEditModule(EditModulePrompt, ModuleTitle)">
+            <span (click)="promptDetailEdit(EditModulePrompt, ModuleTitle, 'editModulePrompt','collapsible')">
               <fa-icon  [icon]="faEdit"></fa-icon>
             </span>
             <span #DeleteModule id="module-{{indexOfelement}}-delete" (click)="deleteModule(DeleteModule)">
@@ -163,7 +163,28 @@
   <div id="courseContainer" #CourseDetailElement class="content hidden">
     <div *ngIf="courses">
       <h3>What you'll learn</h3>
-      <p *ngFor="let learn of courses.learning_objective">{{learn}}</p>
+      <div *ngFor="let learn of courses.learning_objective; let indexOfelement = index">
+        <span class="learningObj" #LearningObjective>{{learn}}
+          <span (click)="promptDetailEdit(EditLearnObjPrompt, LearningObjective, 'editLearnObjPrompt','learningObj')">
+            <fa-icon  [icon]="faEdit"></fa-icon>
+          </span>
+          <span #LearnDelete id = 'lo-{{indexOfelement}}-delete' (click)="deleteLearningObj(LearnDelete)">
+            <fa-icon [icon]="faTrash"></fa-icon>
+          </span>
+        </span>
+        <div #EditLearnObjPrompt class="editLearnObjPrompt hidden">
+          <input
+            id="input-m-{{ indexOfelement }}"
+            #LearnObjInput
+            type="text"
+            value="{{learn}}"
+          />
+          <button (click)="editDetail(EditLearnObjPrompt, LearningObjective, LearnObjInput,'learningObj')">Save</button>
+        </div>
+        
+  
+      </div>
+      
       <div *ngIf="addingLearnObj">
         <input
           #LearningObjectiveInput
@@ -176,7 +197,26 @@
       <button (click)="promptLearningObjective()">Add learning objective</button>
 
       <h3>Audience</h3>
-      <p *ngFor="let audience of courses.audience">{{audience}}</p>
+      <div *ngFor="let audience of courses.audience; let indexOfelement = index">
+        <span class="audienceTitle" #Audience>{{audience}}
+          <span (click)="promptDetailEdit(EditAudiencePrompt, Audience, 'editAudiencePrompt','audienceTitle')" id = 'audience-{{indexOfelement}}-edit'>
+            <fa-icon  [icon]="faEdit"></fa-icon>
+          </span>
+          <span id = 'audience-{{indexOfelement}}-delete' #AudienceDelete (click)="deleteAudience(AudienceDelete)">
+            <fa-icon [icon]="faTrash"></fa-icon>
+          </span>
+        </span>
+
+        <div #EditAudiencePrompt class="editAudiencePrompt hidden">
+          <input
+          id="input-m-{{ indexOfelement }}"
+          #EditAudienceInput
+          type="text"
+          value="{{audience}}"
+          />
+          <button (click)="editDetail(EditAudiencePrompt, Audience, EditAudienceInput,'audienceTitle')">Save</button>
+        </div>
+      </div>
 
       <div *ngIf="addingAudience">
         <input
@@ -190,8 +230,28 @@
       <button (click)="promptAudience()">Add learning objective</button>
 
       <h3>Requirements</h3>
-      <p *ngFor="let requirement of courses.requirements">{{requirement}}</p>
+      <div *ngFor="let requirement of courses.requirements; let indexOfelement = index">
+        <span class="requirementTitle" #RequirementTitle>{{requirement}}
+        <span (click)="promptDetailEdit(EditRequirementPrompt, RequirementTitle, 'editRequirementPrompt','requirementTitle')" id = 'audience-{{indexOfelement}}-edit'>
+          <fa-icon  [icon]="faEdit"></fa-icon>
+        </span>
+        <span id = 'req-{{indexOfelement}}-delete' #RequirementDelete (click)="deleteRequirement(RequirementDelete)">
+          <fa-icon [icon]="faTrash"></fa-icon>
+        </span>
+      </span>
 
+        <div #EditRequirementPrompt class="editRequirementPrompt hidden">
+          <input
+          id="input-m-{{ indexOfelement }}"
+          #EditRequirementInput
+          type="text"
+          value="{{requirement}}"
+          />
+          <button (click)="editDetail(EditRequirementPrompt, RequirementTitle, EditRequirementInput,'requirementTitle')">Save</button>
+        </div>
+  
+      </div>
+    
       <div *ngIf="addingRequirement">
         <input
           #ReqInput
